@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Chiffres Double B</title>
+<meta name="description" content="Suivi de l'activité du Double B, jour par jour : clients, chiffre d'affaires, burgers du mois.">
+<meta name="theme-color" content="#f2a516">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Commande 2B">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700;800&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+/* Layout : même en-tête que le reste de l'appli ; mois, chiffres clés, saisie du jour, puis tableau du mois et export. */
+:root{
+  --bg:#f4f2ec; --surface:#ffffff; --sunken:#f9f7f2; --line:#e6e1d5; --fg:#1d1b17; --muted:#6f695d;
+  --accent:#f2a516; --accent-ink:#2a1d00; --accent-soft:#fdf1d6; --go:#2f7d4f; --danger:#c23a2b;
+  --midi:#b86e00; --midi-soft:#fdf1d6; --soir:#2f5d9e; --soir-soft:#e4ecf8; --mamie:#8a4f8f; --mamie-soft:#f4e6f4;
+  --display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
+  --body:"Figtree","Segoe UI",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#141310; --surface:#1f1d18; --sunken:#191814; --line:#34312a; --fg:#f3efe5; --muted:#a69f90;
+  --accent:#f5b232; --accent-ink:#231800; --accent-soft:#3a2e12; --go:#4fae78; --danger:#e8705f;
+  --midi:#f5b232; --midi-soft:#3a2e12; --soir:#8db7ee; --soir-soft:#1b2a40; --mamie:#dba6df; --mamie-soft:#33213a; color-scheme:dark}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.35;-webkit-tap-highlight-color:transparent;
+  padding:env(safe-area-inset-top,0px) max(16px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(16px,env(safe-area-inset-left,0px))}
+[hidden]{display:none!important}
+.wrap{max-width:1100px;margin:0 auto;padding-block:16px 60px}
+h1,h2,h3{font-family:var(--display);margin:0}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+
+.apps{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:14px;max-width:680px;margin:0 auto 14px}
+.apps a{height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:var(--muted);text-decoration:none;text-align:center;line-height:1.1}
+.apps a[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
+header.top{display:flex;align-items:center;gap:14px}
+.logo{flex:none;width:112px;height:62px;border-radius:16px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;padding:6px 10px}
+.logo img{width:100%;height:auto;display:block}
+.titles{flex:1;min-width:0}
+.titles h1{font-size:30px;font-weight:800;letter-spacing:-.5px;line-height:1}
+.titles p{margin:6px 0 0;font-size:15px;color:var(--muted);font-weight:500}
+.sync{font-size:12px;color:var(--muted);text-align:right;margin-bottom:6px}
+.sync::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--muted);margin-right:6px;vertical-align:1px}
+.sync.ok::before{background:var(--go)} .sync.err::before{background:var(--danger)}
+
+/* Mois */
+.month{display:flex;align-items:center;gap:8px;margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:6px}
+.month h2{flex:1;text-align:center;font-size:24px;font-weight:800;text-transform:capitalize}
+.arrow{width:50px;height:50px;border-radius:13px;border:0;background:var(--sunken);display:grid;place-items:center;color:var(--fg)}
+.arrow svg{width:22px;height:22px}
+.today-btn{height:36px;border-radius:10px;border:1px solid var(--line);background:var(--sunken);padding:0 12px;font-size:14px;font-weight:700}
+
+/* Chiffres clés */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+@media (max-width:640px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
+.kpi small{display:block;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.kpi b{display:block;font-family:var(--display);font-size:24px;font-weight:800;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Saisie du jour */
+.day{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:14px}
+.dayhead{display:flex;align-items:center;gap:8px}
+.dayhead h3{flex:1;text-align:center;font-size:20px;font-weight:800}
+.dayhead h3 small{display:block;font-family:var(--body);font-size:13px;font-weight:600;color:var(--muted);margin-top:2px}
+.groups{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+@media (max-width:760px){.groups{grid-template-columns:1fr}}
+.grp{border-radius:16px;padding:12px;background:var(--soft);border:1px solid color-mix(in srgb,var(--c) 25%,transparent)}
+.grp h4{margin:0 0 8px;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--c);display:flex;align-items:center;gap:8px}
+.grp h4 svg{width:18px;height:18px}
+.grp.midi{--c:var(--midi);--soft:var(--midi-soft)} .grp.soir{--c:var(--soir);--soft:var(--soir-soft)} .grp.autre{--c:var(--mamie);--soft:var(--mamie-soft)}
+.fields{display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:8px}
+.grp.autre .fields{grid-template-columns:repeat(2,1fr)}
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.f label{font-size:12px;font-weight:700;color:var(--muted);line-height:1.15;min-height:28px;display:flex;align-items:flex-end}
+.f .in{position:relative}
+.f input{width:100%;height:50px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);text-align:center;font-weight:800;font-size:18px;padding:0 6px;font-variant-numeric:tabular-nums}
+.f input.eur{padding-right:22px;padding-left:4px}
+.f .in span{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:14px;font-weight:700;color:var(--muted);pointer-events:none}
+.f input:focus{border-color:var(--c);outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 25%,transparent)}
+.daytot{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:15px;color:var(--muted);font-weight:600}
+.daytot b{color:var(--fg);font-weight:800}
+
+/* Tableau du mois */
+.tblcard{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.tblcard header{display:flex;align-items:center;gap:10px;padding:12px 14px;flex-wrap:wrap}
+.tblcard header h3{flex:1;font-size:19px;font-weight:800;min-width:150px}
+.btn{height:44px;border-radius:12px;border:0;padding:0 14px;font-weight:700;background:var(--accent);color:var(--accent-ink);display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:15px}
+.btn.soft{background:var(--sunken);border:1px solid var(--line);color:var(--fg)}
+.btn:disabled{opacity:.55;cursor:wait}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-top:1px solid var(--line)}
+table{border-collapse:separate;border-spacing:0;width:100%;font-size:14px;min-width:860px}
+th,td{padding:7px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
+thead th{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;background:var(--sunken);text-align:center}
+thead tr.g th{font-size:12px;letter-spacing:.1em}
+th.gm{color:var(--midi);background:var(--midi-soft)} th.gs{color:var(--soir);background:var(--soir-soft)} th.ga{color:var(--mamie);background:var(--mamie-soft)}
+td.d,th.d{position:sticky;left:0;background:var(--surface);text-align:left;z-index:1}
+thead th.d{background:var(--sunken);z-index:2}
+td.d{font-weight:700}
+td.d small{font-weight:500;color:var(--muted);margin-left:6px;text-transform:capitalize}
+td.tot{font-weight:800}
+tbody tr{cursor:pointer}
+tbody tr.we td{background:color-mix(in srgb,var(--sunken) 70%,var(--surface))}
+tbody tr.sel td{background:var(--accent-soft)!important}
+tbody tr.sel td.d{box-shadow:inset 4px 0 0 var(--accent)}
+tbody tr.today td.d::after{content:"aujourd'hui";margin-left:6px;font-size:11px;font-weight:800;color:var(--accent-ink);background:var(--accent);border-radius:6px;padding:1px 5px}
+td.e{color:var(--line)}
+tfoot td{font-weight:800;background:var(--sunken);border-bottom:0;border-top:2px solid var(--fg)}
+tfoot td.d{background:var(--sunken)}
+.note{font-size:13px;color:var(--muted);padding:10px 14px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:11px 16px;border-radius:12px;font-weight:600;font-size:15px;z-index:30;max-width:calc(100% - 32px)}
+.modal{position:fixed;inset:0;background:rgba(10,8,4,.6);display:grid;place-items:center;z-index:20;padding:20px}
+.modal .box{background:var(--surface);border-radius:18px;padding:16px;max-width:420px;width:100%;display:flex;flex-direction:column;gap:10px}
+@media (max-width:400px){.titles h1{font-size:25px}header.top .logo{width:92px;height:54px}.apps a{font-size:13px}.month h2{font-size:20px}}
+
+/* Version imprimée (PDF A4 paysage, 1123 × 794 px), toujours claire */
+.print{position:fixed;left:-20000px;top:0;width:1123px;height:794px;background:#fff;color:#1d1b17;font-family:var(--body);padding:30px 34px 22px;display:flex;flex-direction:column}
+.print .ph{display:flex;align-items:center;gap:16px;margin-bottom:12px}
+.print .ph img{width:96px;height:auto}
+.print .ph h1{font-family:var(--display);font-size:26px;font-weight:800;flex:1}
+.print .ph h1 small{display:block;font-family:var(--body);font-size:12px;font-weight:500;color:#6f695d;margin-top:3px}
+.print .ph .k{display:flex;gap:18px;text-align:right}
+.print .ph .k div{font-size:10px;color:#6f695d;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.print .ph .k b{display:block;font-family:var(--display);font-size:17px;color:#1d1b17;letter-spacing:0;text-transform:none}
+.print table{min-width:0;font-size:11px;flex:1}
+.print th,.print td{padding:0 6px;height:18px;border-bottom:1px solid #e6e1d5;color:#1d1b17}
+.print thead th{background:#f4f2ec;color:#6f695d;font-size:9.5px;height:20px}
+.print th.gm{background:#fdf1d6;color:#9a5c00} .print th.gs{background:#e4ecf8;color:#2f5d9e} .print th.ga{background:#f4e6f4;color:#8a4f8f}
+.print td.d,.print th.d{position:static;background:transparent}
+.print thead th.d{background:#f4f2ec}
+.print tbody tr.we td{background:#faf8f3}
+.print td.e{color:#d8d2c4}
+.print tfoot td{background:#f4f2ec;border-top:1.5px solid #1d1b17;height:22px;font-size:11.5px}
+.print .pn{font-size:10px;color:#6f695d;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="apps" aria-label="Parties de l'appli">
+    <a href="./">Commande</a><a href="menus.html">Menus &amp; devis</a><a href="chiffres.html" aria-current="page">Chiffres</a>
+  </nav>
+  <div class="sync" id="sync">Connexion…</div>
+  <header class="top">
+    <div class="logo"><img src="logo.png" alt="Double B"></div>
+    <div class="titles"><h1>Chiffres</h1><p>Le suivi de l'activité, service par service.</p></div>
+  </header>
+
+  <div class="month">
+    <button class="arrow" id="mPrev" aria-label="Mois précédent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <h2 id="mName">&nbsp;</h2>
+    <button class="arrow" id="mNext" aria-label="Mois suivant"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <section class="day" aria-label="Saisie du jour">
+    <div class="dayhead">
+      <button class="arrow" id="dPrev" aria-label="Jour précédent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <h3 id="dName">&nbsp;</h3>
+      <button class="arrow" id="dNext" aria-label="Jour suivant"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+    </div>
+    <div class="groups">
+      <div class="grp midi"><h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Midi</h4>
+        <div class="fields">
+          <div class="f"><label for="clients_midi">Clients</label><div class="in"><input id="clients_midi" data-k="clients_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
+          <div class="f"><label for="ca_midi">CA</label><div class="in"><input id="ca_midi" class="eur" data-k="ca_midi" inputmode="decimal" autocomplete="off" placeholder="–"><span>€</span></div></div>
+          <div class="f"><label for="burgers_midi">Burger du mois</label><div class="in"><input id="burgers_midi" data-k="burgers_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
+        </div></div>
+      <div class="grp soir"><h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>Soir</h4>
+        <div class="fields">
+          <div class="f"><label for="clients_soir">Clients</label><div class="in"><input id="clients_soir" data-k="clients_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
+          <div class="f"><label for="ca_soir">CA</label><div class="in"><input id="ca_soir" class="eur" data-k="ca_soir" inputmode="decimal" autocomplete="off" placeholder="–"><span>€</span></div></div>
+          <div class="f"><label for="burgers_soir">Burger du mois</label><div class="in"><input id="burgers_soir" data-k="burgers_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
+        </div></div>
+      <div class="grp autre"><h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Aussi</h4>
+        <div class="fields">
+          <div class="f"><label for="mamie">Mamie</label><div class="in"><input id="mamie" class="eur" data-k="mamie" inputmode="decimal" autocomplete="off" placeholder="–"><span>€</span></div></div>
+          <div class="f"><label for="refuses">Clients refusés</label><div class="in"><input id="refuses" data-k="refuses" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
+        </div></div>
+    </div>
+    <div class="daytot" id="dayTot"></div>
+  </section>
+
+  <section class="tblcard">
+    <header><h3 id="tTitle">Tableau du mois</h3>
+      <button class="btn" id="pdf" type="button">Enregistrer en PDF</button>
+      <button class="btn soft" id="csv" type="button">Fichier Excel</button>
+    </header>
+    <div class="scroll"><table id="tbl"></table></div>
+    <p class="note">Touche une ligne pour la remplir. Les totaux se calculent tout seuls. Refusés = clients qu'on n'a pas pu accueillir faute de place.</p>
+  </section>
+</div>
+<div class="print" id="print" aria-hidden="true"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* Connexion : même base et même code d'équipe que l'appli Commande */
+const API="https://kokjumjhpasxxxrpspng.supabase.co/rest/v1/rpc/";
+const KEY="sb_publishable_HIJXH1eJ_CP-A4G3AecDKg_NbBUD0m2";
+const CK="commande2b-code";
+let CODE=null;try{CODE=localStorage.getItem(CK)}catch{}
+if(!CODE)location.replace("./");
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2600)}
+async function rpc(fn,args={}){
+  const r=await fetch(API+fn,{method:"POST",headers:{"apikey":KEY,"Content-Type":"application/json"},body:JSON.stringify({p_code:CODE,...args})});
+  if(!r.ok){let e={};try{e=await r.json()}catch{}const err=new Error(e.message||"Erreur réseau");err.code=e.code;throw err}
+  const t=await r.text();return t?JSON.parse(t):null;
+}
+function setSync(t,cls){const s=$("#sync");s.textContent=t;s.className="sync"+(cls?" "+cls:"")}
+function lost(e){if(e&&e.code==="28000"){try{localStorage.removeItem(CK)}catch{}location.replace("./");return true}return false}
+
+/* ---------- Dates (heure locale) ---------- */
+const pad=n=>String(n).padStart(2,"0");
+const key=(y,m,d)=>`${y}-${pad(m+1)}-${pad(d)}`;
+const daysIn=(y,m)=>new Date(y,m+1,0).getDate();
+const wd=(y,m,d)=>new Date(y,m,d).toLocaleDateString("fr-FR",{weekday:"long"});
+const monthName=(y,m)=>new Date(y,m,1).toLocaleDateString("fr-FR",{month:"long",year:"numeric"});
+const now=new Date();
+const S={y:now.getFullYear(),m:now.getMonth(),d:now.getDate(),data:{},pending:0,loaded:null};
+
+/* ---------- Nombres ---------- */
+const FIELDS=["clients_midi","ca_midi","burgers_midi","clients_soir","ca_soir","burgers_soir","mamie","refuses"];
+const EUR=new Set(["ca_midi","ca_soir","mamie"]);
+const nf0=new Intl.NumberFormat("fr-FR",{maximumFractionDigits:0});
+const nf2=new Intl.NumberFormat("fr-FR",{minimumFractionDigits:0,maximumFractionDigits:2});
+const nf2f=new Intl.NumberFormat("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2});
+const eur=v=>v==null?"":(Number.isInteger(v)?nf2:nf2f).format(v)+" €";
+const int=v=>v==null?"":nf0.format(v);
+const fmt=(k,v)=>EUR.has(k)?eur(v):int(v);
+function parseNum(s,isEur){s=String(s).replace(/\s|€/g,"").replace(",",".");if(s==="")return null;const n=parseFloat(s);if(isNaN(n)||n<0)return undefined;
+  return isEur?Math.round(n*100)/100:Math.round(n)}
+const val=(row,k)=>row&&typeof row[k]==="number"?row[k]:null;
+const add=(...a)=>{const v=a.filter(x=>x!=null);return v.length?v.reduce((s,x)=>s+x,0):null};
+function totals(row){return {clients:add(val(row,"clients_midi"),val(row,"clients_soir")),ca:add(val(row,"ca_midi"),val(row,"ca_soir")),burgers:add(val(row,"burgers_midi"),val(row,"burgers_soir"))}}
+function monthSums(){
+  const s={};FIELDS.forEach(k=>s[k]=null);s.clients=null;s.ca=null;s.burgers=null;let jours=0;
+  for(let d=1;d<=daysIn(S.y,S.m);d++){const r=S.data[key(S.y,S.m,d)];if(!r)continue;
+    FIELDS.forEach(k=>s[k]=add(s[k],val(r,k)));const t=totals(r);s.clients=add(s.clients,t.clients);s.ca=add(s.ca,t.ca);s.burgers=add(s.burgers,t.burgers);
+    if(t.ca!=null||t.clients!=null)jours++}
+  s.jours=jours;return s;
+}
+
+/* ---------- Chargement et enregistrement ---------- */
+async function load(){
+  if(S.pending>0)return;
+  const mk=key(S.y,S.m,1);
+  try{
+    const d=await rpc("suivi_mois",{p_mois:mk});if(S.pending>0||mk!==key(S.y,S.m,1))return;
+    S.data=d||{};S.loaded=mk;setSync("À jour","ok");render(document.activeElement&&document.activeElement.dataset.k);
+  }catch(e){if(lost(e))return;setSync("Hors ligne","err");render()}
+}
+async function save(k,v){
+  const dk=key(S.y,S.m,S.d);S.data[dk]={...(S.data[dk]||{})};
+  if(v==null)delete S.data[dk][k];else S.data[dk][k]=v;
+  render(true);S.pending++;setSync("Enregistrement…");
+  try{await rpc("suivi_maj",{p_jour:dk,p_champs:{[k]:v}});S.pending--;if(!S.pending)setSync("Enregistré","ok")}
+  catch(e){S.pending--;if(lost(e))return;toast("Pas enregistré : vérifie la connexion");setSync("Hors ligne","err")}
+}
+setInterval(()=>{if(document.visibilityState==="visible")load()},15000);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")load()});
+
+/* ---------- Affichage ---------- */
+function render(keepInputs){
+  $("#mName").textContent=monthName(S.y,S.m);
+  const isToday=S.y===now.getFullYear()&&S.m===now.getMonth()&&S.d===now.getDate();
+  $("#dName").innerHTML=`${esc(cap(wd(S.y,S.m,S.d)))} ${S.d} ${esc(new Date(S.y,S.m,1).toLocaleDateString("fr-FR",{month:"long"}))}<small>${isToday?"Aujourd'hui":"&nbsp;"}</small>`;
+  const row=S.data[key(S.y,S.m,S.d)]||{};
+  if(keepInputs!==true)FIELDS.forEach(k=>{const el=$("#"+k);el.value=val(row,k)==null?"":String(val(row,k)).replace(".",",")});
+  const t=totals(row);
+  $("#dayTot").innerHTML=`<span>Total clients <b class="num">${t.clients==null?"–":int(t.clients)}</b></span><span>CA de la journée <b class="num">${t.ca==null?"–":eur(t.ca)}</b></span><span>Burgers du mois <b class="num">${t.burgers==null?"–":int(t.burgers)}</b></span>`;
+  const s=monthSums();
+  const kp=[["CA du mois",s.ca==null?"–":eur(s.ca)],["Clients du mois",s.clients==null?"–":int(s.clients)],["Ticket moyen",s.ca&&s.clients?eur(Math.round(s.ca/s.clients*100)/100):"–"],["Burgers du mois",s.burgers==null?"–":int(s.burgers)]];
+  $("#kpis").innerHTML=kp.map(([a,b])=>`<div class="kpi"><small>${a}</small><b class="num">${b}</b></div>`).join("");
+  $("#tTitle").textContent="Tableau de "+monthName(S.y,S.m);
+  $("#tbl").innerHTML=tableHTML(true);
+}
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+function cell(k,v){return v==null?`<td class="e">–</td>`:`<td>${esc(fmt(k,v))}</td>`}
+function tableHTML(live){
+  const n=daysIn(S.y,S.m);let body="";
+  for(let d=1;d<=n;d++){
+    const r=S.data[key(S.y,S.m,d)]||{};const t=totals(r);const w=new Date(S.y,S.m,d).getDay();
+    const cls=[w===0||w===6?"we":"",live&&d===S.d?"sel":"",live&&S.y===now.getFullYear()&&S.m===now.getMonth()&&d===now.getDate()?"today":""].join(" ").trim();
+    body+=`<tr data-day="${d}" class="${cls}"><td class="d">${pad(d)}/${pad(S.m+1)}<small>${esc(wd(S.y,S.m,d))}</small></td>
+      ${cell("clients_midi",val(r,"clients_midi"))}${cell("ca_midi",val(r,"ca_midi"))}${cell("burgers_midi",val(r,"burgers_midi"))}
+      ${cell("clients_soir",val(r,"clients_soir"))}${cell("ca_soir",val(r,"ca_soir"))}${cell("burgers_soir",val(r,"burgers_soir"))}
+      ${t.clients==null?`<td class="e">–</td>`:`<td class="tot">${int(t.clients)}</td>`}${t.ca==null?`<td class="e">–</td>`:`<td class="tot">${eur(t.ca)}</td>`}
+      ${cell("mamie",val(r,"mamie"))}${cell("refuses",val(r,"refuses"))}</tr>`;
+  }
+  const s=monthSums();const f=(k,v)=>`<td>${v==null?"":esc(fmt(k,v))}</td>`;
+  return `<thead><tr class="g"><th class="d" rowspan="2">Date</th><th class="gm" colspan="3">Midi</th><th class="gs" colspan="3">Soir</th><th colspan="2">Journée</th><th class="ga" rowspan="2">Mamie</th><th rowspan="2">Refusés</th></tr>
+    <tr><th class="gm">Clients</th><th class="gm">CA</th><th class="gm">Burger du mois</th><th class="gs">Clients</th><th class="gs">CA</th><th class="gs">Burger du mois</th><th>Total clients</th><th>CA total</th></tr></thead>
+    <tbody>${body}</tbody>
+    <tfoot><tr><td class="d">TOTAL</td>${f("clients_midi",s.clients_midi)}${f("ca_midi",s.ca_midi)}${f("burgers_midi",s.burgers_midi)}${f("clients_soir",s.clients_soir)}${f("ca_soir",s.ca_soir)}${f("burgers_soir",s.burgers_soir)}${f("x",s.clients)}${f("ca_midi",s.ca)}${f("mamie",s.mamie)}${f("refuses",s.refuses)}</tr></tfoot>`;
+}
+
+/* ---------- Saisie ---------- */
+document.querySelectorAll("[data-k]").forEach(el=>{
+  el.addEventListener("change",()=>{
+    const k=el.dataset.k;const v=parseNum(el.value,EUR.has(k));
+    if(v===undefined){toast("Chiffre non valable");render();return}
+    const row=S.data[key(S.y,S.m,S.d)]||{};if(val(row,k)===v)return;
+    el.value=v==null?"":String(v).replace(".",",");save(k,v);
+  });
+  el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();const all=[...document.querySelectorAll("[data-k]")];const i=all.indexOf(el);(all[i+1]||el).focus();if(!all[i+1])el.blur()}});
+});
+function goDay(delta){
+  document.activeElement&&document.activeElement.blur&&document.activeElement.blur();
+  const dt=new Date(S.y,S.m,S.d+delta);const mChanged=dt.getMonth()!==S.m||dt.getFullYear()!==S.y;
+  S.y=dt.getFullYear();S.m=dt.getMonth();S.d=dt.getDate();
+  if(mChanged){S.data={};render();load()}else render();
+}
+function goMonth(delta){
+  const dt=new Date(S.y,S.m+delta,1);S.y=dt.getFullYear();S.m=dt.getMonth();
+  S.d=S.y===now.getFullYear()&&S.m===now.getMonth()?now.getDate():1;S.data={};render();load();
+}
+$("#dPrev").onclick=()=>goDay(-1);$("#dNext").onclick=()=>goDay(1);
+$("#mPrev").onclick=()=>goMonth(-1);$("#mNext").onclick=()=>goMonth(1);
+$("#tbl").addEventListener("click",e=>{const tr=e.target.closest("tr[data-day]");if(!tr)return;S.d=+tr.dataset.day;render();
+  $(".day").scrollIntoView({behavior:"smooth",block:"start"});setTimeout(()=>$("#clients_midi").focus({preventScroll:true}),350)});
+
+/* ---------- Export ---------- */
+const fileBase=()=>"Chiffres Double B - "+cap(monthName(S.y,S.m));
+function saveLink(blob,name){const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000)}
+async function offer(blob,name){
+  const file=new File([blob],name,{type:blob.type});
+  const mobile=/iPhone|iPad|Android/i.test(navigator.userAgent)||navigator.maxTouchPoints>1;
+  if(mobile&&navigator.canShare&&navigator.canShare({files:[file]})){
+    try{await navigator.share({files:[file],title:name});return}catch(e){if(e.name==="AbortError")return}
+    const m=document.createElement("div");m.className="modal";
+    m.innerHTML=`<div class="box"><b>${esc(name)}</b><p style="margin:0;color:var(--muted);font-size:14px">Ton fichier est prêt. Appuie sur « Enregistrer ou envoyer » puis choisis « Enregistrer dans Fichiers », Mail…</p><button class="btn" type="button" data-s>Enregistrer ou envoyer</button><button class="btn soft" type="button" data-c>Fermer</button></div>`;
+    m.querySelector("[data-s]").onclick=async()=>{try{await navigator.share({files:[file],title:name})}catch{saveLink(blob,name)}m.remove()};
+    m.querySelector("[data-c]").onclick=()=>m.remove();document.body.appendChild(m);return;
+  }
+  saveLink(blob,name);toast("Fichier téléchargé");
+}
+function printHTML(){
+  const s=monthSums();
+  return `<div class="ph"><img src="logo.png" alt=""><h1>Suivi d'activité — ${esc(cap(monthName(S.y,S.m)))}<small>Double B · 59 avenue Foch, Folschviller</small></h1>
+    <div class="k"><div>CA du mois<b>${s.ca==null?"–":eur(s.ca)}</b></div><div>Clients<b>${s.clients==null?"–":int(s.clients)}</b></div><div>Ticket moyen<b>${s.ca&&s.clients?eur(Math.round(s.ca/s.clients*100)/100):"–"}</b></div><div>Burgers du mois<b>${s.burgers==null?"–":int(s.burgers)}</b></div></div></div>
+    <table>${tableHTML(false)}</table><p class="pn">Refusés = clients qu'on n'a pas pu accueillir faute de place ou de capacité.</p>`;
+}
+$("#pdf").onclick=async e=>{
+  const b=e.currentTarget,old=b.textContent;b.disabled=true;b.innerHTML="Préparation…";
+  try{
+    if(!window.html2canvas||!window.jspdf)throw new Error("libs");
+    if(document.fonts&&document.fonts.ready)await document.fonts.ready;
+    const p=$("#print");p.innerHTML=printHTML();
+    await new Promise(r=>{const im=p.querySelector("img");if(im.complete)r();else{im.onload=r;im.onerror=r}});
+    const cv=await html2canvas(p,{scale:2.5,backgroundColor:"#ffffff",logging:false,x:0,y:0,scrollX:0,scrollY:0,windowWidth:1123});
+    const {jsPDF}=window.jspdf;const pdf=new jsPDF({orientation:"landscape",unit:"mm",format:"a4"});
+    pdf.addImage(cv.toDataURL("image/jpeg",0.93),"JPEG",0,0,297,210);
+    await offer(pdf.output("blob"),fileBase()+".pdf");
+  }catch(err){toast(err.message==="libs"?"Pas de connexion : l'export a besoin d'internet":"L'export a échoué, réessaie")}
+  finally{b.disabled=false;b.textContent=old;$("#print").innerHTML=""}
+};
+$("#csv").onclick=()=>{
+  const n=daysIn(S.y,S.m);const c=v=>v==null?"":String(v).replace(".",",");
+  const lines=[["Date","Jour","Clients midi","CA midi (€)","Burger du mois midi","Clients soir","CA soir (€)","Burger du mois soir","Total clients","CA total journée (€)","Mamie (€)","Refusés"].join(";")];
+  for(let d=1;d<=n;d++){const r=S.data[key(S.y,S.m,d)]||{};const t=totals(r);
+    lines.push([`${pad(d)}/${pad(S.m+1)}/${S.y}`,wd(S.y,S.m,d),...["clients_midi","ca_midi","burgers_midi","clients_soir","ca_soir","burgers_soir"].map(k=>c(val(r,k))),c(t.clients),c(t.ca),c(val(r,"mamie")),c(val(r,"refuses"))].join(";"))}
+  const s=monthSums();
+  lines.push(["TOTAL","",c(s.clients_midi),c(s.ca_midi),c(s.burgers_midi),c(s.clients_soir),c(s.ca_soir),c(s.burgers_soir),c(s.clients),c(s.ca),c(s.mamie),c(s.refuses)].join(";"));
+  offer(new Blob(["﻿"+lines.join("\r\n")],{type:"text/csv"}),fileBase()+".csv");
+};
+
+render();load();
+if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>
