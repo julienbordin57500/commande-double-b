@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Commande Double B</title>
+<meta name="description" content="Listes de commande des matières premières du Double B.">
+<meta name="theme-color" content="#f2a516">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Commande 2B">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout : en-tête logo + « Commande » + date, recherche, onglets, cartes repliables par fournisseur, ajout en bas. */
+:root{
+  --bg:#f4f2ec; --surface:#ffffff; --sunken:#f9f7f2; --line:#e6e1d5; --fg:#1d1b17; --muted:#6f695d;
+  --accent:#f2a516; --accent-ink:#2a1d00; --accent-soft:#fdf1d6; --go:#2f7d4f; --go-ink:#ffffff; --danger:#c23a2b;
+  --c-mar:#3f8a4f; --c-mar-soft:#e3f2e6; --c-sys:#1f5fa8; --c-sys-soft:#e1ecf8; --c-cdp:#b5651d; --c-cdp-soft:#f8eadb;
+  --c-oth:#6d5a9e; --c-oth-soft:#ece7f6;
+  --display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
+  --body:"Figtree","Segoe UI",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#141310; --surface:#1f1d18; --sunken:#191814; --line:#34312a; --fg:#f3efe5; --muted:#a69f90;
+  --accent:#f5b232; --accent-ink:#231800; --accent-soft:#3a2e12; --go:#4fae78; --go-ink:#0d1f14; --danger:#e8705f;
+  --c-mar:#7cc78c; --c-mar-soft:#1e3324; --c-sys:#7fb3ea; --c-sys-soft:#182a40; --c-cdp:#e3a066; --c-cdp-soft:#3a2716;
+  --c-oth:#b9a6e6; --c-oth-soft:#2a2440; color-scheme:dark}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.35;-webkit-tap-highlight-color:transparent;
+  padding:env(safe-area-inset-top,0px) max(16px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(16px,env(safe-area-inset-left,0px))}
+[hidden]{display:none!important}
+.wrap{max-width:680px;margin:0 auto;padding-block:16px 60px}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* Écran de code */
+.gate{min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center}
+.gate .logo{width:180px;height:auto;padding:14px 18px}
+.gate h1{font-size:28px}
+.gate p{color:var(--muted);margin:0;max-width:320px}
+.gate form{display:flex;flex-direction:column;gap:10px;width:100%;max-width:340px}
+.gate input{height:56px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);text-align:center;font-size:20px;letter-spacing:.06em;font-weight:700}
+.gate .err{color:var(--danger);font-weight:600;font-size:15px}
+
+/* En-tête */
+header.top{display:flex;align-items:center;gap:14px}
+.logo{flex:none;width:112px;height:62px;border-radius:16px;background:#ffffff;border:1px solid var(--line);display:grid;place-items:center;padding:6px 10px}
+.logo img{width:100%;height:auto;display:block}
+.titles{flex:1;min-width:0}
+.titles h1{font-size:30px;font-weight:800;letter-spacing:-.5px;line-height:1}
+.titles .date{margin-top:6px;font-size:15px;color:var(--muted);font-weight:500}
+.titles .date b{color:var(--fg);font-weight:700}
+.sync{font-size:12px;color:var(--muted);text-align:right;margin-bottom:6px}
+.sync::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--muted);margin-right:6px;vertical-align:1px}
+.sync.ok::before{background:var(--go)} .sync.err::before{background:var(--danger)}
+
+/* Recherche */
+.search{position:relative;margin-top:16px}
+.search svg{position:absolute;left:16px;top:50%;width:22px;height:22px;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.search input{width:100%;height:56px;border-radius:16px;border:1.5px solid var(--line);background:var(--surface);padding:0 52px 0 50px;font-size:17px;-webkit-appearance:none;appearance:none}
+.search input:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 4px var(--accent-soft)}
+.search input::-webkit-search-cancel-button{display:none}
+.search button{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:12px;border:0;background:var(--sunken);font-size:22px;line-height:1;color:var(--muted)}
+.qinfo{margin:10px 4px 0;font-size:14px;color:var(--muted);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.qinfo .btn{height:40px;font-size:14px;padding:0 14px}
+mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:0 1px}
+
+/* Onglets */
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:14px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:16px;position:sticky;top:env(safe-area-inset-top,0px);z-index:4}
+.tabs button{height:50px;border:0;border-radius:12px;background:transparent;font-weight:700;font-size:16px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:8px}
+.tabs button[aria-selected="true"]{background:var(--fg);color:var(--bg)}
+.badge{min-width:24px;height:24px;border-radius:12px;background:var(--accent);color:var(--accent-ink);font-size:13px;font-weight:800;display:inline-grid;place-items:center;padding:0 7px;font-variant-numeric:tabular-nums}
+
+/* Cartes fournisseur */
+.suppliers{display:flex;flex-direction:column;gap:14px;margin-top:16px}
+.sup{background:var(--surface);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.sup-head{width:100%;display:flex;align-items:center;gap:14px;padding:14px;background:none;border:0;text-align:left}
+.ico{flex:none;width:52px;height:52px;border-radius:15px;display:grid;place-items:center;background:var(--soft);color:var(--c)}
+.ico svg{width:32px;height:32px}
+.sup-name{flex:1;min-width:0}
+.sup-name h2{font-size:21px;font-weight:800;line-height:1.1}
+.sup-name small{display:block;color:var(--muted);font-size:13px;margin-top:4px}
+.count{flex:none;font-size:13px;font-weight:700;padding:5px 10px;border-radius:999px;background:var(--accent);color:var(--accent-ink)}
+.chev{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:var(--muted);transition:transform .2s ease}
+.sup[data-open="true"] .chev{transform:rotate(90deg)}
+.sup-body{border-top:1px solid var(--line)}
+.sup[data-open="false"] .sup-body{display:none}
+.item{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:10px 10px 10px 16px;border-top:1px solid var(--line);position:relative}
+.item:first-child{border-top:0}
+.item::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:transparent}
+.item.on{background:var(--accent-soft)}
+.item.on::before{background:var(--accent)}
+.item .name{flex:1 1 170px;min-width:0;font-weight:600;font-size:16px;padding-block:4px}
+.item .name em{font-style:normal;font-weight:400;color:var(--muted);font-size:14px}
+.ctrls{flex:0 0 auto;display:flex;align-items:center;gap:6px;margin-left:auto}
+.qty{width:70px;height:44px;border:1px solid var(--line);border-radius:12px;background:var(--surface);text-align:center;font-weight:700;font-variant-numeric:tabular-nums;padding:0 4px}
+.qty::placeholder{color:var(--muted);font-weight:500}
+.unit{height:44px;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:0 6px;font-size:15px;max-width:96px}
+.toggle{flex:none;height:44px;padding:0 14px 0 10px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;color:var(--muted);white-space:nowrap}
+.toggle .box{width:22px;height:22px;border-radius:50%;border:2px solid currentColor;display:grid;place-items:center}
+.toggle .box svg{width:13px;height:13px;opacity:0}
+.toggle[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.toggle[aria-pressed="true"] .box{background:var(--accent-ink);border-color:var(--accent-ink);color:var(--accent)}
+.toggle[aria-pressed="true"] .box svg{opacity:1}
+.del{flex:none;height:42px;min-width:42px;padding:0 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font-weight:700}
+.del.sure{background:var(--danger);border-color:var(--danger);color:#fff}
+.sup-empty{padding:16px;color:var(--muted);font-size:15px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+
+/* Formulaire d'ajout */
+.add{margin-top:24px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.add h3{font-size:19px;font-weight:800}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field label{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.add input,.add select{height:50px;border:1px solid var(--line);border-radius:12px;background:var(--sunken);padding:0 12px;width:100%}
+.btn{height:50px;border-radius:12px;border:0;padding:0 18px;font-weight:700;background:var(--accent);color:var(--accent-ink)}
+.btn.soft{background:var(--sunken);border:1px solid var(--line);color:var(--fg)}
+.newsup{display:flex;gap:8px}
+.newsup input{flex:1}
+.sep{height:1px;background:var(--line);margin:6px 0}
+.links{display:flex;flex-wrap:wrap;gap:4px 18px;padding-top:12px}
+.linkbtn{background:none;border:0;color:var(--muted);text-decoration:underline;font-size:15px;padding:6px 0}
+
+/* Commande */
+.cmd-sup{margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.cmd-sup header{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.cmd-sup .ico{width:44px;height:44px;border-radius:13px}
+.cmd-sup .ico svg{width:26px;height:26px}
+.cmd-sup h2{font-size:19px;font-weight:800;flex:1}
+.cmd-sup header span{font-size:13px;color:var(--muted);font-weight:600}
+.cmd-item{display:flex;align-items:center;gap:12px;padding:10px 10px 10px 16px;border-top:1px solid var(--line);min-height:58px}
+.cmd-item:first-of-type{border-top:0}
+.cmd-item .name{flex:1;min-width:0;font-weight:600}
+.qpill{flex:none;font-weight:800;font-size:15px;padding:6px 12px;border-radius:10px;background:var(--accent-soft);font-variant-numeric:tabular-nums}
+.qpill.none{background:transparent;color:var(--muted);font-weight:500;font-size:13px;padding:0}
+.empty{text-align:center;color:var(--muted);padding:44px 18px;border:1px dashed var(--line);border-radius:20px;margin-top:16px;background:var(--surface)}
+.empty strong{display:block;color:var(--fg);font-size:19px;margin-bottom:6px;font-family:var(--display)}
+.done{margin-top:22px}
+.done .btn{width:100%;height:62px;font-size:18px;background:var(--go);color:var(--go-ink)}
+.done .btn.confirm{background:var(--fg);color:var(--bg)}
+.done p{text-align:center;color:var(--muted);font-size:13px;margin:8px 0 0}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:11px 16px;border-radius:12px;font-weight:600;font-size:15px;z-index:10;max-width:calc(100% - 32px)}
+@media (max-width:400px){.titles h1{font-size:25px}header.top .logo{width:92px;height:54px}.ico{width:46px;height:46px}.ico svg{width:28px;height:28px}.toggle{padding:0 12px 0 8px;font-size:13px}.qty{width:62px}}
+@media (prefers-reduced-motion:reduce){.chev{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap gate" id="gate" hidden>
+  <div class="logo"><img src="logo.png" alt="Double B"></div>
+  <h1>Commande</h1>
+  <p>Entre le code d'accès de l'équipe. Il est demandé une seule fois sur ce téléphone.</p>
+  <form id="gateForm" autocomplete="off">
+    <input id="gateCode" placeholder="Code d'accès" autocapitalize="off" autocorrect="off" spellcheck="false" required aria-label="Code d'accès">
+    <button class="btn" type="submit">Entrer</button>
+    <div class="err" id="gateErr" hidden></div>
+  </form>
+</div>
+
+<div class="wrap" id="app" hidden>
+  <div class="sync" id="sync">Connexion…</div>
+  <header class="top">
+    <div class="logo"><img src="logo.png" alt="Double B"></div>
+    <div class="titles"><h1>Commande</h1><div class="date" id="now">&nbsp;</div></div>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="Sections">
+    <button role="tab" data-tab="liste" aria-selected="true">Produits</button>
+    <button role="tab" data-tab="commande" aria-selected="false">À commander <span class="badge" id="badge" hidden></span></button>
+  </div>
+
+  <section id="view-liste">
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Chercher un produit… ex. iceberg, agria" autocomplete="off" aria-label="Chercher un produit">
+      <button type="button" id="qClear" aria-label="Effacer la recherche" hidden>×</button>
+    </div>
+    <div class="qinfo" id="qinfo" hidden></div>
+    <div class="suppliers" id="suppliers"><div class="empty"><strong>Chargement…</strong>Tes fournisseurs et leurs produits arrivent.</div></div>
+
+    <form class="add" id="addForm" autocomplete="off">
+      <h3>Ajouter un produit</h3>
+      <div class="field"><label for="nNom">Produit</label><input id="nNom" placeholder="ex. Ciboulette" maxlength="60" required></div>
+      <div class="field"><label for="nFour">Fournisseur</label><select id="nFour"></select></div>
+      <button class="btn" type="submit">Ajouter le produit</button>
+      <div class="sep"></div>
+      <div class="field"><label for="nSup">Nouveau fournisseur</label>
+        <div class="newsup"><input id="nSup" placeholder="ex. Brasserie Galibot" maxlength="40"><button class="btn soft" type="button" id="addSup">Créer</button></div>
+      </div>
+    </form>
+    <div class="links">
+      <button class="linkbtn" id="editToggle" type="button">Modifier la liste</button>
+      <button class="linkbtn" id="invite" type="button">Inviter l'équipe</button>
+      <button class="linkbtn" id="logout" type="button">Changer de code</button>
+    </div>
+  </section>
+
+  <section id="view-commande" hidden><div id="commande"></div></section>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* Connexion à la base (clé publique : les données restent protégées par le code d'équipe) */
+const API="https://kokjumjhpasxxxrpspng.supabase.co/rest/v1/rpc/";
+const KEY="sb_publishable_HIJXH1eJ_CP-A4G3AecDKg_NbBUD0m2";
+const CK="commande2b-code";
+const DEFAULT_SUPS=["Maraîcher","Sysco","Coup de Pâtes"];
+const UNITS=["pièce","kg","g","L","carton","colis","botte","sac","seau","barquette"];
+const S={items:new Map(),sups:[...DEFAULT_SUPS],ready:false,edit:false,open:{},q:"",code:null,pending:0};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+const fold=s=>s.normalize("NFD").replace(/\p{Diacritic}/gu,"").toLowerCase().replace(/œ/g,"oe").replace(/æ/g,"ae");
+const fmt=n=>String(Math.round(n*1000)/1000).replace(".",",");
+function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2400)}
+const store={get(k){try{return localStorage.getItem(k)}catch{return null}},set(k,v){try{localStorage.setItem(k,v)}catch{}},del(k){try{localStorage.removeItem(k)}catch{}}};
+
+async function rpc(fn,args={}){
+  const r=await fetch(API+fn,{method:"POST",headers:{"apikey":KEY,"Content-Type":"application/json"},body:JSON.stringify({p_code:S.code,...args})});
+  if(!r.ok){let e={};try{e=await r.json()}catch{}const err=new Error(e.message||"Erreur réseau");err.code=e.code;err.status=r.status;throw err}
+  const t=await r.text();return t?JSON.parse(t):null;
+}
+function setSync(t,cls){const s=$("#sync");s.textContent=t;s.className="sync"+(cls?" "+cls:"")}
+
+/* Code d'équipe : lien d'invitation (#code=…) ou saisie, gardé sur le téléphone */
+async function boot(){
+  const h=new URLSearchParams(location.hash.slice(1)).get("code");
+  if(h){store.set(CK,h.trim());history.replaceState(null,"",location.pathname+location.search)}
+  S.code=store.get(CK);
+  if(!S.code){showGate();return}
+  try{const ok=await rpc("verifier");if(!ok){store.del(CK);showGate("Ce code n'est plus valable.");return}}
+  catch(e){/* hors ligne : on ouvre quand même, la synchro reprendra */}
+  showApp();
+}
+function showGate(msg){$("#app").hidden=true;$("#gate").hidden=false;const er=$("#gateErr");er.hidden=!msg;er.textContent=msg||"";setTimeout(()=>$("#gateCode").focus(),100)}
+$("#gateForm").addEventListener("submit",async e=>{
+  e.preventDefault();const c=$("#gateCode").value.trim();if(!c)return;S.code=c;
+  try{const ok=await rpc("verifier");if(ok){store.set(CK,c);showApp()}else showGate("Code incorrect. Vérifie avec le gérant.")}
+  catch{showGate("Pas de connexion internet. Réessaie dans un instant.")}
+});
+function showApp(){$("#gate").hidden=true;$("#app").hidden=false;refresh();startPolling()}
+
+/* Synchronisation : rafraîchit toutes les 5 s quand l'appli est ouverte */
+let pollT=null;
+function startPolling(){clearInterval(pollT);pollT=setInterval(()=>{if(document.visibilityState==="visible")refresh()},5000)}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&S.code)refresh()});
+async function refresh(){
+  if(S.pending>0)return;
+  try{
+    const d=await rpc("etat");if(S.pending>0)return;
+    S.items=new Map(d.produits.map(p=>[p.id,{...p,qte:p.qte==null?null:+p.qte}]));
+    S.sups=d.fournisseurs.length?d.fournisseurs:[...DEFAULT_SUPS];S.ready=true;
+    setSync("À jour","ok");
+    const a=document.activeElement;if(!(a&&(a.matches(".qty")||a.matches(".unit"))))render();
+  }catch(e){
+    if(e.code==="28000"){store.del(CK);S.code=null;showGate("Le code a changé. Entre le nouveau code.");return}
+    setSync("Hors ligne","err");if(!S.ready){S.ready=true;render()}
+  }
+}
+async function send(fn,args){
+  S.pending++;setSync("Enregistrement…");
+  try{await rpc(fn,args);S.pending--;if(!S.pending)refresh()}
+  catch(e){S.pending--;toast(e.code==="28000"?"Code refusé":"Pas enregistré : vérifie la connexion");refresh();throw e}
+}
+
+/* Icônes fournisseurs */
+const ICONS={
+  mar:'<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12.5c-3-3-7.4-1.8-9.3 2.4L5 26.6c-.4.9.5 1.8 1.4 1.4l11.7-5.2c4.2-1.9 5.4-6.3 2.4-9.3z"/><path d="M12 19l2.5 1.5M10.5 23l2 1.2M15.5 15.5l2 2"/><path d="M19.5 12.5c.6-2.8 2.6-5 5.5-5.5M20.5 11.5c1-1.6 1.2-4 .3-6.5M21.5 13c1.8.8 4.2.8 6.5-.2"/></svg>',
+  sys:'<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h15v13H3z"/><path d="M18 12h5.5l4.5 5v4h-10"/><circle cx="8.5" cy="23.5" r="2.5"/><circle cx="22.5" cy="23.5" r="2.5"/><path d="M7 12.5h7M7 16h5"/></svg>',
+  cdp:'<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 25.5c-2.2-2.2-1.4-6.4 2.2-10l6.8-6.8c3.6-3.6 7.8-4.4 10-2.2s1.4 6.4-2.2 10l-6.8 6.8c-3.6 3.6-7.8 4.4-10 2.2z"/><path d="M11 17.5l3 1.5M14.5 14l3 1.5M18 10.5l3 1.5"/></svg>',
+  boi:'<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3h6v5l2 3.5V28a1 1 0 0 1-1 1h-8a1 1 0 0 1-1-1V11.5L13 8z"/><path d="M11 16h10M11 23h10"/></svg>',
+  oth:'<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10l12-6 12 6v12l-12 6-12-6z"/><path d="M4 10l12 6 12-6M16 16v12"/></svg>'
+};
+const CHECK='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3L13 4.5"/></svg>';
+const CHEV='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+function supKind(name){const n=fold(name);
+  if(/marai|primeur|fruit|legume/.test(n))return "mar";
+  if(/sysco|metro|transgourmet|promocash|grossiste/.test(n))return "sys";
+  if(/coup de pat|boulang|pain|patiss/.test(n))return "cdp";
+  if(/brasser|boisson|biere|vin|galibot/.test(n))return "boi";
+  return "oth"}
+function supStyle(name){const k=supKind(name);const c=k==="boi"?"oth":k;return `--c:var(--c-${c});--soft:var(--c-${c}-soft)`}
+const supIcon=name=>ICONS[supKind(name)];
+
+/* Date et heure */
+function tick(){const d=new Date();
+  let j=d.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});j=j.charAt(0).toUpperCase()+j.slice(1);
+  $("#now").innerHTML=`<b>${esc(j)}</b> · ${esc(d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}))}`}
+tick();setInterval(tick,20000);
+
+/* Repli des fournisseurs, propre au téléphone */
+try{S.open=JSON.parse(store.get("commande2b-open")||"{}")}catch{}
+const isOpen=n=>S.open[n]!==false;
+function setOpen(n,v){S.open[n]=v;store.set("commande2b-open",JSON.stringify(S.open))}
+
+/* Recherche par mots-clés */
+function terms(){return fold(S.q||"").split(/[^a-z0-9]+/).filter(Boolean)}
+function matches(p,ts){if(!ts.length)return true;const hay=fold(p.nom+" "+p.fournisseur);return ts.every(t=>hay.includes(t))}
+function hl(text,ts){
+  if(!ts.length)return esc(text);
+  const map=[];let f="";
+  for(let i=0;i<text.length;i++){const c=fold(text[i]);for(let k=0;k<c.length;k++){f+=c[k];map.push(i)}}
+  const on=new Array(text.length).fill(false);
+  ts.forEach(t=>{let i=f.indexOf(t);while(i>-1){for(let k=i;k<i+t.length;k++)on[map[k]]=true;i=f.indexOf(t,i+1)}});
+  let out="",open=false;
+  for(let i=0;i<text.length;i++){if(on[i]&&!open){out+="<mark>";open=true}if(!on[i]&&open){out+="</mark>";open=false}out+=esc(text[i])}
+  return out+(open?"</mark>":"");
+}
+function label(nom){const ts=terms();const m=nom.match(/^(.*?)\s*(\(.+\))$/);return m?`${hl(m[1],ts)} <em>${hl(m[2],ts)}</em>`:hl(nom,ts)}
+
+/* Rendu */
+function supList(){const extra=[...new Set([...S.items.values()].map(p=>p.fournisseur))].filter(f=>!S.sups.includes(f));return [...S.sups,...extra]}
+function itemsOf(f){return [...S.items.values()].filter(p=>p.fournisseur===f).sort((a,b)=>a.ordre-b.ordre||a.nom.localeCompare(b.nom,"fr"))}
+function render(){
+  const sups=supList();const all=[...S.items.values()];const n=all.filter(p=>p.acommander).length;
+  const b=$("#badge");b.hidden=!n;b.textContent=n;
+  $("#editToggle").textContent=S.edit?"Terminer les modifications":"Modifier la liste";
+  const sel=$("#nFour"),cur=sel.value;sel.innerHTML=sups.map(f=>`<option>${esc(f)}</option>`).join("");if(sups.includes(cur))sel.value=cur;
+  if(!S.ready)return;
+  const ts=terms();
+  if(ts.length){
+    const hits=all.filter(p=>matches(p,ts)).length;const info=$("#qinfo");info.hidden=false;
+    info.innerHTML=hits?`<span>${hits} produit${hits>1?"s":""} trouvé${hits>1?"s":""}</span>`
+      :`<span>Aucun produit ne correspond à « ${esc(S.q.trim())} ».</span><button class="btn soft" type="button" id="qAdd">Ajouter « ${esc(S.q.trim())} »</button>`;
+    $("#suppliers").innerHTML=sups.filter(f=>itemsOf(f).some(p=>matches(p,ts))).map(supHTML).join("");
+  }else{
+    $("#qinfo").hidden=true;
+    $("#suppliers").innerHTML=sups.map(supHTML).join("")||`<div class="empty"><strong>Aucun fournisseur</strong>Crée-en un avec le formulaire ci-dessous.</div>`;
+  }
+  renderCmd(sups);
+}
+function supHTML(f){
+  const ts=terms();const all=itemsOf(f);const ps=ts.length?all.filter(p=>matches(p,ts)):all;
+  const k=all.filter(p=>p.acommander).length;const open=ts.length?true:isOpen(f);
+  const body=ps.length?ps.map(itemHTML).join("")
+    :`<div class="sup-empty"><span>Aucun produit pour l'instant.</span>${S.edit&&!DEFAULT_SUPS.includes(f)?`<button class="del" data-delsup="${esc(f)}">Supprimer ce fournisseur</button>`:""}</div>`;
+  return `<section class="sup" data-open="${open}" style="${supStyle(f)}">
+    <button class="sup-head" data-sup="${esc(f)}" aria-expanded="${open}">
+      <span class="ico" aria-hidden="true">${supIcon(f)}</span>
+      <span class="sup-name"><h2>${esc(f)}</h2><small>${ts.length?`${ps.length} sur ${all.length} produits`:`${all.length} produit${all.length>1?"s":""}`}</small></span>
+      ${k?`<span class="count">${k} à commander</span>`:""}
+      <span class="chev" aria-hidden="true">${CHEV}</span>
+    </button>
+    <div class="sup-body">${body}</div></section>`;
+}
+function itemHTML(p){
+  if(S.edit)return `<div class="item"><div class="name">${label(p.nom)}</div><div class="ctrls"><button class="del" data-del="${p.id}" aria-label="Supprimer ${esc(p.nom)}">Supprimer</button></div></div>`;
+  return `<div class="item${p.acommander?" on":""}"><div class="name">${label(p.nom)}</div>
+    <div class="ctrls">
+      <input class="qty" type="number" inputmode="decimal" min="0" max="10000" step="any" placeholder="Qté" value="${p.qte??""}" data-q="${p.id}" aria-label="Quantité de ${esc(p.nom)} (facultatif)">
+      <select class="unit" data-u="${p.id}" aria-label="Unité de ${esc(p.nom)}">${UNITS.map(u=>`<option${u===p.unite?" selected":""}>${u}</option>`).join("")}</select>
+      <button class="toggle" data-t="${p.id}" aria-pressed="${p.acommander}"><span class="box">${CHECK}</span>${p.acommander?"À commander":"Commander"}</button>
+    </div></div>`;
+}
+function renderCmd(sups){
+  const el=$("#commande");
+  const groups=sups.map(f=>[f,itemsOf(f).filter(p=>p.acommander)]).filter(g=>g[1].length);
+  if(!groups.length){el.innerHTML=`<div class="empty"><strong>Rien à commander</strong>Dans l'onglet Produits, appuie sur « Commander » à côté de ce qui manque. La quantité est facultative.</div>`;return}
+  el.innerHTML=groups.map(([f,ps])=>`<section class="cmd-sup" style="${supStyle(f)}"><header><span class="ico" aria-hidden="true">${supIcon(f)}</span><h2>${esc(f)}</h2><span>${ps.length} produit${ps.length>1?"s":""}</span></header>
+    ${ps.map(p=>`<div class="cmd-item"><div class="name">${esc(p.nom)}</div>${p.qte?`<span class="qpill">${fmt(p.qte)} ${esc(p.unite)}</span>`:`<span class="qpill none">quantité libre</span>`}<button class="del" data-t="${p.id}" aria-label="Retirer ${esc(p.nom)} de la commande">Retirer</button></div>`).join("")}</section>`).join("")
+    +`<div class="done"><button class="btn" id="doneBtn" type="button">Commande effectuée</button><p>Vide la liste et les quantités une fois les commandes passées.</p></div>`;
+}
+
+/* Actions */
+$("#q").addEventListener("input",e=>{S.q=e.target.value;$("#qClear").hidden=!S.q;render()});
+$("#q").addEventListener("keydown",e=>{if(e.key==="Escape"){e.target.value="";S.q="";$("#qClear").hidden=true;render()}});
+$("#qClear").onclick=()=>{$("#q").value="";S.q="";$("#qClear").hidden=true;render();$("#q").focus()};
+document.addEventListener("click",e=>{
+  if(e.target.id==="qAdd"){$("#nNom").value=S.q.trim();$("#addForm").scrollIntoView({behavior:"smooth",block:"center"});setTimeout(()=>$("#nFour").focus(),300);return}
+  const h=e.target.closest("[data-sup]");
+  if(h){if(terms().length)return;const f=h.dataset.sup;setOpen(f,!isOpen(f));const sec=h.closest(".sup");sec.dataset.open=isOpen(f);h.setAttribute("aria-expanded",isOpen(f));return}
+  const t=e.target.closest("[data-t]");
+  if(t){const p=S.items.get(t.dataset.t);if(!p)return;
+    p.acommander=!p.acommander;const champs={acommander:p.acommander};if(!p.acommander){p.qte=null;champs.qte=""}
+    render();send("maj_produit",{p_id:p.id,p_champs:champs}).catch(()=>{});return}
+  const d=e.target.closest("[data-del]");
+  if(d){const p=S.items.get(d.dataset.del);if(!p)return;
+    if(!d.classList.contains("sure")){d.classList.add("sure");d.textContent="Confirmer";setTimeout(()=>{if(d.isConnected){d.classList.remove("sure");d.textContent="Supprimer"}},3500);return}
+    S.items.delete(p.id);render();send("suppr_produit",{p_id:p.id}).then(()=>toast(p.nom+" supprimé")).catch(()=>{});return}
+  const ds=e.target.closest("[data-delsup]");
+  if(ds){const f=ds.dataset.delsup;S.sups=S.sups.filter(x=>x!==f);render();send("suppr_fournisseur",{p_nom:f}).then(()=>toast("Fournisseur supprimé")).catch(()=>{});return}
+  if(e.target.id==="doneBtn"){const b=e.target;
+    if(!b.classList.contains("confirm")){b.classList.add("confirm");b.textContent="Confirmer : vider la liste";setTimeout(()=>{if(b.isConnected){b.classList.remove("confirm");b.textContent="Commande effectuée"}},4000);return}
+    [...S.items.values()].forEach(p=>{if(p.acommander){p.acommander=false;p.qte=null}});render();
+    send("commande_effectuee").then(()=>toast("Commande effectuée, liste vidée")).catch(()=>{})}
+});
+document.addEventListener("change",e=>{
+  const q=e.target.closest("[data-q]");
+  if(q){const p=S.items.get(q.dataset.q);if(!p)return;
+    const raw=String(q.value).replace(",",".").trim();let v=raw===""?null:Math.min(10000,Math.max(0,parseFloat(raw)));if(!v||isNaN(v))v=null;
+    p.qte=v;const champs={qte:v==null?"":v};if(v&&!p.acommander){p.acommander=true;champs.acommander=true}
+    render();send("maj_produit",{p_id:p.id,p_champs:champs}).catch(()=>{});return}
+  const u=e.target.closest("[data-u]");
+  if(u){const p=S.items.get(u.dataset.u);if(!p)return;p.unite=u.value;send("maj_produit",{p_id:p.id,p_champs:{unite:p.unite}}).catch(()=>{});if(p.acommander)renderCmd(supList())}
+});
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.matches(".qty")){e.preventDefault();e.target.blur()}});
+$("#editToggle").onclick=()=>{S.edit=!S.edit;render()};
+$("#addSup").onclick=()=>{
+  const n=$("#nSup").value.trim();if(!n)return;
+  if(supList().some(f=>f.toLowerCase()===n.toLowerCase())){toast(n+" existe déjà");return}
+  S.sups=[...S.sups,n];setOpen(n,true);$("#nSup").value="";render();$("#nFour").value=n;
+  send("ajout_fournisseur",{p_nom:n}).then(()=>toast("Fournisseur "+n+" créé")).catch(()=>{});
+};
+$("#nSup").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("#addSup").click()}});
+$("#addForm").addEventListener("submit",e=>{
+  e.preventDefault();const nom=$("#nNom").value.trim();if(!nom)return;const f=$("#nFour").value;
+  const tmp="tmp-"+Date.now();S.items.set(tmp,{id:tmp,nom,fournisseur:f,acommander:false,qte:null,unite:"pièce",ordre:Date.now()});
+  setOpen(f,true);render();$("#nNom").value="";$("#nNom").focus();
+  send("ajout_produit",{p_nom:nom,p_fournisseur:f}).then(()=>toast(nom+" ajouté chez "+f)).catch(()=>{});
+});
+$("#invite").onclick=async()=>{
+  const link=location.origin+location.pathname+"#code="+encodeURIComponent(S.code);
+  const text="Appli Commande du Double B : "+link;
+  try{if(navigator.share){await navigator.share({title:"Commande Double B",text:"Appli Commande du Double B",url:link});return}}catch{return}
+  try{await navigator.clipboard.writeText(text);toast("Lien d'invitation copié : envoie-le par SMS ou WhatsApp")}catch{prompt("Copie ce lien :",link)}
+};
+$("#logout").onclick=()=>{store.del(CK);S.code=null;clearInterval(pollT);showGate()};
+document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{
+  const tab=b.dataset.tab;["liste","commande"].forEach(t=>$("#view-"+t).hidden=t!==tab);
+  document.querySelectorAll("[data-tab]").forEach(x=>x.setAttribute("aria-selected",x===b));window.scrollTo({top:0});
+});
+window.addEventListener("hashchange",()=>{if(location.hash.includes("code="))boot()});
+if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+boot();
+</script>
+</body>
+</html>
