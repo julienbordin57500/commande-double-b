@@ -66,6 +66,7 @@ header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .field input,.field textarea{border:1px solid var(--line);border-radius:12px;background:var(--sunken);padding:10px 12px;width:100%}
 .field input{height:48px}
 .field textarea{min-height:220px;resize:vertical;line-height:1.5;font-size:16px}
+.euro{position:relative}.euro input{padding-right:34px}.euro span{position:absolute;right:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:700;pointer-events:none}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media (max-width:420px){.row2{grid-template-columns:1fr}}
 .hint{font-size:13px;color:var(--muted);margin:0}
@@ -101,7 +102,7 @@ header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .page .bottom-orn{position:absolute;left:50%;bottom:60px;transform:translateX(-50%)}
 .p-title{font-family:var(--t-title);font-weight:700;font-size:calc(66px * var(--fs));letter-spacing:.02em;line-height:1;margin:0;color:var(--ink);text-transform:uppercase}
 .p-sub{font-family:var(--t-title);font-weight:600;color:var(--gold);font-size:calc(19px * var(--fs));letter-spacing:.32em;text-transform:uppercase;margin-top:calc(14px * var(--fs))}
-.p-price{font-family:var(--t-title);font-weight:600;color:var(--gold);font-size:calc(17px * var(--fs));letter-spacing:.22em;text-transform:uppercase;margin-top:calc(6px * var(--fs))}
+.p-price{position:absolute;left:96px;right:96px;bottom:94px;text-align:center;font-family:var(--t-body);font-style:italic;font-size:16px;letter-spacing:.02em;color:var(--ink)}
 .rule{display:flex;align-items:center;justify-content:center;margin:calc(16px * var(--fs)) auto}
 .rule i{display:block;height:1px;background:var(--gold);width:calc(120px * var(--fs))}
 .rule b{display:block;width:8px;height:8px;background:var(--gold);transform:rotate(45deg);margin:0 2px}
@@ -161,7 +162,7 @@ header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
       <p class="hint">Mets le nom de chaque partie suivi de « : » (Entrée :, Plat :, Dessert :, Pièces salées :…) et sépare les choix par « ou » ou par un retour à la ligne. La page se met à jour pendant que tu écris.</p>
       <div class="row2">
         <div class="field"><label for="fTitle">Titre</label><input id="fTitle" value="Menu" maxlength="40" lang="fr"></div>
-        <div class="field"><label for="fPrice">Prix (facultatif)</label><input id="fPrice" placeholder="ex. 35 € par personne" maxlength="40"></div>
+        <div class="field"><label for="fPrice">Prix par personne</label><div class="euro"><input id="fPrice" inputmode="decimal" placeholder="ex. 35" maxlength="8" aria-describedby="fPriceU"><span id="fPriceU">€</span></div></div>
       </div>
       <div class="field"><label for="fSub">Sous-titre (facultatif)</label><input id="fSub" placeholder="ex. Mariage du 14 juin 2027" maxlength="60" lang="fr"></div>
       <div class="field"><label for="fNote">Mention en bas (facultatif)</label><input id="fNote" placeholder="ex. Boissons non comprises" maxlength="140" lang="fr"></div>
@@ -320,9 +321,11 @@ const PRICE=/(\d+(?:[.,]\d{1,2})?)\s*(?:€|euros?\b|eur\b)/i;
 function asPrice(line){
   const f=fold(line);if(!PRICE.test(line)||line.length>60||f.split(/\s+/).length>9)return null;
   if(/\p{L}{4,}/u.test(f.replace(/\b(menu|prix|tarif|euros?|par|personnes?|pers|adultes?|enfants?|ttc|net|boissons?|comprises?|non|hors|seulement)\b/g,"")))return null;
-  const n=line.match(PRICE)[1].replace(".",",");
-  return `${n} € par ${/enfant/.test(f)?"enfant":/adulte/.test(f)?"adulte":"personne"}`+(/boissons? comprises?/.test(f)?", boissons comprises":"");
+  return line.match(PRICE)[1].replace(".",",");
 }
+/* Le prix est toujours « X € par personne », écrit tout en bas de la page */
+const priceNum=v=>{const m=String(v||"").match(/\d+(?:[.,]\d{1,2})?/);return m?m[0].replace(".",","):""};
+const priceText=v=>priceNum(v)?`${priceNum(v)} € par personne`:"";
 const NOTE=/(boissons? (non )?compris|hors boissons?|boissons? en sus|allerg|sur (reservation|commande)|prix nets?|\bttc\b|minimum|selon (arrivage|saison|le marche)|tarif)/;
 const EVENT=/^(mariage|anniversaire|bapteme|communion|noel|reveillon|saint.valentin|fete|seminaire|repas|soiree|nouvel an|paques|diner|dejeuner|evenement|comite|depart|retraite)|\b\d{1,2}[\/.]\d{1,2}([\/.]\d{2,4})?\b|\b\d{1,2} (janvier|fevrier|mars|avril|mai|juin|juillet|aout|septembre|octobre|novembre|decembre)\b/;
 
@@ -387,7 +390,7 @@ function parseMenu(raw){
 const EXAMPLE_TXT="Entrée : tartine de pain de campagne, foie gras de canard, chutney de figues ou gravlax de saumon maison, crème citronnée à l'aneth, pickles d'oignons rouges, mini-blinis\nPlat : dodine de volaille farcie aux herbes, risotto croustillant, betterave rôtie, jus réduit ou carré de porcelet rôti au miel et aux épices, brochette de légumes, jus corsé\nDessert : pavlova aux fruits exotiques, chantilly vanillée ou poire pochée au vin rouge, crumble de noisettes, glace vanille";
 let RAW=store.get("menus2b-texte");if(typeof RAW!=="string")RAW="";
 let MENU=store.get("menus2b-dernier");
-const opts=()=>({titre:$("#fTitle").value.trim(),sousTitre:$("#fSub").value.trim(),prix:$("#fPrice").value.trim(),note:$("#fNote").value.trim()});
+const opts=()=>({titre:$("#fTitle").value.trim(),sousTitre:$("#fSub").value.trim(),prix:priceNum($("#fPrice").value),note:$("#fNote").value.trim()});
 function build(){
   const p=parseMenu(RAW||EXAMPLE_TXT),o=opts();
   MENU={titre:o.titre||"Menu",sousTitre:o.sousTitre||p.sousTitre,prix:o.prix||p.prix,note:o.note||p.note,sections:p.sections};
@@ -402,13 +405,12 @@ function menuPage(m){
     return `${si?rule():""}<div class="sec">${head}
       ${s.sousTitre?`<div class="sec-sub" contenteditable="true" data-ss="${si}">${esc(s.sousTitre)}</div>`:""}${s.nom||s.sousTitre?rule(true):""}${items.join(sep)}</div>`;
   }).join("");
-  return `<div class="page" id="thePage" lang="fr">${frameSVG()}<div class="content">
+  return `<div class="page" id="thePage" lang="fr">${frameSVG()}<div class="content"${priceText(m.prix)?' style="bottom:132px"':""}>
     <h2 class="p-title" contenteditable="true" spellcheck="true" data-f="titre">${esc(m.titre||"Menu")}</h2>
     ${m.sousTitre?`<div class="p-sub" contenteditable="true" spellcheck="true" data-f="sousTitre">${esc(m.sousTitre)}</div>`:""}
-    ${m.prix?`<div class="p-price" contenteditable="true" data-f="prix">${esc(m.prix)}</div>`:""}
     ${rule()}${secs}
     ${m.note?`<div class="p-note" contenteditable="true" spellcheck="true" data-f="note">${esc(m.note)}</div>`:""}
-  </div>${BOTTOM}</div>`;
+  </div>${priceText(m.prix)?`<div class="p-price">${esc(priceText(m.prix))}</div>`:""}${BOTTOM}</div>`;
 }
 function secsUI(){
   const el=$("#secs");const ss=MENU.sections||[];
@@ -532,7 +534,7 @@ document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{
 
 /* Démarrage : on reprend le dernier menu */
 const ch=store.get("menus2b-champs");
-if(ch){$("#fTitle").value=ch.titre||"Menu";$("#fSub").value=ch.sousTitre||"";$("#fPrice").value=ch.prix||"";$("#fNote").value=ch.note||""}
+if(ch){$("#fTitle").value=ch.titre||"Menu";$("#fSub").value=ch.sousTitre||"";$("#fPrice").value=priceNum(ch.prix);$("#fNote").value=ch.note||""}
 $("#raw").value=RAW;
 if(!MENU||!Array.isArray(MENU.sections))build();
 $("#editnote").textContent="Aperçu au format A4. Touche un texte de la page pour le retoucher.";
