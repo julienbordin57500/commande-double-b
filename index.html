@@ -51,6 +51,11 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .gate input{height:56px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);text-align:center;font-size:20px;letter-spacing:.06em;font-weight:700}
 .gate .err{color:var(--danger);font-weight:600;font-size:15px}
 
+/* Bascule entre les deux parties de l'appli */
+.apps{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:14px}
+.apps a{height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:var(--muted);text-decoration:none}
+.apps a[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
+
 /* En-tête */
 header.top{display:flex;align-items:center;gap:14px}
 .logo{flex:none;width:112px;height:62px;border-radius:16px;background:#ffffff;border:1px solid var(--line);display:grid;place-items:center;padding:6px 10px}
@@ -167,6 +172,7 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
 </div>
 
 <div class="wrap" id="app" hidden>
+  <nav class="apps" aria-label="Parties de l'appli"><a href="./" aria-current="page">Commande</a><a href="menus.html">Menus &amp; devis</a></nav>
   <div class="sync" id="sync">Connexion…</div>
   <header class="top">
     <div class="logo"><img src="logo.png" alt="Double B"></div>
