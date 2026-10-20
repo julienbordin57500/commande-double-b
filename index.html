@@ -224,6 +224,12 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
 .cut svg.slash{position:absolute;inset:0;width:100%;height:100%;z-index:2;overflow:visible}
 .pbar{margin-bottom:12px}
 .cmd-item{flex-wrap:wrap}
+.okc{flex:none;height:44px;display:flex;align-items:center;gap:7px;padding:0 12px 0 6px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);font-weight:800;font-size:14px;color:var(--go)}
+.okc .ring{width:30px;height:30px;border-radius:50%;border:2.5px solid var(--go);display:grid;place-items:center;transition:background .15s,transform .15s}
+.okc .ring svg{width:16px;height:16px;color:#fff;opacity:0;transition:opacity .15s}
+.okc.on .ring{background:var(--go);transform:scale(1.12)}
+.okc.on .ring svg{opacity:1}
+.cmd-item.gone{transition:transform .3s ease-in,opacity .3s ease-in,height .3s ease .05s,min-height .3s ease .05s,padding .3s ease .05s;transform:translateX(60%);opacity:0;height:0!important;min-height:0;padding-block:0;overflow:hidden}
 .cmd-item .name{flex:1 1 170px}
 .sup-name small .count{display:inline-block;margin-left:6px;padding:2px 8px;font-size:12px}
 </style>
@@ -251,7 +257,7 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
 
   <div class="secsw" role="group" aria-label="Partie">
     <button type="button" data-sec="cuisine" aria-pressed="true"><span class="e">🍳</span>Cuisine <span class="n" id="nCuisine" hidden></span></button>
-    <button type="button" data-sec="boissons" aria-pressed="false"><span class="e">🍷</span>Boissons <span class="n" id="nBoissons" hidden></span></button>
+    <button type="button" data-sec="boissons" aria-pressed="false"><span class="e">🍸</span>Bar &amp; Salle <span class="n" id="nBoissons" hidden></span></button>
   </div>
 
   <div class="tabs" role="tablist" aria-label="Sections">
@@ -303,7 +309,7 @@ const norm=s=>fold(String(s)).replace(/[^a-z0-9]+/g," ").trim();
 const fmt=n=>String(Math.round(n*1000)/1000).replace(".",",");
 function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2400)}
 const store={get(k){try{return localStorage.getItem(k)}catch{return null}},set(k,v){try{localStorage.setItem(k,v)}catch{}},del(k){try{localStorage.removeItem(k)}catch{}}};
-const SECN={cuisine:"Cuisine",boissons:"Boissons"};
+const SECN={cuisine:"Cuisine",boissons:"Bar & Salle"};   // « boissons » en base : boissons + fournitures de la salle (serviettes, bretzels…)
 
 async function rpc(fn,args={}){
   const r=await fetch(API+fn,{method:"POST",headers:{"apikey":KEY,"Content-Type":"application/json"},body:JSON.stringify({p_code:S.code,...args})});
@@ -430,7 +436,7 @@ function render(){
   ["cuisine","boissons"].forEach(sec=>{const k=all.filter(p=>(p.section||"cuisine")===sec&&p.acommander).length;const el=$(sec==="cuisine"?"#nCuisine":"#nBoissons");el.hidden=!k;el.textContent=k});
   document.querySelectorAll("[data-sec]").forEach(x=>x.setAttribute("aria-pressed",x.dataset.sec===S.sec));
   $("#addTitle").textContent="Ajouter un produit — "+SECN[S.sec];
-  $("#q").placeholder=S.sec==="boissons"?"Chercher une boisson… ex. coca, pression":"Chercher un produit… ex. iceberg, agria";
+  $("#q").placeholder=S.sec==="boissons"?"Chercher… ex. coca, serviettes, bretzels":"Chercher un produit… ex. iceberg, agria";
   const sel=$("#nFour"),cur=sel.value;const others=allSups().filter(f=>!sups.includes(f));
   sel.innerHTML=sups.map(f=>`<option>${esc(f)}</option>`).join("")+(others.length?`<optgroup label="Autres fournisseurs">${others.map(f=>`<option>${esc(f)}</option>`).join("")}</optgroup>`:"");
   if(allSups().includes(cur))sel.value=cur;
@@ -443,7 +449,7 @@ function render(){
     $("#suppliers").innerHTML=sups.filter(f=>itemsOf(f).some(p=>matches(p,ts))).map(supHTML).join("");
   }else{
     $("#qinfo").hidden=true;
-    $("#suppliers").innerHTML=sups.map(supHTML).join("")||`<div class="empty"><strong>Aucun fournisseur ${S.sec==="boissons"?"de boissons":""}</strong>Crée-en un avec le formulaire ci-dessous.</div>`;
+    $("#suppliers").innerHTML=sups.map(supHTML).join("")||`<div class="empty"><strong>Aucun fournisseur ${S.sec==="boissons"?"pour le bar et la salle":""}</strong>Crée-en un avec le formulaire ci-dessous.</div>`;
   }
   renderCmd(sups);
 }
@@ -475,7 +481,7 @@ function renderCmd(sups){
   if(!groups.length){el.innerHTML=`<div class="empty"><strong>Rien à commander en ${SECN[S.sec].toLowerCase()}</strong>Dans l'onglet Produits, appuie sur « Commander » à côté de ce qui manque. La quantité est facultative.</div>`;return}
   el.innerHTML=groups.map(([f,ps])=>{const open=isCOpen(f);return `<section class="cmd-sup" data-open="${open}" data-cmdsup="${esc(f)}" style="${supStyle(f)}">
     <header role="button" tabindex="0" data-ctog="${esc(f)}" aria-expanded="${open}"><span class="ico" aria-hidden="true">${supIcon(f)}</span><h2>${esc(f)}</h2><span>${ps.length} article${ps.length>1?"s":""}</span><span class="chev" aria-hidden="true">${CHEV}</span></header>
-    <div class="cmd-body">${ps.map(p=>`<div class="cmd-item"><div class="name"><span>${esc(p.nom)}</span>${chip(p)}</div>${p.qte?`<span class="qpill">${fmt(p.qte)} ${esc(p.unite)}</span>`:`<span class="qpill none">quantité libre</span>`}<button class="del" data-t="${p.id}" aria-label="Retirer ${esc(p.nom)} de la commande">Retirer</button></div>`).join("")}
+    <div class="cmd-body">${ps.map(p=>`<div class="cmd-item"><div class="name"><span>${esc(p.nom)}</span>${chip(p)}</div>${p.qte?`<span class="qpill">${fmt(p.qte)} ${esc(p.unite)}</span>`:`<span class="qpill none">quantité libre</span>`}<button class="okc" data-ok="${p.id}" aria-label="${esc(p.nom)} est commandé"><span class="ring">${CHECK}</span>Commandé</button><button class="del" data-t="${p.id}" aria-label="Retirer ${esc(p.nom)} de la commande">Retirer</button></div>`).join("")}
     <div class="cmd-done"><button class="btn" type="button" data-done="${esc(f)}">Commande effectuée chez ${esc(f)}</button></div></div></section>`}).join("");
 }
 
@@ -512,6 +518,13 @@ document.addEventListener("click",async e=>{
   const ds=e.target.closest("[data-delsup]");
   if(ds){const f=ds.dataset.delsup;const ok=await ask("Supprimer ce fournisseur ?",esc(f),[{label:"Oui, supprimer",value:true,cls:"danger"},{label:"Annuler",value:false,cls:"soft"}]);if(!ok)return;
     S.sups=S.sups.filter(x=>x!==f);render();send("suppr_fournisseur",{p_nom:f}).then(()=>toast("Fournisseur supprimé")).catch(()=>{});return}
+  const ok=e.target.closest("[data-ok]");
+  if(ok){const p=S.items.get(ok.dataset.ok);if(!p||ok.classList.contains("on"))return;
+    ok.classList.add("on");const row=ok.closest(".cmd-item");S.busy=true;
+    await new Promise(r=>setTimeout(r,matchMedia("(prefers-reduced-motion: reduce)").matches?0:260));
+    if(row){row.style.height=row.offsetHeight+"px";row.classList.add("gone");await new Promise(r=>setTimeout(r,matchMedia("(prefers-reduced-motion: reduce)").matches?0:320))}
+    p.acommander=false;p.qte=null;S.busy=false;render();
+    send("maj_produit",{p_id:p.id,p_champs:{acommander:false,qte:""}}).then(()=>toast(p.nom+" : commandé ✓")).catch(()=>{});return}
   const dn=e.target.closest("[data-done]");
   if(dn){const f=dn.dataset.done;
     if(!dn.classList.contains("confirm")){dn.classList.add("confirm");dn.textContent="Touche encore pour confirmer";setTimeout(()=>{if(dn.isConnected){dn.classList.remove("confirm");dn.textContent="Commande effectuée chez "+f}},4000);return}
@@ -586,7 +599,7 @@ function openEdit(id){
   m.innerHTML=`<div class="box" role="dialog" aria-label="Modifier ${esc(p.nom)}"><h3>Modifier l'article</h3>
     <div class="field"><label for="eNom">Nom</label><input id="eNom" maxlength="80" value="${esc(p.nom)}"></div>
     <div class="field"><label for="eFour">Fournisseur</label><select id="eFour">${allSups().map(f=>`<option${f===p.fournisseur?" selected":""}>${esc(f)}</option>`).join("")}</select></div>
-    <div class="field"><label>Partie</label><div class="seg"><button type="button" data-es="cuisine" aria-pressed="${sec==="cuisine"}">🍳 Cuisine</button><button type="button" data-es="boissons" aria-pressed="${sec==="boissons"}">🍷 Boissons</button></div></div>
+    <div class="field"><label>Partie</label><div class="seg"><button type="button" data-es="cuisine" aria-pressed="${sec==="cuisine"}">🍳 Cuisine</button><button type="button" data-es="boissons" aria-pressed="${sec==="boissons"}">🍸 Bar &amp; Salle</button></div></div>
     <div class="acts"><button class="btn" type="button" id="eSave">Enregistrer</button><button class="btn soft" type="button" id="eCancel">Annuler</button></div></div>`;
   document.body.appendChild(m);
   m.querySelectorAll("[data-es]").forEach(b=>b.onclick=()=>{sec=b.dataset.es;m.querySelectorAll("[data-es]").forEach(x=>x.setAttribute("aria-pressed",x===b))});

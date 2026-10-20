@@ -217,7 +217,7 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
 const fold=s=>s.normalize("NFD").replace(/\p{Diacritic}/gu,"").toLowerCase().replace(/œ/g,"oe").replace(/æ/g,"ae");
 function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2600)}
-/* Menu et devis : propres à chaque profil (Julien, Eric, Thierry) */
+/* Menu et devis : propres à chaque profil (Julien, Eric, Thierry, Claire) */
 const PROF=(()=>{try{return localStorage.getItem("2b-profil")||"commun"}catch{return "commun"}})();
 const store={get(k){try{const v=localStorage.getItem(k+"@"+PROF);return JSON.parse(v!=null?v:localStorage.getItem(k))}catch{return null}},set(k,v){try{localStorage.setItem(k+"@"+PROF,JSON.stringify(v))}catch{}}};
 
