@@ -24,7 +24,7 @@
   --display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
   --body:"Figtree","Segoe UI",system-ui,sans-serif;
   /* La trame imprimée garde toujours ses couleurs, quel que soit le thème */
-  --paper:#fbf6ec; --ink:#141210; --gold:#8a5a2b; --gold-soft:#b08355;
+  --paper:#fbf7ed; --ink:#1a1714; --gold:#7d5226; --gold-soft:#b08355;
   --t-title:"Cormorant Garamond","Garamond","Times New Roman",serif;
   --t-body:"EB Garamond","Garamond","Times New Roman",serif;
   color-scheme:light;
@@ -95,40 +95,44 @@ header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .editnote{font-size:13px;color:var(--muted);margin:8px 2px 0}
 @media (max-width:900px){.preview{position:static}}
 
-/* ===== La page imprimée (A4 = 794 × 1123 px) ===== */
+/* ===== La page imprimée (A4 = 794 × 1123 px), calquée sur les modèles (724 × 1086) ===== */
 .page{position:relative;width:794px;height:1123px;background:var(--paper);color:var(--ink);overflow:hidden;font-family:var(--t-body);--fs:1}
+.page.forf{background:#fbf6f1}
 .page .frame{position:absolute;inset:0;pointer-events:none}
-.page .content{position:absolute;left:96px;right:96px;top:92px;bottom:120px;display:flex;flex-direction:column;align-items:center;text-align:center}
-.page .bottom-orn{position:absolute;left:50%;bottom:60px;transform:translateX(-50%)}
-.p-title{font-family:var(--t-title);font-weight:700;font-size:calc(66px * var(--fs));letter-spacing:.02em;line-height:1;margin:0;color:var(--ink);text-transform:uppercase}
-.p-sub{font-family:var(--t-title);font-weight:600;color:var(--gold);font-size:calc(19px * var(--fs));letter-spacing:.32em;text-transform:uppercase;margin-top:calc(14px * var(--fs))}
-.p-price{position:absolute;left:96px;right:96px;bottom:94px;text-align:center;font-family:var(--t-body);font-style:italic;font-size:16px;letter-spacing:.02em;color:var(--ink)}
-.rule{display:flex;align-items:center;justify-content:center;margin:calc(16px * var(--fs)) auto}
-.rule i{display:block;height:1px;background:var(--gold);width:calc(120px * var(--fs))}
-.rule b{display:block;width:8px;height:8px;background:var(--gold);transform:rotate(45deg);margin:0 2px}
-.rule.small i{width:calc(80px * var(--fs))} .rule.small b{width:6px;height:6px}
+.page .content{position:absolute;left:92px;right:92px;top:70px;bottom:112px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.p-title{font-family:var(--t-title);font-weight:700;font-size:calc(64px * var(--fs));letter-spacing:.015em;line-height:1;margin:0;color:var(--ink);text-transform:uppercase}
+.p-sub{font-family:var(--t-title);font-weight:600;color:var(--gold);font-size:calc(18px * var(--fs));letter-spacing:.3em;text-transform:uppercase;margin-top:calc(10px * var(--fs));line-height:1.2}
+.p-price{position:absolute;left:96px;right:96px;bottom:106px;text-align:center;font-family:var(--t-body);font-style:italic;font-size:16px;letter-spacing:.02em;color:var(--ink)}
+.rule{display:flex;align-items:center;flex:none}
+.rule i{display:block;flex:1;height:1.2px;background:var(--gold)}
+.rule b{flex:none;display:block;width:6.5px;height:6.5px;background:var(--gold);transform:rotate(45deg);margin:0 1px}
+.rule.hollow b{background:#fbf6f1;border:1px solid var(--gold);width:6px;height:6px;margin:0 2px}
+.rule.dotc b{width:4px;height:4px;border-radius:50%;transform:none}
+.r-title{width:275px;margin:calc(17px * var(--fs)) 0 calc(40px * var(--fs))}
+.r-sec{width:193px;margin:calc(15px * var(--fs)) 0 calc(19px * var(--fs))}
+.r-between{width:215px;margin:calc(28px * var(--fs)) 0 calc(24px * var(--fs))}
 .sec{width:100%;display:flex;flex-direction:column;align-items:center}
-.sec-name{font-family:var(--t-title);font-weight:700;color:var(--gold);font-size:calc(26px * var(--fs));letter-spacing:.14em;text-transform:uppercase;margin-top:calc(6px * var(--fs))}
-.sec-sub{font-family:var(--t-title);font-weight:600;color:var(--gold);font-size:calc(13px * var(--fs));letter-spacing:.28em;text-transform:uppercase;margin-top:calc(2px * var(--fs))}
-.dish{font-size:calc(21px * var(--fs));line-height:1.32;max-width:88%;text-wrap:balance;margin:0}
-.ou{font-size:calc(18px * var(--fs));color:var(--gold);margin:calc(9px * var(--fs)) 0}
-.dot{display:block;width:6px;height:6px;background:var(--gold);transform:rotate(45deg);margin:calc(9px * var(--fs)) auto}
+.sec-name{font-family:var(--t-title);font-weight:700;color:var(--gold);font-size:calc(27px * var(--fs));letter-spacing:.15em;text-transform:uppercase;line-height:1.1}
+.sec-sub{font-family:var(--t-title);font-weight:600;color:var(--gold);font-size:calc(13px * var(--fs));letter-spacing:.26em;text-transform:uppercase;margin-top:calc(3px * var(--fs))}
+.dish{font-size:calc(24px * var(--fs));line-height:calc(26px * var(--fs));max-width:480px;text-wrap:pretty;margin:0}
+.dish .d1,.dish .d2{display:block}
+.ou{font-size:calc(22px * var(--fs));line-height:1;color:var(--gold);margin:calc(15px * var(--fs)) 0 calc(7px * var(--fs))}
+.dot{display:block;width:6px;height:6px;background:var(--gold);transform:rotate(45deg);margin:calc(12px * var(--fs)) auto}
 .p-note{font-size:calc(15px * var(--fs));margin-top:auto;padding-top:calc(14px * var(--fs));max-width:92%;text-wrap:balance}
 .page [contenteditable]:focus{outline:2px dashed var(--gold-soft);outline-offset:3px;border-radius:2px}
 
-/* Forfaits apéritifs : deux colonnes */
-.cols{display:grid;grid-template-columns:1fr 1px 1fr;gap:0 22px;width:100%;margin-top:calc(30px * var(--fs))}
-.vline{background:var(--gold);opacity:.7;position:relative}
-.vline::after{content:"";position:absolute;left:50%;top:50%;width:9px;height:9px;border:1px solid var(--gold);background:var(--paper);transform:translate(-50%,-50%) rotate(45deg)}
-.col{display:flex;flex-direction:column;align-items:center}
-.col h3{font-family:var(--t-title);font-weight:700;font-size:calc(17px * var(--fs));letter-spacing:.03em;text-transform:uppercase;margin:0;color:var(--ink);white-space:nowrap}
-.col .pp{font-size:calc(19px * var(--fs));color:var(--gold);margin-top:6px}
-.col .lead{font-size:calc(16.5px * var(--fs));margin:calc(4px * var(--fs)) 0 calc(12px * var(--fs));white-space:nowrap}
-.col ul{list-style:none;padding:0;margin:0;text-align:left;font-size:calc(17.5px * var(--fs));line-height:2.05}
-.col ul li::before{content:"•";margin-right:12px}
-.col .acc{font-size:calc(17.5px * var(--fs));line-height:1.35;text-wrap:balance}
-.fine{font-size:calc(13.5px * var(--fs));margin-top:auto}
-
+/* Forfaits apéritifs : chaque élément à sa place, comme sur le modèle */
+.forf .ab{position:absolute;text-align:center;line-height:1;margin:0}
+.forf .f-title{left:0;right:0;top:141px;font-family:var(--t-title);font-weight:700;font-size:41px;letter-spacing:.02em;text-transform:uppercase}
+.forf .col{position:absolute;top:0;width:310px;height:100%}
+.forf .col>*{position:absolute;left:0;right:0;text-align:center;line-height:1;margin:0}
+.forf h3{font-family:var(--t-title);font-weight:700;font-size:19px;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap}
+.forf .pp{font-size:18.5px;color:var(--gold)}
+.forf .lead{font-size:17px;white-space:nowrap}
+.forf .li{font-size:17px;text-align:left!important;left:118px!important;white-space:nowrap}
+.forf .li::before{content:"•";position:absolute;left:-22px}
+.forf .acc{font-size:17.5px;line-height:26px!important}
+.forf .fine{left:0;right:0;top:990px;font-size:16.5px}
 .modal{position:fixed;inset:0;background:rgba(10,8,4,.6);display:grid;place-items:center;z-index:20;padding:20px}
 .modal .box{background:var(--surface);border-radius:18px;padding:16px;max-width:520px;width:100%;max-height:90vh;overflow:auto;display:flex;flex-direction:column;gap:10px}
 .modal img{width:100%;height:auto;border-radius:8px;border:1px solid var(--line)}
@@ -215,29 +219,51 @@ const fold=s=>s.normalize("NFD").replace(/\p{Diacritic}/gu,"").toLowerCase().rep
 function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2600)}
 const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch{return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
 
-/* ---------- Cadre de la trame ---------- */
-const G="#8a5a2b";
-const CORNER=`<g fill="none" stroke="${G}" stroke-width="1.5" stroke-linecap="round">
-  <path d="M6 58 C6 34 13 20 30 15 C41 12 50 18 48 27 C46 35 36 35 35 28 C34 23 39 21 42 24"/>
-  <path d="M58 6 C34 6 20 13 15 30 C12 41 18 50 27 48 C35 46 35 36 28 35 C23 34 21 39 24 42"/>
-  <path d="M14 14 L21 21"/></g><rect x="20.5" y="20.5" width="7" height="7" fill="${G}" transform="rotate(45 24 24)"/>`;
-function frameSVG(){
-  const W=794,H=1123,o=24,i=31,c=70;
-  const corner=(x,y,sx,sy)=>`<g transform="translate(${x} ${y}) scale(${sx} ${sy})">${CORNER}</g>`;
-  return `<svg class="frame" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
-    <g stroke="${G}" stroke-width="1.2">
-      <line x1="${c}" y1="${o}" x2="${W-c}" y2="${o}"/><line x1="${c}" y1="${i}" x2="${W-c}" y2="${i}"/>
-      <line x1="${c}" y1="${H-o}" x2="${W-c}" y2="${H-o}"/><line x1="${c}" y1="${H-i}" x2="${W-c}" y2="${H-i}"/>
-      <line x1="${o}" y1="${c}" x2="${o}" y2="${H-c}"/><line x1="${i}" y1="${c}" x2="${i}" y2="${H-c}"/>
-      <line x1="${W-o}" y1="${c}" x2="${W-o}" y2="${H-c}"/><line x1="${W-i}" y1="${c}" x2="${W-i}" y2="${H-c}"/>
-    </g>
-    ${corner(10,10,1,1)}${corner(W-10,10,-1,1)}${corner(10,H-10,1,-1)}${corner(W-10,H-10,-1,-1)}
-  </svg>`;
+/* ---------- Cadre de la trame (relevé sur les modèles, coordonnées 724 × 1086 remises à l'échelle A4) ---------- */
+const G="#7d5226";
+const K=794/724, VY=1123/1086;
+const concave=(cx,cy,h)=>`M${cx-h} ${cy-h} Q${cx} ${cy-h*.35} ${cx+h} ${cy-h} Q${cx+h*.35} ${cy} ${cx+h} ${cy+h} Q${cx} ${cy+h*.35} ${cx-h} ${cy+h} Q${cx-h*.35} ${cy} ${cx-h} ${cy-h}Z`;
+// Coin : deux volutes qui se croisent sur la diagonale, deux boucles et deux motifs en losange creux (symétrique sur la diagonale)
+const CORNER=`<g fill="none" stroke="${G}" stroke-width="1.25" stroke-linecap="round">
+  <path d="M24.5 24.5 C32 18 42 11 54 10 C62 9.5 67 12 67 16 C67 19.5 63.5 21 62 18.6"/>
+  <path d="M24.5 24.5 C18 32 11 42 10 54 C9.5 62 12 67 16 67 C19.5 67 21 63.5 18.6 62"/>
+  <path d="M27.3 27.3 C34 21.5 43 15 51 14.5 C56 14.2 58.5 16.5 58 19.5 C57.6 21.8 55 22.5 54 20.6"/>
+  <path d="M27.3 27.3 C21.5 34 15 43 14.5 51 C14.2 56 16.5 58.5 19.5 58 C21.8 57.6 22.5 55 20.6 54"/>
+  <path d="M26.6 20 C26 15.5 28.6 12.8 31.8 13.3 C35 13.8 35.6 17.4 33.4 18.9"/>
+  <path d="M20 26.6 C15.5 26 12.8 28.6 13.3 31.8 C13.8 35 17.4 35.6 18.9 33.4"/>
+  <path d="${concave(18.4,18.4,4.6)}" stroke-width="1.7"/><path d="${concave(34.6,34.6,4.8)}" stroke-width="1.7"/></g>
+  <g fill="${G}"><circle cx="62.7" cy="18.4" r="1.9"/><circle cx="18.4" cy="62.7" r="1.9"/><circle cx="54.4" cy="20.7" r="1.6"/><circle cx="20.7" cy="54.4" r="1.6"/></g>`;
+// Ornement du bas : volute en S autour de deux losanges pleins
+const BOTTOM_ORN=`<g fill="none" stroke="${G}" stroke-width="1.3" stroke-linecap="round">
+  <path d="M0 0 C-8 8 -20 11 -32 9 C-44 7 -54 2 -56 -4 C-57.5 -9 -52 -11 -50 -7"/>
+  <path d="M0 0 C8 -8 20 -11 32 -9 C44 -7 54 -2 56 4 C57.5 9 52 11 50 7"/>
+  <path d="M-24 10 C-30 7.5 -35.5 2.5 -35 -1.5 C-34.5 -5 -30.5 -5.5 -30.8 -2.4"/>
+  <path d="M24 -10 C30 -7.5 35.5 -2.5 35 1.5 C34.5 5 30.5 5.5 30.8 2.4"/></g>
+  <g fill="${G}"><path d="M0 -17 L4.6 -9.2 L0 -1.6 L-4.6 -9.2Z"/><path d="M0 1.6 L4.6 9.2 L0 17 L-4.6 9.2Z"/>
+  <circle cx="-50.6" cy="-6.6" r="1.9"/><circle cx="50.6" cy="6.6" r="1.9"/><circle cx="-31" cy="-2.2" r="1.5"/><circle cx="31" cy="2.2" r="1.5"/></g>`;
+const ln=(x1,y1,x2,y2,w)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${G}" stroke-width="${w||1.3}"/>`;
+const X=x=>+(x*K).toFixed(1), YT=y=>+(y*VY).toFixed(1), YB=y=>+(1123-(1086-y)*VY).toFixed(1);
+function frameSVG(kind){
+  const W=794,H=1123,c=s=>`<g transform="translate(0 0) scale(${s} ${s})">${CORNER}</g>`;
+  const corner=(tx,ty,sx,sy)=>`<g transform="translate(${tx} ${ty}) scale(${sx} ${sy})">${CORNER}</g>`;
+  let lines="",corners="",extra="";
+  if(kind==="forf"){ // double filet tout autour
+    const k=K*.95;
+    lines=ln(X(74),YT(17),X(650),YT(17),1.2)+ln(X(74),YT(21.3),X(650),YT(21.3),1.2)+ln(X(74),YB(1069),X(650),YB(1069),1.2)+ln(X(74),YB(1073.5),X(650),YB(1073.5),1.2)
+      +ln(X(14.6),YT(81),X(14.6),YB(1017),1.2)+ln(X(18.6),YT(81),X(18.6),YB(1017),1.2)+ln(W-X(14.6),YT(81),W-X(14.6),YB(1017),1.2)+ln(W-X(18.6),YT(81),W-X(18.6),YB(1017),1.2)
+      // séparation verticale des deux forfaits, avec losange creux au milieu
+      +ln(397,YT(272),397,YT(815),1)+`<rect x="393.2" y="${YT(525)-3.8}" width="7.6" height="7.6" transform="rotate(45 397 ${YT(525)})" fill="#fbf6f1" stroke="${G}" stroke-width="1"/>`;
+    corners=corner(0,0,k,k)+corner(W,0,-k,k)+corner(0,H,k,-k)+corner(W,H,-k,-k);
+  }else{ // filet simple en haut et sur les côtés, double en bas, ornement en bas au centre
+    lines=ln(X(75),YT(15),X(649),YT(15),1.6)+ln(X(79),YB(1051.3),X(644),YB(1051.3),1.5)+ln(X(79),YB(1056.6),X(644),YB(1056.6),1.3)
+      +ln(X(18.6),YT(77),X(18.6),YB(986),1.4)+ln(W-X(18.6),YT(77),W-X(18.6),YB(986),1.4);
+    const k=K,by=YB(1072);
+    corners=corner(0,1,k,k)+corner(W,1,-k,k)+corner(0,by,k,-k)+corner(W,by,-k,-k);
+    extra=`<g transform="translate(397 ${YB(1004.5)}) scale(${K})">${BOTTOM_ORN}</g>`;
+  }
+  return `<svg class="frame" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">${lines}${corners}${extra}</svg>`;
 }
-const BOTTOM=`<svg class="bottom-orn" width="150" height="26" viewBox="0 0 150 26" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="${G}" stroke-width="1.5" stroke-linecap="round">
-  <path d="M70 13 C58 13 50 4 40 6 C31 8 31 19 39 19 C45 19 45 12 41 12"/><path d="M80 13 C92 13 100 22 110 20 C119 18 119 7 111 7 C105 7 105 14 109 14"/>
-  <path d="M8 13 H32 M118 13 H142"/></g><rect x="71" y="9" width="8" height="8" fill="${G}" transform="rotate(45 75 13)"/></svg>`;
-const rule=(small)=>`<div class="rule${small?" small":""}"><i></i><b></b><i></i></div>`;
+const rule=(cls,kind)=>`<div class="rule ${cls||""} ${kind||""}"><i></i><b></b><i></i></div>`;
 
 /* ================================================================
    Mise en page automatique : découpe le texte du chef en titre,
@@ -384,7 +410,7 @@ function parseMenu(raw){
 }
 
 /* ---------- Données du menu ---------- */
-const EXAMPLE_TXT="Entrée : tartine de pain de campagne, foie gras de canard, chutney de figues ou gravlax de saumon maison, crème citronnée à l'aneth, pickles d'oignons rouges, mini-blinis\nPlat : dodine de volaille farcie aux herbes, risotto croustillant, betterave rôtie, jus réduit ou carré de porcelet rôti au miel et aux épices, brochette de légumes, jus corsé\nDessert : pavlova aux fruits exotiques, chantilly vanillée ou poire pochée au vin rouge, crumble de noisettes, glace vanille";
+const EXAMPLE_TXT="Entrée : tartine de pain de campagne, foie gras de canard et chutney de figues ou gravlax de saumon maison, crème citronnée à l'aneth, pickles d'oignons rouges et mini-blinis\nPlat : dodine de volaille farcie aux herbes, risotto croustillant, betterave rôtie et jus réduit en finition ou carré de porcelet rôti au miel et aux épices, brochette de légumes et jus corsé\nDessert : pavlova aux fruits exotiques, chantilly vanillée ou poire pochée au vin rouge, crumble de noisettes et glace vanille";
 let RAW=store.get("menus2b-texte");if(typeof RAW!=="string")RAW="";
 let MENU=store.get("menus2b-dernier");
 const opts=()=>({titre:$("#fTitle").value.trim(),sousTitre:$("#fSub").value.trim(),prix:priceNum($("#fPrice").value),note:$("#fNote").value.trim()});
@@ -396,18 +422,21 @@ function build(){
 
 function menuPage(m){
   const secs=(m.sections||[]).map((s,si)=>{
-    const items=(s.plats||[]).map((p,pi)=>`<p class="dish" contenteditable="true" spellcheck="true" data-s="${si}" data-p="${pi}">${esc(p)}</p>`);
+    // comme sur le modèle : retour à la ligne après la première virgule (le plat, puis ses accompagnements)
+    const tail=t=>{const j=t.lastIndexOf(" et ");return t.length>42&&j>0?`<span class="d2"> ${esc(t.slice(0,j))}</span><span class="d2"> ${esc(t.slice(j+1))}</span>`:`<span class="d2"> ${esc(t)}</span>`};
+    const dish=p=>{const i=p.indexOf(", ");return i>0?`<span class="d1">${esc(p.slice(0,i+1))}</span>${tail(p.slice(i+2))}`:esc(p)};
+    const items=(s.plats||[]).map((p,pi)=>`<p class="dish" contenteditable="true" spellcheck="true" data-s="${si}" data-p="${pi}">${dish(p)}</p>`);
     const sep=s.mode==="liste"?`<span class="dot"></span>`:`<div class="ou">Ou</div>`;
     const head=s.nom?`<div class="sec-name" contenteditable="true" spellcheck="true" data-sn="${si}">${esc(s.nom)}</div>`:"";
-    return `${si?rule():""}<div class="sec">${head}
-      ${s.sousTitre?`<div class="sec-sub" contenteditable="true" data-ss="${si}">${esc(s.sousTitre)}</div>`:""}${s.nom||s.sousTitre?rule(true):""}${items.join(sep)}</div>`;
+    return `${si?rule("r-between"):""}<div class="sec">${head}
+      ${s.sousTitre?`<div class="sec-sub" contenteditable="true" data-ss="${si}">${esc(s.sousTitre)}</div>`:""}${s.nom||s.sousTitre?rule("r-sec"):""}${items.join(sep)}</div>`;
   }).join("");
-  return `<div class="page" id="thePage" lang="fr">${frameSVG()}<div class="content"${priceText(m.prix)?' style="bottom:132px"':""}>
+  return `<div class="page" id="thePage" lang="fr">${frameSVG("menu")}<div class="content"${priceText(m.prix)?' style="bottom:140px"':""}>
     <h2 class="p-title" contenteditable="true" spellcheck="true" data-f="titre">${esc(m.titre||"Menu")}</h2>
     ${m.sousTitre?`<div class="p-sub" contenteditable="true" spellcheck="true" data-f="sousTitre">${esc(m.sousTitre)}</div>`:""}
-    ${rule()}${secs}
+    ${rule("r-title")}${secs}
     ${m.note?`<div class="p-note" contenteditable="true" spellcheck="true" data-f="note">${esc(m.note)}</div>`:""}
-  </div>${priceText(m.prix)?`<div class="p-price">${esc(priceText(m.prix))}</div>`:""}${BOTTOM}</div>`;
+  </div>${priceText(m.prix)?`<div class="p-price">${esc(priceText(m.prix))}</div>`:""}</div>`;
 }
 function secsUI(){
   const el=$("#secs");const ss=MENU.sections||[];
@@ -421,19 +450,23 @@ $("#secs").addEventListener("click",e=>{const b=e.target.closest("[data-mode]");
 /* ---------- Forfaits apéritifs ---------- */
 const F_DEFAULT={p1:"12 €",p2:"17 €",drinks:"Bière\nPicon bière\nKir vin blanc\nKir crémant\nVerre de vin\nSoft\nAperol Spritz\nPanaché\nMonaco"};
 function forfaitPage(f){
-  const list=f.drinks.split("\n").map(s=>s.trim()).filter(Boolean).map(d=>`<li>${esc(d)}</li>`).join("");
-  const orn=`<svg width="70" height="12" viewBox="0 0 70 12" style="margin:STYLE"><g fill="none" stroke="${G}" stroke-width="1.3" stroke-linecap="round"><path d="M33 6 C26 6 22 1 16 2 C11 3 11 9 16 9 C19 9 19 5 17 5"/><path d="M37 6 C44 6 48 11 54 10 C59 9 59 3 54 3 C51 3 51 7 53 7"/><path d="M2 6 H10 M60 6 H68"/></g></svg>`;
-  const col=(name,price,lead,acc)=>`<div class="col"><h3>${name}</h3><div class="pp">${esc(price)} par personne</div>
-    ${orn.replace("margin:STYLE","margin:12px 0 14px")}<div class="lead">${lead}</div><ul>${list}</ul>${rule(true)}<div class="acc">${acc}</div>${orn.replace("margin:STYLE","margin-top:18px")}</div>`;
-  return `<div class="page" id="thePage">${frameSVG()}<div class="content" style="bottom:70px;left:60px;right:60px">
-    <h2 class="p-title" style="font-size:calc(50px * var(--fs));margin-top:26px">Forfaits apéritifs</h2>${rule(true)}
-    <div class="cols">
-      ${col("Forfait apéritif classique",f.p1,"Une consommation au choix parmi :","Accompagné de nos amuse-bouches apéritifs.")}
-      <div class="vline"></div>
-      ${col("Forfait apéritif réception",f.p2,"Deux consommations au choix parmi :","Accompagnés de nos amuse-bouches apéritifs.")}
-    </div>
-    <p class="fine">Les consommations prises en supplément du forfait choisi seront facturées selon la carte en vigueur.</p>
-  </div></div>`;
+  const drinks=f.drinks.split("\n").map(s=>s.trim()).filter(Boolean);
+  const gap=drinks.length>1?Math.min(37.2,298/(drinks.length-1)):0;   // 9 boissons = l'espacement du modèle
+  const at=(y,h)=>`top:${(y-h/2).toFixed(1)}px`;                        // y = centre de la ligne, en px de la page
+  const orn=y=>`<svg width="72" height="12" viewBox="0 0 72 12" style="${at(y,12)};left:119px;right:auto"><g fill="none" stroke="${G}" stroke-width="1.2" stroke-linecap="round"><path d="M33 6 C27 6 23 2 18 2.5 C13.5 3 13.5 9 18 9 C21 9 21 5.5 19 5.5"/><path d="M39 6 C45 6 49 10 54 9.5 C58.5 9 58.5 3 54 3 C51 3 51 6.5 53 6.5"/><path d="M3 6 H11 M61 6 H69"/></g><circle cx="36" cy="6" r="1.7" fill="${G}"/></svg>`;
+  const col=(cx,name,price,lead,acc)=>`<div class="col" style="left:${cx-155}px">
+    <h3 style="${at(YT(276),19)}">${name}</h3><div class="pp" style="${at(YT(306),18.5)}">${esc(price)} par personne</div>${orn(YT(336))}
+    <div class="lead" style="${at(YT(380),17)}">${lead}</div>
+    ${drinks.map((d,i)=>`<div class="li" style="${at(YT(423)+i*gap,17)}">${esc(d)}</div>`).join("")}
+    <div style="${at(YT(759),8)};left:86px;right:86px">${rule("","dotc")}</div>
+    <div class="acc" style="${at(YT(810),52)}">${acc}</div>${orn(YT(870))}</div>`;
+  return `<div class="page forf" id="thePage">${frameSVG("forf")}
+    <h2 class="ab f-title">Forfaits apéritifs</h2>
+    <div class="ab" style="top:${YT(206)-4}px;left:${X(281)}px;width:${X(432)-X(281)}px">${rule("","hollow")}</div>
+    ${col(X(200),"Forfait apéritif classique",f.p1,"Une consommation au choix parmi :","Accompagné de nos<br>amuse-bouches apéritifs.")}
+    ${col(X(523),"Forfait apéritif réception",f.p2,"Deux consommations au choix parmi :","Accompagnés de nos<br>amuse-bouches apéritifs.")}
+    <p class="ab fine">Les consommations prises en supplément du forfait choisi seront facturées selon la carte en vigueur.</p>
+  </div>`;
 }
 
 /* ---------- Affichage, mise à l'échelle et ajustement automatique ---------- */
@@ -445,7 +478,8 @@ function show(){
 }
 function fit(){ // la plus grande taille de texte qui tienne sur la page
   const page=$("#thePage");if(!page)return;const content=page.querySelector(".content");
-  let fs=1.3;page.style.setProperty("--fs",fs);
+  if(page.classList.contains("forf"))return;
+  let fs=1;page.style.setProperty("--fs",fs);
   while(content.scrollHeight>content.clientHeight+1&&fs>0.5){fs-=0.03;page.style.setProperty("--fs",fs.toFixed(2))}
 }
 function scale(){const w=$("#stage").clientWidth-28;const k=Math.min(1,w/794);const sc=$("#scaler");sc.style.transform=`scale(${k})`;sc.parentElement.style.height=(1123*k+28)+"px"}
@@ -491,7 +525,7 @@ async function capture(){
   holder.style.cssText="position:fixed;left:-10000px;top:0;width:794px;height:1123px";
   const clone=src.cloneNode(true);clone.querySelectorAll("[contenteditable]").forEach(n=>n.removeAttribute("contenteditable"));
   holder.appendChild(clone);document.body.appendChild(holder);
-  try{return await html2canvas(clone,{scale:3,backgroundColor:"#fbf6ec",useCORS:true,logging:false})}finally{holder.remove()}
+  try{return await html2canvas(clone,{scale:3,backgroundColor:null,useCORS:true,logging:false})}finally{holder.remove()}
 }
 function fileBase(){const t=TAB==="menu"?[MENU.titre,MENU.sousTitre].filter(Boolean).join(" - "):"Forfaits apéritifs";return (t||"Menu").replace(/[\\/:*?"<>|]/g,"").slice(0,80)}
 function saveLink(blob,name){const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000)}
