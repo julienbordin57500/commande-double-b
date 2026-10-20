@@ -144,7 +144,7 @@ header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 <div class="wrap">
   <nav class="apps" aria-label="Parties de l'appli"><a href="./">Commande</a><a href="menus.html" aria-current="page">Menus &amp; devis</a><a href="chiffres.html">Chiffres</a></nav>
   <header class="top">
-    <div class="logo"><img src="logo.png" alt="Double B"></div>
+    <div class="logo"><img src="logo-hd.png" alt="Double B"></div>
     <div class="titles"><h1>Menus</h1><p>Colle ton menu, il se met tout seul dans la trame des devis.</p></div>
   </header>
   <div class="tabs" role="tablist">
@@ -217,7 +217,9 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
 const fold=s=>s.normalize("NFD").replace(/\p{Diacritic}/gu,"").toLowerCase().replace(/œ/g,"oe").replace(/æ/g,"ae");
 function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2600)}
-const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch{return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+/* Menu et devis : propres à chaque profil (Julien, Eric, Thierry) */
+const PROF=(()=>{try{return localStorage.getItem("2b-profil")||"commun"}catch{return "commun"}})();
+const store={get(k){try{const v=localStorage.getItem(k+"@"+PROF);return JSON.parse(v!=null?v:localStorage.getItem(k))}catch{return null}},set(k,v){try{localStorage.setItem(k+"@"+PROF,JSON.stringify(v))}catch{}}};
 
 /* ---------- Cadre de la trame (relevé sur les modèles, coordonnées 724 × 1086 remises à l'échelle A4) ---------- */
 const G="#7d5226";
@@ -572,5 +574,6 @@ $("#editnote").textContent="Aperçu au format A4. Touche un texte de la page pou
 show();
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
+<script src="profil.js"></script>
 </body>
 </html>

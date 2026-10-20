@@ -13,6 +13,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png" type="image/png">
+<script src="profil.js" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
 <style>
@@ -178,13 +179,60 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:11px 16px;border-radius:12px;font-weight:600;font-size:15px;z-index:10;max-width:calc(100% - 32px)}
 @media (max-width:400px){.titles h1{font-size:25px}header.top .logo{width:92px;height:54px}.ico{width:46px;height:46px}.ico svg{width:28px;height:28px}.toggle{padding:0 12px 0 8px;font-size:13px}.qty{width:62px}}
 @media (prefers-reduced-motion:reduce){.chev{transition:none}}
+
+/* Cuisine / Boissons */
+.secsw{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.secsw button{height:58px;border-radius:16px;border:2px solid var(--line);background:var(--surface);font-weight:800;font-size:17px;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--muted)}
+.secsw button .e{font-size:22px}
+.secsw button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--fg)}
+.secsw .n{min-width:24px;height:24px;border-radius:12px;background:var(--accent);color:var(--accent-ink);font-size:13px;display:inline-grid;place-items:center;padding:0 7px}
+/* Boutons ✏️ ✖️ sur chaque article */
+.item .name>span:first-child,.cmd-item .name>span:first-child{flex:1 1 120px;min-width:0}
+.ib{flex:none;width:38px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;color:var(--muted);padding:0}
+.ib svg{width:17px;height:17px}
+.ib.x:hover,.ib.x:active{color:var(--danger);border-color:var(--danger)}
+.badge-promo{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.06em;color:#fff;background:#d63a2a;border-radius:6px;padding:2px 6px;line-height:1.2;box-shadow:0 1px 0 rgba(0,0,0,.12)}
+/* Fenêtres */
+.sheet .acts{display:grid;gap:8px}
+.sheet .acts .btn{height:56px;font-size:17px}
+.btn.danger{background:var(--danger);color:#fff}
+.sheet .field input,.sheet .field select{height:54px;border:1.5px solid var(--line);border-radius:14px;background:var(--sunken);padding:0 12px;width:100%;font-size:17px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.seg button{height:52px;border-radius:14px;border:2px solid var(--line);background:var(--surface);font-weight:800;font-size:16px;color:var(--muted)}
+.seg button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--fg)}
+.promo{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1.5px solid var(--line);border-radius:14px;background:var(--sunken);font-weight:700;font-size:16px;cursor:pointer}
+.sw{position:relative;width:56px;height:32px;flex:none}
+.sw input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.sw i{position:absolute;inset:0;border-radius:16px;background:var(--line);transition:background .15s}
+.sw i::after{content:"";position:absolute;left:3px;top:3px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .15s}
+.sw input:checked+i{background:#d63a2a}
+.sw input:checked+i::after{transform:translateX(24px)}
+.sw input:focus-visible+i{outline:3px solid var(--accent);outline-offset:2px}
+/* À commander : blocs repliables + validation par fournisseur */
+.cmd-sup header{cursor:pointer;width:100%;background:none;border:0;border-bottom:1px solid var(--line);font:inherit;color:inherit;text-align:left}
+.cmd-sup[data-open="false"] header{border-bottom:0}
+.cmd-sup[data-open="false"] .cmd-body{display:none}
+.cmd-sup .chev{transition:transform .2s ease}
+.cmd-sup[data-open="true"] .chev{transform:rotate(90deg)}
+.cmd-done{padding:12px 14px;border-top:1px solid var(--line);background:var(--sunken)}
+.cmd-done .btn{width:100%;height:54px;font-size:17px;background:var(--go);color:var(--go-ink)}
+.cmd-done .btn.confirm{background:var(--fg);color:var(--bg)}
+/* Coup de couteau */
+.cut{position:relative;margin-top:16px;pointer-events:none}
+.cut>.cmd-sup{position:absolute;inset:0;margin:0!important;transition:transform .32s cubic-bezier(.5,0,.75,0),opacity .32s ease-in}
+.cut .knife{position:absolute;left:0;top:0;width:84px;height:84px;z-index:3;filter:drop-shadow(0 3px 4px rgba(0,0,0,.3))}
+.cut svg.slash{position:absolute;inset:0;width:100%;height:100%;z-index:2;overflow:visible}
+.pbar{margin-bottom:12px}
+.cmd-item{flex-wrap:wrap}
+.cmd-item .name{flex:1 1 170px}
+.sup-name small .count{display:inline-block;margin-left:6px;padding:2px 8px;font-size:12px}
 </style>
 </head>
 <body>
 
 <div class="wrap gate" id="gate" hidden>
-  <div class="logo"><img src="logo.png" alt="Double B"></div>
-  <h1>Commande</h1>
+  <img src="logo-hd.png" alt="Double B" style="width:min(280px,76vw);height:auto">
+  <div style="font-weight:800;letter-spacing:.24em;font-size:14px">COMMANDE <span style="color:var(--accent)">·</span> DEVIS <span style="color:var(--accent)">·</span> ANALYSE</div>
   <p>Entre le code d'accès de l'équipe. Il est demandé une seule fois sur ce téléphone.</p>
   <form id="gateForm" autocomplete="off">
     <input id="gateCode" placeholder="Code d'accès" autocapitalize="off" autocorrect="off" spellcheck="false" required aria-label="Code d'accès">
@@ -197,9 +245,14 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
   <nav class="apps" aria-label="Parties de l'appli"><a href="./" aria-current="page">Commande</a><a href="menus.html">Menus &amp; devis</a><a href="chiffres.html">Chiffres</a></nav>
   <div class="sync" id="sync">Connexion…</div>
   <header class="top">
-    <div class="logo"><img src="logo.png" alt="Double B"></div>
+    <div class="logo"><img src="logo-hd.png" alt="Double B"></div>
     <div class="titles"><h1>Commande</h1><div class="date" id="now">&nbsp;</div></div>
   </header>
+
+  <div class="secsw" role="group" aria-label="Partie">
+    <button type="button" data-sec="cuisine" aria-pressed="true"><span class="e">🍳</span>Cuisine <span class="n" id="nCuisine" hidden></span></button>
+    <button type="button" data-sec="boissons" aria-pressed="false"><span class="e">🍷</span>Boissons <span class="n" id="nBoissons" hidden></span></button>
+  </div>
 
   <div class="tabs" role="tablist" aria-label="Sections">
     <button role="tab" data-tab="liste" aria-selected="true">Produits</button>
@@ -216,7 +269,7 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
     <div class="suppliers" id="suppliers"><div class="empty"><strong>Chargement…</strong>Tes fournisseurs et leurs produits arrivent.</div></div>
 
     <form class="add" id="addForm" autocomplete="off">
-      <h3>Ajouter un produit</h3>
+      <h3 id="addTitle">Ajouter un produit</h3>
       <div class="field"><label for="nNom">Produit</label><input id="nNom" placeholder="ex. Ciboulette" maxlength="60" required></div>
       <div class="field"><label for="nFour">Fournisseur</label><select id="nFour"></select></div>
       <button class="btn" type="submit">Ajouter le produit</button>
@@ -226,7 +279,6 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
       </div>
     </form>
     <div class="links">
-      <button class="linkbtn" id="editToggle" type="button">Modifier la liste</button>
       <button class="linkbtn" id="invite" type="button">Inviter l'équipe</button>
       <button class="linkbtn" id="logout" type="button">Changer de code</button>
     </div>
@@ -242,14 +294,16 @@ const API="https://kokjumjhpasxxxrpspng.supabase.co/rest/v1/rpc/";
 const KEY="sb_publishable_HIJXH1eJ_CP-A4G3AecDKg_NbBUD0m2";
 const CK="commande2b-code";
 const DEFAULT_SUPS=["Maraîcher","Sysco","Coup de Pâtes"];
-const UNITS=["pièce","kg","g","L","carton","colis","botte","sac","seau","barquette"];
-const S={items:new Map(),sups:[...DEFAULT_SUPS],ready:false,edit:false,open:{},q:"",code:null,pending:0};
+const UNITS=["pièce","kg","g","L","carton","colis","botte","sac","seau","barquette","bouteille","fût","pack"];
+const S={items:new Map(),sups:[...DEFAULT_SUPS],supSec:{},ready:false,open:{},copen:{},q:"",code:null,pending:0,sec:"cuisine",busy:false};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
 const fold=s=>s.normalize("NFD").replace(/\p{Diacritic}/gu,"").toLowerCase().replace(/œ/g,"oe").replace(/æ/g,"ae");
+const norm=s=>fold(String(s)).replace(/[^a-z0-9]+/g," ").trim();
 const fmt=n=>String(Math.round(n*1000)/1000).replace(".",",");
 function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2400)}
 const store={get(k){try{return localStorage.getItem(k)}catch{return null}},set(k,v){try{localStorage.setItem(k,v)}catch{}},del(k){try{localStorage.removeItem(k)}catch{}}};
+const SECN={cuisine:"Cuisine",boissons:"Boissons"};
 
 async function rpc(fn,args={}){
   const r=await fetch(API+fn,{method:"POST",headers:{"apikey":KEY,"Content-Type":"application/json"},body:JSON.stringify({p_code:S.code,...args})});
@@ -274,20 +328,21 @@ $("#gateForm").addEventListener("submit",async e=>{
   try{const ok=await rpc("verifier");if(ok){store.set(CK,c);showApp()}else showGate("Code incorrect. Vérifie avec le gérant.")}
   catch{showGate("Pas de connexion internet. Réessaie dans un instant.")}
 });
-function showApp(){$("#gate").hidden=true;$("#app").hidden=false;refresh();startPolling()}
+function showApp(){$("#gate").hidden=true;$("#app").hidden=false;refresh();startPolling();
+  const go=()=>window.Profil&&window.Profil.ensure();if(window.Profil)go();else addEventListener("load",go)}
 
 /* Synchronisation : rafraîchit toutes les 5 s quand l'appli est ouverte */
 let pollT=null;
 function startPolling(){clearInterval(pollT);pollT=setInterval(()=>{if(document.visibilityState==="visible")refresh()},5000)}
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&S.code)refresh()});
 async function refresh(){
-  if(S.pending>0)return;
+  if(S.pending>0||S.busy)return;
   try{
-    const d=await rpc("etat");if(S.pending>0)return;
-    S.items=new Map(d.produits.map(p=>[p.id,{...p,qte:p.qte==null?null:+p.qte}]));
-    S.sups=d.fournisseurs.length?d.fournisseurs:[...DEFAULT_SUPS];S.ready=true;
+    const d=await rpc("etat");if(S.pending>0||S.busy)return;
+    S.items=new Map(d.produits.map(p=>[p.id,{...p,section:p.section||"cuisine",qte:p.qte==null?null:+p.qte}]));
+    S.sups=d.fournisseurs.length?d.fournisseurs:[...DEFAULT_SUPS];S.supSec=d.sections||{};S.ready=true;
     setSync("À jour","ok");
-    const a=document.activeElement;if(!(a&&(a.matches(".qty")||a.matches(".unit"))))render();
+    const a=document.activeElement;if(!(a&&(a.matches(".qty")||a.matches(".unit")))&&!document.querySelector(".sheet"))render();
   }catch(e){
     if(e.code==="28000"){store.del(CK);S.code=null;showGate("Le code a changé. Entre le nouveau code.");return}
     setSync("Hors ligne","err");if(!S.ready){S.ready=true;render()}
@@ -295,7 +350,7 @@ async function refresh(){
 }
 async function send(fn,args){
   S.pending++;setSync("Enregistrement…");
-  try{await rpc(fn,args);S.pending--;if(!S.pending)refresh()}
+  try{const r=await rpc(fn,args);S.pending--;if(!S.pending)refresh();return r}
   catch(e){S.pending--;toast(e.code==="28000"?"Code refusé":"Pas enregistré : vérifie la connexion");refresh();throw e}
 }
 
@@ -309,12 +364,14 @@ const ICONS={
 };
 const CHECK='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3L13 4.5"/></svg>';
 const CHEV='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+const PEN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>';
+const CROSS='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 function supKind(name){const n=fold(name);
   if(/marai|primeur|fruit|legume/.test(n))return "mar";
   if(/sysco|metro|transgourmet|promocash|grossiste/.test(n))return "sys";
   if(/coup de pat|boulang|pain|patiss/.test(n))return "cdp";
-  if(/brasser|boisson|biere|vin|galibot/.test(n))return "boi";
-  return "oth"}
+  if(/brasser|boisson|biere|vin|galibot|cave|soda|eau/.test(n))return "boi";
+  return S.sec==="boissons"?"boi":"oth"}
 function supStyle(name){const k=supKind(name);const c=k==="boi"?"oth":k;return `--c:var(--c-${c});--soft:var(--c-${c}-soft)`}
 const supIcon=name=>ICONS[supKind(name)];
 
@@ -326,8 +383,13 @@ tick();setInterval(tick,20000);
 
 /* Repli des fournisseurs, propre au téléphone */
 try{S.open=JSON.parse(store.get("commande2b-open")||"{}")}catch{}
-const isOpen=n=>S.open[n]!==false;
-function setOpen(n,v){S.open[n]=v;store.set("commande2b-open",JSON.stringify(S.open))}
+try{S.copen=JSON.parse(store.get("commande2b-copen")||"{}")}catch{}
+S.sec=store.get("commande2b-sec")==="boissons"?"boissons":"cuisine";
+const okey=n=>S.sec+"|"+n;
+const isOpen=n=>S.open[okey(n)]!==false;
+function setOpen(n,v){S.open[okey(n)]=v;store.set("commande2b-open",JSON.stringify(S.open))}
+const isCOpen=n=>S.copen[okey(n)]!==false;
+function setCOpen(n,v){S.copen[okey(n)]=v;store.set("commande2b-copen",JSON.stringify(S.copen))}
 
 /* Recherche par mots-clés */
 function terms(){return fold(S.q||"").split(/[^a-z0-9]+/).filter(Boolean)}
@@ -344,94 +406,122 @@ function hl(text,ts){
 }
 function label(nom){const ts=terms();const m=nom.match(/^(.*?)\s*(\(.+\))$/);return m?`${hl(m[1],ts)} <em>${hl(m[2],ts)}</em>`:hl(nom,ts)}
 
-/* Prix : dernier prix noté et évolution par rapport au précédent */
-const PUNITS=["kg","pièce","L","douzaine","carton","colis","botte","barquette","sac","seau"];
+/* Prix : dernier prix noté, promo et évolution par rapport au précédent */
+const PUNITS=["kg","pièce","L","douzaine","carton","colis","botte","barquette","sac","seau","bouteille","fût","pack"];
 const eur=n=>new Intl.NumberFormat("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:3}).format(n)+" €";
 const dshort=d=>new Date(d).toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit",year:"2-digit"});
+const PROMO='<span class="badge-promo">PROMO</span>';
 function varPct(a,b){if(!a||!b||a.u!==b.u)return null;return Math.round((a.p-b.p)/b.p*1000)/10}
 function varHTML(v){if(v==null)return "";const c=v>0?"up":v<0?"down":"eq";return `<span class="var ${c}">${v>0?"▲ +":v<0?"▼ ":""}${String(v).replace(".",",")} %</span>`}
 function chip(p){
   if(!p.prix)return `<button class="pchip" data-prix="${p.id}" aria-label="Noter le prix de ${esc(p.nom)}">+ prix</button>`;
-  return `<button class="pchip has" data-prix="${p.id}" aria-label="Prix de ${esc(p.nom)}">${eur(+p.prix.p)}/${esc(p.prix.u)} ${varHTML(varPct(p.prix,p.avant))}</button>`;
+  return `<button class="pchip has" data-prix="${p.id}" aria-label="Prix de ${esc(p.nom)}">${eur(+p.prix.p)}/${esc(p.prix.u)} ${p.prix.promo?PROMO:varHTML(varPct(p.prix,p.avant))}</button>`;
 }
+const tools=p=>`<button class="ib" data-edit="${p.id}" aria-label="Modifier ${esc(p.nom)}">${PEN}</button><button class="ib x" data-del="${p.id}" aria-label="Supprimer ${esc(p.nom)}">${CROSS}</button>`;
 
 /* Rendu */
-function supList(){const extra=[...new Set([...S.items.values()].map(p=>p.fournisseur))].filter(f=>!S.sups.includes(f));return [...S.sups,...extra]}
-function itemsOf(f){return [...S.items.values()].filter(p=>p.fournisseur===f).sort((a,b)=>a.ordre-b.ordre||a.nom.localeCompare(b.nom,"fr"))}
+const inSec=p=>(p.section||"cuisine")===S.sec;
+function allSups(){const extra=[...new Set([...S.items.values()].map(p=>p.fournisseur))].filter(f=>!S.sups.includes(f));return [...S.sups,...extra]}
+function supList(){return allSups().filter(f=>(S.supSec[f]||"cuisine")===S.sec||[...S.items.values()].some(p=>p.fournisseur===f&&inSec(p)))}
+function itemsOf(f){return [...S.items.values()].filter(p=>p.fournisseur===f&&inSec(p)).sort((a,b)=>a.ordre-b.ordre||a.nom.localeCompare(b.nom,"fr"))}
 function render(){
-  const sups=supList();const all=[...S.items.values()];const n=all.filter(p=>p.acommander).length;
+  const sups=supList();const all=[...S.items.values()];const mine=all.filter(inSec);const n=mine.filter(p=>p.acommander).length;
   const b=$("#badge");b.hidden=!n;b.textContent=n;
-  $("#editToggle").textContent=S.edit?"Terminer les modifications":"Modifier la liste";
-  const sel=$("#nFour"),cur=sel.value;sel.innerHTML=sups.map(f=>`<option>${esc(f)}</option>`).join("");if(sups.includes(cur))sel.value=cur;
+  ["cuisine","boissons"].forEach(sec=>{const k=all.filter(p=>(p.section||"cuisine")===sec&&p.acommander).length;const el=$(sec==="cuisine"?"#nCuisine":"#nBoissons");el.hidden=!k;el.textContent=k});
+  document.querySelectorAll("[data-sec]").forEach(x=>x.setAttribute("aria-pressed",x.dataset.sec===S.sec));
+  $("#addTitle").textContent="Ajouter un produit — "+SECN[S.sec];
+  $("#q").placeholder=S.sec==="boissons"?"Chercher une boisson… ex. coca, pression":"Chercher un produit… ex. iceberg, agria";
+  const sel=$("#nFour"),cur=sel.value;const others=allSups().filter(f=>!sups.includes(f));
+  sel.innerHTML=sups.map(f=>`<option>${esc(f)}</option>`).join("")+(others.length?`<optgroup label="Autres fournisseurs">${others.map(f=>`<option>${esc(f)}</option>`).join("")}</optgroup>`:"");
+  if(allSups().includes(cur))sel.value=cur;
   if(!S.ready)return;
   const ts=terms();
   if(ts.length){
-    const hits=all.filter(p=>matches(p,ts)).length;const info=$("#qinfo");info.hidden=false;
+    const hits=mine.filter(p=>matches(p,ts)).length;const info=$("#qinfo");info.hidden=false;
     info.innerHTML=hits?`<span>${hits} produit${hits>1?"s":""} trouvé${hits>1?"s":""}</span>`
       :`<span>Aucun produit ne correspond à « ${esc(S.q.trim())} ».</span><button class="btn soft" type="button" id="qAdd">Ajouter « ${esc(S.q.trim())} »</button>`;
     $("#suppliers").innerHTML=sups.filter(f=>itemsOf(f).some(p=>matches(p,ts))).map(supHTML).join("");
   }else{
     $("#qinfo").hidden=true;
-    $("#suppliers").innerHTML=sups.map(supHTML).join("")||`<div class="empty"><strong>Aucun fournisseur</strong>Crée-en un avec le formulaire ci-dessous.</div>`;
+    $("#suppliers").innerHTML=sups.map(supHTML).join("")||`<div class="empty"><strong>Aucun fournisseur ${S.sec==="boissons"?"de boissons":""}</strong>Crée-en un avec le formulaire ci-dessous.</div>`;
   }
   renderCmd(sups);
 }
 function supHTML(f){
   const ts=terms();const all=itemsOf(f);const ps=ts.length?all.filter(p=>matches(p,ts)):all;
   const k=all.filter(p=>p.acommander).length;const open=ts.length?true:isOpen(f);
+  const hasAny=[...S.items.values()].some(p=>p.fournisseur===f);
   const body=ps.length?ps.map(itemHTML).join("")
-    :`<div class="sup-empty"><span>Aucun produit pour l'instant.</span>${S.edit&&!DEFAULT_SUPS.includes(f)?`<button class="del" data-delsup="${esc(f)}">Supprimer ce fournisseur</button>`:""}</div>`;
+    :`<div class="sup-empty"><span>Aucun produit pour l'instant.</span>${!hasAny&&!DEFAULT_SUPS.includes(f)?`<button class="del" data-delsup="${esc(f)}">Supprimer ce fournisseur</button>`:""}</div>`;
   return `<section class="sup" data-open="${open}" style="${supStyle(f)}">
     <button class="sup-head" data-sup="${esc(f)}" aria-expanded="${open}">
       <span class="ico" aria-hidden="true">${supIcon(f)}</span>
-      <span class="sup-name"><h2>${esc(f)}</h2><small>${ts.length?`${ps.length} sur ${all.length} produits`:`${all.length} produit${all.length>1?"s":""}`}</small></span>
-      ${k?`<span class="count">${k} à commander</span>`:""}
+      <span class="sup-name"><h2>${esc(f)}</h2><small>${ts.length?`${ps.length} sur ${all.length} produits`:`${all.length} produit${all.length>1?"s":""}`}${k?` <span class="count">${k} à commander</span>`:""}</small></span>
       <span class="chev" aria-hidden="true">${CHEV}</span>
     </button>
     <div class="sup-body">${body}</div></section>`;
 }
 function itemHTML(p){
-  if(S.edit)return `<div class="item"><div class="name">${label(p.nom)}</div><div class="ctrls"><button class="del" data-del="${p.id}" aria-label="Supprimer ${esc(p.nom)}">Supprimer</button></div></div>`;
-  return `<div class="item${p.acommander?" on":""}"><div class="name"><span>${label(p.nom)}</span>${chip(p)}</div>
+  return `<div class="item${p.acommander?" on":""}"><div class="name"><span>${label(p.nom)}</span>${chip(p)}${tools(p)}</div>
     <div class="ctrls">
       <input class="qty" type="number" inputmode="decimal" min="0" max="10000" step="any" placeholder="Qté" value="${p.qte??""}" data-q="${p.id}" aria-label="Quantité de ${esc(p.nom)} (facultatif)">
-      <select class="unit" data-u="${p.id}" aria-label="Unité de ${esc(p.nom)}">${UNITS.map(u=>`<option${u===p.unite?" selected":""}>${u}</option>`).join("")}</select>
+      <select class="unit" data-u="${p.id}" aria-label="Unité de ${esc(p.nom)}">${(UNITS.includes(p.unite)?UNITS:[p.unite,...UNITS]).map(u=>`<option${u===p.unite?" selected":""}>${esc(u)}</option>`).join("")}</select>
       <button class="toggle" data-t="${p.id}" aria-pressed="${p.acommander}"><span class="box">${CHECK}</span>${p.acommander?"À commander":"Commander"}</button>
     </div></div>`;
 }
 function renderCmd(sups){
   const el=$("#commande");
   const groups=sups.map(f=>[f,itemsOf(f).filter(p=>p.acommander)]).filter(g=>g[1].length);
-  if(!groups.length){el.innerHTML=`<div class="empty"><strong>Rien à commander</strong>Dans l'onglet Produits, appuie sur « Commander » à côté de ce qui manque. La quantité est facultative.</div>`;return}
-  el.innerHTML=groups.map(([f,ps])=>`<section class="cmd-sup" style="${supStyle(f)}"><header><span class="ico" aria-hidden="true">${supIcon(f)}</span><h2>${esc(f)}</h2><span>${ps.length} produit${ps.length>1?"s":""}</span></header>
-    ${ps.map(p=>`<div class="cmd-item"><div class="name"><span>${esc(p.nom)}</span>${chip(p)}</div>${p.qte?`<span class="qpill">${fmt(p.qte)} ${esc(p.unite)}</span>`:`<span class="qpill none">quantité libre</span>`}<button class="del" data-t="${p.id}" aria-label="Retirer ${esc(p.nom)} de la commande">Retirer</button></div>`).join("")}</section>`).join("")
-    +`<div class="done"><button class="btn" id="doneBtn" type="button">Commande effectuée</button><p>Vide la liste et les quantités une fois les commandes passées.</p></div>`;
+  if(!groups.length){el.innerHTML=`<div class="empty"><strong>Rien à commander en ${SECN[S.sec].toLowerCase()}</strong>Dans l'onglet Produits, appuie sur « Commander » à côté de ce qui manque. La quantité est facultative.</div>`;return}
+  el.innerHTML=groups.map(([f,ps])=>{const open=isCOpen(f);return `<section class="cmd-sup" data-open="${open}" data-cmdsup="${esc(f)}" style="${supStyle(f)}">
+    <header role="button" tabindex="0" data-ctog="${esc(f)}" aria-expanded="${open}"><span class="ico" aria-hidden="true">${supIcon(f)}</span><h2>${esc(f)}</h2><span>${ps.length} article${ps.length>1?"s":""}</span><span class="chev" aria-hidden="true">${CHEV}</span></header>
+    <div class="cmd-body">${ps.map(p=>`<div class="cmd-item"><div class="name"><span>${esc(p.nom)}</span>${chip(p)}</div>${p.qte?`<span class="qpill">${fmt(p.qte)} ${esc(p.unite)}</span>`:`<span class="qpill none">quantité libre</span>`}<button class="del" data-t="${p.id}" aria-label="Retirer ${esc(p.nom)} de la commande">Retirer</button></div>`).join("")}
+    <div class="cmd-done"><button class="btn" type="button" data-done="${esc(f)}">Commande effectuée chez ${esc(f)}</button></div></div></section>`}).join("");
 }
+
+/* Petites fenêtres (confirmations, choix) : gros boutons, rien de caché */
+function ask(title,text,buttons){return new Promise(res=>{
+  const m=document.createElement("div");m.className="sheet";
+  m.innerHTML=`<div class="box" role="dialog" aria-label="${esc(title)}"><h3>${esc(title)}</h3>${text?`<div class="sub" style="margin-top:0">${text}</div>`:""}<div class="acts">${buttons.map((b,i)=>`<button class="btn ${b.cls||""}" type="button" data-i="${i}">${esc(b.label)}</button>`).join("")}</div></div>`;
+  document.body.appendChild(m);
+  const close=v=>{m.remove();res(v)};
+  m.addEventListener("click",e=>{const b=e.target.closest("[data-i]");if(b)close(buttons[+b.dataset.i].value);else if(e.target===m)close(null)});
+})}
 
 /* Actions */
 $("#q").addEventListener("input",e=>{S.q=e.target.value;$("#qClear").hidden=!S.q;render()});
 $("#q").addEventListener("keydown",e=>{if(e.key==="Escape"){e.target.value="";S.q="";$("#qClear").hidden=true;render()}});
 $("#qClear").onclick=()=>{$("#q").value="";S.q="";$("#qClear").hidden=true;render();$("#q").focus()};
-document.addEventListener("click",e=>{
+document.querySelectorAll("[data-sec]").forEach(b=>b.onclick=()=>{S.sec=b.dataset.sec;store.set("commande2b-sec",S.sec);render()});
+document.addEventListener("click",async e=>{
   if(e.target.id==="qAdd"){$("#nNom").value=S.q.trim();$("#addForm").scrollIntoView({behavior:"smooth",block:"center"});setTimeout(()=>$("#nFour").focus(),300);return}
   const pc=e.target.closest("[data-prix]");if(pc){openPrice(pc.dataset.prix);return}
+  const ed=e.target.closest("[data-edit]");if(ed){openEdit(ed.dataset.edit);return}
   const h=e.target.closest("[data-sup]");
   if(h){if(terms().length)return;const f=h.dataset.sup;setOpen(f,!isOpen(f));const sec=h.closest(".sup");sec.dataset.open=isOpen(f);h.setAttribute("aria-expanded",isOpen(f));return}
+  const ct=e.target.closest("[data-ctog]");
+  if(ct){const f=ct.dataset.ctog;setCOpen(f,!isCOpen(f));const sec=ct.closest(".cmd-sup");sec.dataset.open=isCOpen(f);ct.setAttribute("aria-expanded",isCOpen(f));return}
   const t=e.target.closest("[data-t]");
   if(t){const p=S.items.get(t.dataset.t);if(!p)return;
     p.acommander=!p.acommander;const champs={acommander:p.acommander};if(!p.acommander){p.qte=null;champs.qte=""}
     render();send("maj_produit",{p_id:p.id,p_champs:champs}).catch(()=>{});return}
   const d=e.target.closest("[data-del]");
   if(d){const p=S.items.get(d.dataset.del);if(!p)return;
-    if(!d.classList.contains("sure")){d.classList.add("sure");d.textContent="Confirmer";setTimeout(()=>{if(d.isConnected){d.classList.remove("sure");d.textContent="Supprimer"}},3500);return}
-    S.items.delete(p.id);render();send("suppr_produit",{p_id:p.id}).then(()=>toast(p.nom+" supprimé")).catch(()=>{});return}
+    const ok=await ask("Supprimer cet article ?",`<b>${esc(p.nom)}</b> chez ${esc(p.fournisseur)}. Son historique de prix sera aussi effacé.`,[{label:"Oui, supprimer",value:true,cls:"danger"},{label:"Annuler",value:false,cls:"soft"}]);
+    if(!ok)return;S.items.delete(p.id);render();send("suppr_produit",{p_id:p.id}).then(()=>toast(p.nom+" supprimé")).catch(()=>{});return}
   const ds=e.target.closest("[data-delsup]");
-  if(ds){const f=ds.dataset.delsup;S.sups=S.sups.filter(x=>x!==f);render();send("suppr_fournisseur",{p_nom:f}).then(()=>toast("Fournisseur supprimé")).catch(()=>{});return}
-  if(e.target.id==="doneBtn"){const b=e.target;
-    if(!b.classList.contains("confirm")){b.classList.add("confirm");b.textContent="Confirmer : vider la liste";setTimeout(()=>{if(b.isConnected){b.classList.remove("confirm");b.textContent="Commande effectuée"}},4000);return}
-    [...S.items.values()].forEach(p=>{if(p.acommander){p.acommander=false;p.qte=null}});render();
-    send("commande_effectuee").then(()=>toast("Commande effectuée, liste vidée")).catch(()=>{})}
+  if(ds){const f=ds.dataset.delsup;const ok=await ask("Supprimer ce fournisseur ?",esc(f),[{label:"Oui, supprimer",value:true,cls:"danger"},{label:"Annuler",value:false,cls:"soft"}]);if(!ok)return;
+    S.sups=S.sups.filter(x=>x!==f);render();send("suppr_fournisseur",{p_nom:f}).then(()=>toast("Fournisseur supprimé")).catch(()=>{});return}
+  const dn=e.target.closest("[data-done]");
+  if(dn){const f=dn.dataset.done;
+    if(!dn.classList.contains("confirm")){dn.classList.add("confirm");dn.textContent="Touche encore pour confirmer";setTimeout(()=>{if(dn.isConnected){dn.classList.remove("confirm");dn.textContent="Commande effectuée chez "+f}},4000);return}
+    const block=dn.closest(".cmd-sup");const sec=S.sec;S.busy=true;
+    await knife(block);
+    [...S.items.values()].forEach(p=>{if(p.fournisseur===f&&(p.section||"cuisine")===sec&&p.acommander){p.acommander=false;p.qte=null}});
+    S.busy=false;render();
+    send("commande_effectuee_fournisseur",{p_fournisseur:f,p_section:sec}).then(()=>toast("Commande "+f+" effectuée")).catch(()=>{})}
 });
+document.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches("[data-ctog]")){e.preventDefault();e.target.click()}});
 document.addEventListener("change",e=>{
   const q=e.target.closest("[data-q]");
   if(q){const p=S.items.get(q.dataset.q);if(!p)return;
@@ -442,17 +532,86 @@ document.addEventListener("change",e=>{
   if(u){const p=S.items.get(u.dataset.u);if(!p)return;p.unite=u.value;send("maj_produit",{p_id:p.id,p_champs:{unite:p.unite}}).catch(()=>{});if(p.acommander)renderCmd(supList())}
 });
 document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.matches(".qty")){e.preventDefault();e.target.blur()}});
-/* Fenêtre prix : saisie + historique */
+
+/* Coup de couteau : le bloc est tranché en diagonale, les deux morceaux s'écartent, la liste se resserre (< 1 s) */
+function knife(block){return new Promise(res=>{
+  if(!block||matchMedia("(prefers-reduced-motion: reduce)").matches){res();return}
+  const r=block.getBoundingClientRect(),W=r.width,H=r.height;
+  const wrap=document.createElement("div");wrap.className="cut";wrap.style.height=H+"px";
+  const a=block.cloneNode(true),b=block.cloneNode(true);
+  a.style.clipPath="polygon(0 0,100% 0,100% 100%)";b.style.clipPath="polygon(0 0,0 100%,100% 100%)";
+  const slash=document.createElementNS("http://www.w3.org/2000/svg","svg");slash.setAttribute("class","slash");slash.setAttribute("viewBox",`0 0 ${W} ${H}`);slash.setAttribute("preserveAspectRatio","none");
+  slash.innerHTML=`<line x1="0" y1="0" x2="${W}" y2="${H}" stroke="#1d1b17" stroke-opacity=".55" stroke-width="3" stroke-linecap="round" stroke-dasharray="${Math.hypot(W,H)}" stroke-dashoffset="${Math.hypot(W,H)}"/>`;
+  const k=document.createElement("div");k.className="knife";
+  k.innerHTML=`<svg viewBox="0 0 64 64"><path d="M6 6 L40 30 L34 36 Z" fill="#e8ecef" stroke="#8a9299" stroke-width="1.5" stroke-linejoin="round"/><path d="M6 6 L40 30" stroke="#fff" stroke-width="1.5"/><rect x="36" y="31" width="22" height="9" rx="3.5" transform="rotate(38 36 31)" fill="#5a3a22"/><circle cx="44" cy="40" r="1.4" fill="#d9b48a"/><circle cx="50" cy="44.6" r="1.4" fill="#d9b48a"/></svg>`;
+  block.replaceWith(wrap);wrap.append(b,a,slash,k);
+  const ang=Math.atan2(H,W)*180/Math.PI;
+  k.animate([{transform:`translate(-56px,-56px) rotate(${ang-38}deg)`},{transform:`translate(${W-8}px,${H-8}px) rotate(${ang-38}deg)`}],{duration:300,easing:"cubic-bezier(.4,0,.6,1)",fill:"forwards"});
+  slash.querySelector("line").animate([{strokeDashoffset:Math.hypot(W,H)},{strokeDashoffset:0}],{duration:300,easing:"cubic-bezier(.4,0,.6,1)",fill:"forwards"});
+  setTimeout(()=>{const dx=Math.sin(ang*Math.PI/180)*44,dy=Math.cos(ang*Math.PI/180)*44;
+    a.style.transform=`translate(${dx}px,${-dy}px) rotate(3deg)`;a.style.opacity="0";
+    b.style.transform=`translate(${-dx}px,${dy}px) rotate(-3deg)`;b.style.opacity="0";
+    slash.style.transition="opacity .2s";slash.style.opacity="0";k.style.transition="opacity .15s";k.style.opacity="0"},300);
+  setTimeout(()=>{wrap.style.transition="height .2s ease,margin .2s ease";wrap.style.height="0px";wrap.style.marginTop="0px"},600);
+  setTimeout(()=>{wrap.remove();res()},820);
+})}
+
+/* Ajout : nouveau fournisseur et nouveau produit (avec contrôle des doublons) */
+$("#addSup").onclick=()=>{
+  const n=$("#nSup").value.trim();if(!n)return;
+  if(allSups().some(f=>norm(f)===norm(n))){toast(n+" existe déjà");return}
+  S.sups=[...S.sups,n];S.supSec[n]=S.sec;setOpen(n,true);$("#nSup").value="";render();$("#nFour").value=n;
+  send("ajout_fournisseur",{p_nom:n,p_section:S.sec}).then(()=>toast("Fournisseur "+n+" créé")).catch(()=>{});
+};
+$("#nSup").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("#addSup").click()}});
+$("#addForm").addEventListener("submit",async e=>{
+  e.preventDefault();const nom=$("#nNom").value.trim();if(!nom)return;const f=$("#nFour").value;const sec=S.sec;
+  const dup=[...S.items.values()].find(p=>p.fournisseur===f&&norm(p.nom)===norm(nom));
+  if(dup){
+    const c=await ask("Cet article existe déjà",`<b>${esc(dup.nom)}</b> existe déjà chez <b>${esc(f)}</b>${(dup.section||"cuisine")!==sec?` (partie ${SECN[dup.section||"cuisine"]})`:""}.`,
+      [{label:"Garder les deux",value:"both",cls:"soft"},{label:"Remplacer l'article existant",value:"replace"},{label:"Annuler",value:null,cls:"soft"}]);
+    if(!c)return;
+    if(c==="replace"){dup.nom=nom;dup.section=sec;render();$("#nNom").value="";
+      send("maj_produit",{p_id:dup.id,p_champs:{nom,section:sec}}).then(()=>toast("Article remplacé")).catch(()=>{});return}
+  }
+  const tmp="tmp-"+Date.now();S.items.set(tmp,{id:tmp,nom,fournisseur:f,section:sec,acommander:false,qte:null,unite:"pièce",ordre:Date.now()});
+  setOpen(f,true);render();$("#nNom").value="";$("#nNom").focus();
+  send("ajout_produit",{p_nom:nom,p_fournisseur:f,p_section:sec}).then(()=>toast(nom+" ajouté chez "+f)).catch(()=>{});
+});
+
+/* Modifier un article : nom, fournisseur, Cuisine / Boissons */
+function openEdit(id){
+  const p=S.items.get(id);if(!p||String(id).startsWith("tmp-"))return;let sec=p.section||"cuisine";
+  const m=document.createElement("div");m.className="sheet";
+  m.innerHTML=`<div class="box" role="dialog" aria-label="Modifier ${esc(p.nom)}"><h3>Modifier l'article</h3>
+    <div class="field"><label for="eNom">Nom</label><input id="eNom" maxlength="80" value="${esc(p.nom)}"></div>
+    <div class="field"><label for="eFour">Fournisseur</label><select id="eFour">${allSups().map(f=>`<option${f===p.fournisseur?" selected":""}>${esc(f)}</option>`).join("")}</select></div>
+    <div class="field"><label>Partie</label><div class="seg"><button type="button" data-es="cuisine" aria-pressed="${sec==="cuisine"}">🍳 Cuisine</button><button type="button" data-es="boissons" aria-pressed="${sec==="boissons"}">🍷 Boissons</button></div></div>
+    <div class="acts"><button class="btn" type="button" id="eSave">Enregistrer</button><button class="btn soft" type="button" id="eCancel">Annuler</button></div></div>`;
+  document.body.appendChild(m);
+  m.querySelectorAll("[data-es]").forEach(b=>b.onclick=()=>{sec=b.dataset.es;m.querySelectorAll("[data-es]").forEach(x=>x.setAttribute("aria-pressed",x===b))});
+  const close=()=>m.remove();m.addEventListener("click",e=>{if(e.target===m)close()});$("#eCancel").onclick=close;
+  $("#eSave").onclick=()=>{
+    const nom=$("#eNom").value.trim(),f=$("#eFour").value;if(!nom){$("#eNom").focus();return}
+    const champs={};if(nom!==p.nom)champs.nom=nom;if(f!==p.fournisseur)champs.fournisseur=f;if(sec!==(p.section||"cuisine"))champs.section=sec;
+    close();if(!Object.keys(champs).length)return;
+    Object.assign(p,{nom,fournisseur:f,section:sec});render();
+    send("maj_produit",{p_id:p.id,p_champs:champs}).then(()=>toast(sec!==S.sec?`Déplacé dans ${SECN[sec]}`:"Article modifié")).catch(()=>{});
+  };
+}
+
+/* Fenêtre prix : saisie + promo + historique */
 async function openPrice(id){
   const p=S.items.get(id);if(!p||String(id).startsWith("tmp-"))return;
   const last=p.prix;const u0=last?last.u:(PUNITS.includes(p.unite)?p.unite:"kg");
   const m=document.createElement("div");m.className="sheet";
   m.innerHTML=`<div class="box" role="dialog" aria-label="Prix de ${esc(p.nom)}">
-    <h3>${esc(p.nom)}</h3><div class="sub">${esc(p.fournisseur)} · ${last?`dernier prix ${eur(+last.p)}/${esc(last.u)} le ${dshort(last.le)}`:"aucun prix noté"}</div>
+    <h3>${esc(p.nom)}</h3><div class="sub">${esc(p.fournisseur)} · ${last?`dernier prix ${eur(+last.p)}/${esc(last.u)} le ${dshort(last.le)}${last.promo?" (promo)":""}`:"aucun prix noté"}</div>
     <div class="prow"><div class="in"><input id="pv" inputmode="decimal" placeholder="0,00" autocomplete="off" aria-label="Prix"><span>€</span></div>
       <select id="pu" aria-label="Unité du prix">${PUNITS.map(u=>`<option value="${u}"${u===u0?" selected":""}>par ${u}</option>`).join("")}</select></div>
+    <label class="promo"><span>🏷️ En promo</span><span class="sw"><input type="checkbox" id="pp"><i></i></span></label>
     <button class="btn" id="psave" type="button">Enregistrer le prix du jour</button>
-    <div class="hist" id="ph"><h4><span>Historique</span><span></span></h4><div class="hrow"><span class="dt">Chargement…</span></div></div>
+    <div class="hist" id="ph"><h4><span>Historique des achats</span><span></span></h4><div class="hrow"><span class="dt">Chargement…</span></div></div>
     <button class="btn soft" id="pclose" type="button">Fermer</button></div>`;
   document.body.appendChild(m);
   const close=()=>{m.remove();refresh()};
@@ -461,38 +620,26 @@ async function openPrice(id){
   async function hist(){
     try{const h=await rpc("historique_prix",{p_id:id});
       const first=h[h.length-1],cur=h[0];const tot=h.length>1?varPct(cur,first):null;
-      $("#ph").innerHTML=`<h4><span>Historique</span><span>${tot!=null?`depuis le ${dshort(first.le)} ${varHTML(tot)}`:""}</span></h4>`+
-        (h.length?h.map((x,i)=>`<div class="hrow"><span class="dt">${dshort(x.le)}</span><b>${eur(+x.p)}/${esc(x.u)}</b>${varHTML(varPct(x,h[i+1]))}<button class="x" data-hx="${x.id}" aria-label="Supprimer ce prix">×</button></div>`).join("")
+      $("#ph").innerHTML=`<h4><span>Historique des achats</span><span>${tot!=null?`depuis le ${dshort(first.le)} ${varHTML(tot)}`:""}</span></h4>`+
+        (h.length?h.map((x,i)=>`<div class="hrow"><span class="dt">${dshort(x.le)}</span><b>${eur(+x.p)}/${esc(x.u)}</b>${x.promo?PROMO:""}${varHTML(varPct(x,h[i+1]))}<button class="x" data-hx="${x.id}" aria-label="Supprimer ce prix">×</button></div>`).join("")
         :`<div class="hrow"><span class="dt">Pas encore de prix. Note-le à chaque commande pour suivre les hausses.</span></div>`);
     }catch(e){$("#ph").innerHTML=`<div class="hrow"><span class="dt">Historique indisponible (connexion).</span></div>`}
   }
   $("#ph").addEventListener("click",async e=>{const b=e.target.closest("[data-hx]");if(!b)return;
-    if(!b.classList.contains("sure")){b.classList.add("sure");b.style.background="var(--danger)";b.style.color="#fff";setTimeout(()=>{if(b.isConnected){b.classList.remove("sure");b.style.background="";b.style.color=""}},3000);return}
+    const ok=await ask("Supprimer ce prix ?","Il sera retiré de l'historique.",[{label:"Oui, supprimer",value:true,cls:"danger"},{label:"Annuler",value:false,cls:"soft"}]);if(!ok)return;
     try{await rpc("suppr_prix",{p_prix_id:+b.dataset.hx});toast("Prix supprimé");hist()}catch{toast("Pas supprimé : vérifie la connexion")}});
   const save=async()=>{
     const v=parseFloat(String($("#pv").value).replace(/\s|€/g,"").replace(",","."));
     if(!v||v<=0||v>100000){toast("Entre un prix, ex. 2,40");$("#pv").focus();return}
-    $("#psave").disabled=true;
-    try{await rpc("ajout_prix",{p_id:id,p_prix:v,p_unite:$("#pu").value});toast(`Prix noté : ${eur(v)}/${$("#pu").value}`);m.querySelector(".sub").textContent=`${p.fournisseur} · dernier prix ${eur(v)}/${$("#pu").value} aujourd'hui`;$("#pv").value="";await hist()}
+    const promo=$("#pp").checked;$("#psave").disabled=true;
+    try{await rpc("ajout_prix",{p_id:id,p_prix:v,p_unite:$("#pu").value,p_promo:promo});toast(`Prix noté : ${eur(v)}/${$("#pu").value}${promo?" (promo)":""}`);
+      m.querySelector(".sub").textContent=`${p.fournisseur} · dernier prix ${eur(v)}/${$("#pu").value} aujourd'hui${promo?" (promo)":""}`;$("#pv").value="";$("#pp").checked=false;await hist()}
     catch{toast("Pas enregistré : vérifie la connexion")}finally{$("#psave").disabled=false}
   };
   $("#psave").onclick=save;$("#pv").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();save()}});
   hist();
 }
-$("#editToggle").onclick=()=>{S.edit=!S.edit;render()};
-$("#addSup").onclick=()=>{
-  const n=$("#nSup").value.trim();if(!n)return;
-  if(supList().some(f=>f.toLowerCase()===n.toLowerCase())){toast(n+" existe déjà");return}
-  S.sups=[...S.sups,n];setOpen(n,true);$("#nSup").value="";render();$("#nFour").value=n;
-  send("ajout_fournisseur",{p_nom:n}).then(()=>toast("Fournisseur "+n+" créé")).catch(()=>{});
-};
-$("#nSup").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("#addSup").click()}});
-$("#addForm").addEventListener("submit",e=>{
-  e.preventDefault();const nom=$("#nNom").value.trim();if(!nom)return;const f=$("#nFour").value;
-  const tmp="tmp-"+Date.now();S.items.set(tmp,{id:tmp,nom,fournisseur:f,acommander:false,qte:null,unite:"pièce",ordre:Date.now()});
-  setOpen(f,true);render();$("#nNom").value="";$("#nNom").focus();
-  send("ajout_produit",{p_nom:nom,p_fournisseur:f}).then(()=>toast(nom+" ajouté chez "+f)).catch(()=>{});
-});
+
 $("#invite").onclick=async()=>{
   const link=location.origin+location.pathname+"#code="+encodeURIComponent(S.code);
   const text="Appli Commande du Double B : "+link;
