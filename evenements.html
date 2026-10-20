@@ -375,6 +375,7 @@ function openForm(ev,day){
     <div class="field"><label for="fNotes">Notes <em>(menu choisi, allergies, déco…)</em></label><textarea id="fNotes" maxlength="2000">${esc(e.notes||"")}</textarea></div>
     <div class="acts">
       <button class="btn" type="button" id="fSave">${isNew?"Ajouter au calendrier":"Enregistrer"}</button>
+      ${isNew?"":`<button class="btn soft" type="button" id="fDevis">📄 Faire le devis</button>`}
       ${isNew?"":`<button class="btn danger" type="button" id="fDel">Supprimer l'événement</button>`}
       <button class="btn soft" type="button" id="fCancel">Annuler</button>
     </div></div>`;
@@ -408,6 +409,12 @@ function openForm(ev,day){
       const d=parse(jour);S.sel=jour;S.y=d.getFullYear();S.m=d.getMonth();await load();
       toast(isNew?"Ajouté au calendrier ✓":"Fiche enregistrée ✓")}
     catch(err){if(lost(err))return;toast("Pas enregistré : vérifie la connexion");$("#fSave").disabled=false}
+  };
+  if(!isNew)$("#fDevis").onclick=()=>{
+    const t=type==="traiteur"?"Prestation traiteur":"Privatisation de la salle";
+    const adr=[$("#fTel").value.trim(),type==="traiteur"&&$("#fLieu").value.trim()?"Lieu : "+$("#fLieu").value.trim():""].filter(Boolean).join("\n");
+    try{localStorage.setItem("devis2b-prefill",JSON.stringify({client:$("#fClient").value.trim(),adr,objet:t,jour:$("#fJour").value,pers:$("#fPers").value.trim()}))}catch{}
+    location.href="menus.html#devis";
   };
   if(!isNew)$("#fDel").onclick=async()=>{
     const ok=await ask("Supprimer cet événement ?",`<b>${esc(e.client)}</b> le ${esc(longDay(parse(e.jour)))}. Si c'est juste annulé, choisis plutôt le statut « Annulé ».`,[{label:"Oui, supprimer",value:true,cls:"danger"},{label:"Annuler",value:false,cls:"soft"}]);

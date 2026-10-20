@@ -68,7 +68,16 @@ header.top{display:flex;align-items:center;gap:14px}
 .kpi{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
 .kpi small{display:block;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .kpi b{display:block;font-family:var(--display);font-size:24px;font-weight:800;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.kpi em{display:block;font-style:normal;font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}
+.kpi em{display:block;font-style:normal;font-size:12px;color:var(--muted);font-weight:600;margin-top:3px;line-height:1.5}
+.cmpv{font-weight:800;color:var(--fg)} .cmpv.up{color:var(--go)} .cmpv.down{color:var(--danger)}
+.chartbtn{margin-top:10px;width:100%;height:46px;border-radius:14px;border:1px solid var(--line);background:var(--surface);font-weight:700;font-size:15px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:8px}
+.chartbtn .cv{transition:transform .2s}.chartbtn[aria-expanded="true"] .cv{transform:rotate(180deg)}
+.chartbox{margin-top:8px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px 10px 6px}
+.chartbox svg{width:100%;display:block;overflow:visible}
+.chartbox .bar{fill:var(--midi)} .chartbox .bar.sel{fill:var(--fg)}
+.chartbox .grid{stroke:var(--line);stroke-dasharray:3 3} .chartbox .base{stroke:var(--muted);stroke-width:1}
+.chartbox text{font-size:11px;fill:var(--muted);font-family:var(--body)} .chartbox .mx{font-weight:700}
+.tip{font-size:14px;color:var(--muted);min-height:20px;margin:0 2px 6px}.tip b{color:var(--fg)}.tip span{font-size:13px}
 .daytot small{font-weight:500}
 
 /* Saisie du jour */
@@ -177,6 +186,8 @@ tfoot td.d{background:var(--sunken)}
   </div>
 
   <div class="kpis" id="kpis"></div>
+  <button class="chartbtn" id="chartBtn" type="button" aria-expanded="false">📈 Graphique du CA jour par jour <span class="cv">▾</span></button>
+  <div class="chartbox" id="chartBox" hidden><div class="tip" id="tip">Touche une barre pour voir le détail du jour.</div><div id="chart"></div></div>
 
   <section class="day" aria-label="Saisie du jour">
     <div class="dayhead">
@@ -266,6 +277,18 @@ const sp=(r,svc)=>add(val(r,"clients_"+svc+"_sp"),val(r,"clients_"+svc));
 const emp=(r,svc)=>val(r,"clients_"+svc+"_emp");
 function totals(r){const cm=add(sp(r,"midi"),emp(r,"midi")),cs=add(sp(r,"soir"),emp(r,"soir"));
   return {cm,cs,clients:add(cm,cs),sp:add(sp(r,"midi"),sp(r,"soir")),emp:add(emp(r,"midi"),emp(r,"soir")),ca:add(val(r,"ca_midi"),val(r,"ca_soir")),burgers:add(val(r,"burgers_midi"),val(r,"burgers_soir"))}}
+/* Comparaison : même période (jusqu'au même jour si le mois est en cours) */
+function periodCA(data,y,m,upto){let ca=null,cl=null;for(let d=1;d<=Math.min(upto,daysIn(y,m));d++){const r=data[key(y,m,d)];if(!r)continue;const t=totals(r);ca=add(ca,t.ca);cl=add(cl,t.clients)}return {ca,cl}}
+function compare(){
+  const cur=S.y===now.getFullYear()&&S.m===now.getMonth();const upto=cur?now.getDate():daysIn(S.y,S.m);
+  const pm=new Date(S.y,S.m-1,1),ly=new Date(S.y-1,S.m,1);
+  const a=periodCA(S.data,S.y,S.m,upto),b=periodCA(S.prev||{},pm.getFullYear(),pm.getMonth(),upto),c=periodCA(S.ly||{},ly.getFullYear(),ly.getMonth(),upto);
+  const pct=(x,y)=>x==null||!y?null:Math.round((x-y)/y*100);
+  const tag=(v,lbl)=>v==null?"":`<span class="cmpv ${v>0?"up":v<0?"down":""}">${v>0?"▲ +":v<0?"▼ ":"= "}${Math.abs(v)} %</span> vs ${lbl}`;
+  const ml=d=>d.toLocaleDateString("fr-FR",{month:"short"}).replace(".","");
+  return {ca:[tag(pct(a.ca,b.ca),ml(pm)),tag(pct(a.ca,c.ca),ml(ly)+" "+ly.getFullYear())].filter(Boolean).join("<br>"),
+          cl:[tag(pct(a.cl,b.cl),ml(pm))].filter(Boolean).join("")};
+}
 function monthSums(){
   const s={midi_sp:null,midi_emp:null,soir_sp:null,soir_emp:null,ca_midi:null,ca_soir:null,burgers_midi:null,burgers_soir:null,refuses:null,clients:null,sp:null,emp:null,ca:null,burgers:null};
   for(let d=1;d<=daysIn(S.y,S.m);d++){const r=S.data[key(S.y,S.m,d)];if(!r)continue;const t=totals(r);
@@ -281,18 +304,26 @@ const DIRTY=new Map();   // "jour|champ" → valeur saisie, en attente d'envoi
 async function load(){
   const mk=key(S.y,S.m,1);
   try{
-    const d=await rpc("suivi_mois",{p_mois:mk});if(mk!==key(S.y,S.m,1))return;
-    S.data=d||{};
+    const pm=new Date(S.y,S.m-1,1),ly=new Date(S.y-1,S.m,1);
+    const [d,dp,dl]=await Promise.all([rpc("suivi_mois",{p_mois:mk}),rpc("suivi_mois",{p_mois:key(pm.getFullYear(),pm.getMonth(),1)}).catch(()=>({})),rpc("suivi_mois",{p_mois:key(ly.getFullYear(),ly.getMonth(),1)}).catch(()=>({}))]);
+    if(mk!==key(S.y,S.m,1))return;
+    S.data=d||{};S.prev=dp||{};S.ly=dl||{};
     DIRTY.forEach((v,id)=>{const [dk,k]=id.split("|");if(v!=="…"&&dk.slice(0,7)===mk.slice(0,7)){S.data[dk]={...(S.data[dk]||{})};if(v==null)delete S.data[dk][k];else S.data[dk][k]=v}});
     S.loaded=mk;if(!S.pending)setSync("À jour","ok");render();
   }catch(e){if(lost(e))return;setSync("Hors ligne","err");render()}
 }
+/* Hors connexion : les chiffres non envoyés sont gardés sur le téléphone et renvoyés au retour du réseau */
+const FK="chiffres2b-file";
+const fileGet=()=>{try{return JSON.parse(localStorage.getItem(FK)||"{}")}catch{return {}}};
+const fileSet=o=>{try{Object.keys(o).length?localStorage.setItem(FK,JSON.stringify(o)):localStorage.removeItem(FK)}catch{}};
+function retryFile(){const f=fileGet();Object.entries(f).forEach(([id,v])=>{const [dk,k]=id.split("|");if(!DIRTY.has(id))save(dk,k,v)})}
+addEventListener("online",retryFile);
 async function save(dk,k,v){
-  const id=dk+"|"+k;DIRTY.set(id,v);
+  const id=dk+"|"+k;DIRTY.set(id,v);{const f=fileGet();f[id]=v;fileSet(f)}
   S.data[dk]={...(S.data[dk]||{})};if(v==null)delete S.data[dk][k];else S.data[dk][k]=v;
   renderTotals();S.pending++;setSync("Enregistrement…");
-  try{await rpc("suivi_maj",{p_jour:dk,p_champs:{[k]:v}});if(DIRTY.get(id)===v)DIRTY.delete(id);S.pending--;if(!S.pending)setSync("Enregistré","ok")}
-  catch(e){S.pending--;if(lost(e))return;setSync("Pas enregistré, nouvel essai…","err");setTimeout(()=>{if(DIRTY.has(id))save(dk,k,DIRTY.get(id))},5000)}
+  try{await rpc("suivi_maj",{p_jour:dk,p_champs:{[k]:v}});if(DIRTY.get(id)===v){DIRTY.delete(id);const f=fileGet();if(f[id]===v){delete f[id];fileSet(f)}}S.pending--;if(!S.pending)setSync("Enregistré","ok")}
+  catch(e){S.pending--;if(lost(e))return;setSync("Pas de réseau : gardé sur le téléphone","err");setTimeout(()=>{if(DIRTY.has(id))save(dk,k,DIRTY.get(id))},8000)}
 }
 setInterval(()=>{if(document.visibilityState==="visible")load()},15000);
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")load()});
@@ -310,9 +341,10 @@ function renderTotals(){
   const row=S.data[key(S.y,S.m,S.d)]||{};const t=totals(row);
   $("#dayTot").innerHTML=`<span>Clients <b class="num">${t.clients==null?"–":int(t.clients)}</b>${t.emp?` <small>(dont ${int(t.emp)} à emporter)</small>`:""}</span><span>CA de la journée <b class="num">${t.ca==null?"–":eur(t.ca)}</b></span><span>Burgers du mois <b class="num">${t.burgers==null?"–":int(t.burgers)}</b></span>`;
   const s=monthSums();
-  const kp=[["CA du mois",s.ca==null?"–":eur(s.ca),""],["Clients du mois",s.clients==null?"–":int(s.clients),s.emp?`dont ${int(s.emp)} à emporter`:""],["Ticket moyen",s.ca&&s.clients?eur(Math.round(s.ca/s.clients*100)/100):"–",""],["Burgers du mois",s.burgers==null?"–":int(s.burgers),""]];
+  const cp=compare();
+  const kp=[["CA du mois",s.ca==null?"–":eur(s.ca),cp.ca],["Clients du mois",s.clients==null?"–":int(s.clients),[s.emp?`dont ${int(s.emp)} à emporter`:"",cp.cl].filter(Boolean).join("<br>")],["Ticket moyen",s.ca&&s.clients?eur(Math.round(s.ca/s.clients*100)/100):"–",""],["Burgers du mois",s.burgers==null?"–":int(s.burgers),""]];
   $("#kpis").innerHTML=kp.map(([a,b,c])=>`<div class="kpi"><small>${a}</small><b class="num">${b}</b>${c?`<em>${c}</em>`:""}</div>`).join("");
-  $("#tbl").innerHTML=tableHTML(true);$("#cmp").innerHTML=compactHTML();
+  $("#tbl").innerHTML=tableHTML(true);$("#cmp").innerHTML=compactHTML();if(!$("#chartBox").hidden)drawChart();
 }
 function render(){
   $("#mName").textContent=monthName(S.y,S.m);
@@ -358,6 +390,27 @@ function compactHTML(){
     <thead><tr><th class="d">Jour</th><th class="gm">Midi</th><th class="gs">Soir</th><th>Journée</th></tr></thead><tbody>${body}</tbody>
     <tfoot><tr><td class="d">Total</td>${svc(s.ca_midi,s.midi_sp,s.midi_emp,s.burgers_midi)}${svc(s.ca_soir,s.soir_sp,s.soir_emp,s.burgers_soir)}${dayCell(s,s.refuses)}</tr></tfoot>`;
 }
+
+/* Graphique : CA total de chaque jour du mois (une seule série), détail au toucher */
+function drawChart(){
+  const n=daysIn(S.y,S.m),W=Math.max(280,$("#chart").clientWidth||340),H=150,top=12,bot=22,left=4,bw=(W-left*2)/n;
+  const vals=[];for(let d=1;d<=n;d++){const t=totals(S.data[key(S.y,S.m,d)]||{});vals.push(t.ca)}
+  const max=Math.max(...vals.map(v=>v||0));const sc=v=>max?(H-top-bot)*v/max:0;
+  let bars="",hits="",lbl="";
+  vals.forEach((v,i)=>{const x=left+i*bw,w=Math.max(2,bw-3),h=sc(v||0),y=H-bot-h;
+    if(v){const r=Math.min(4,w/2,h);bars+=`<path d="M${x} ${H-bot}V${y+r}Q${x} ${y} ${x+r} ${y}H${x+w-r}Q${x+w} ${y} ${x+w} ${y+r}V${H-bot}Z" class="bar${i+1===S.d?" sel":""}"/>`}
+    hits+=`<rect x="${x}" y="0" width="${bw}" height="${H}" fill="transparent" data-cd="${i+1}"/>`;
+    if((i+1)%5===0||i===0)lbl+=`<text x="${x+w/2}" y="${H-6}" text-anchor="middle">${i+1}</text>`});
+  $("#chart").innerHTML=max?`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="CA jour par jour, maximum ${eur(max)}">
+    <line x1="0" y1="${top}" x2="${W}" y2="${top}" class="grid"/><text x="${W-2}" y="${top-3}" text-anchor="end" class="mx">${e0(max)}</text>
+    <line x1="0" y1="${H-bot}" x2="${W}" y2="${H-bot}" class="base"/>${bars}${lbl}${hits}</svg>`:`<div class="tip">Pas encore de CA saisi ce mois-ci.</div>`;
+}
+addEventListener("resize",()=>{if(!$("#chartBox").hidden)drawChart()});
+$("#chartBtn").onclick=()=>{const b=$("#chartBox");b.hidden=!b.hidden;$("#chartBtn").setAttribute("aria-expanded",!b.hidden);try{localStorage.setItem("chiffres2b-graph",b.hidden?"0":"1")}catch{}if(!b.hidden)drawChart()};
+try{if(localStorage.getItem("chiffres2b-graph")==="1"){$("#chartBox").hidden=false;$("#chartBtn").setAttribute("aria-expanded","true")}}catch{}
+$("#chart").addEventListener("click",e=>{const r=e.target.closest("[data-cd]");if(!r)return;const d=+r.dataset.cd;const row=S.data[key(S.y,S.m,d)]||{};const t=totals(row);
+  $("#tip").innerHTML=`<b>${esc(cap(wd(S.y,S.m,d)))} ${d}</b> : ${t.ca==null?"pas de chiffre":eur(t.ca)}${val(row,"ca_midi")!=null||val(row,"ca_soir")!=null?` <span>(midi ${eur(val(row,"ca_midi")||0)} · soir ${eur(val(row,"ca_soir")||0)})</span>`:""}`;
+  $("#chart").querySelectorAll(".bar").forEach(b=>b.classList.remove("sel"))});
 
 /* ---------- Saisie : enregistrée pendant qu'on tape (après une petite pause) et en quittant la case ---------- */
 const timers={};
@@ -439,7 +492,7 @@ $("#csv").onclick=()=>{
   offer(new Blob(["﻿"+lines.join("\r\n")],{type:"text/csv"}),fileBase()+".csv");
 };
 
-render();load();
+render();load();retryFile();
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
 <script src="profil.js"></script>

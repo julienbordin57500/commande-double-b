@@ -53,7 +53,7 @@ header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .titles{flex:1;min-width:160px}
 .titles h1{font-family:var(--display);font-size:30px;font-weight:800;letter-spacing:-.5px;line-height:1;margin:0}
 .titles p{margin:6px 0 0;font-size:15px;color:var(--muted);font-weight:500}
-.tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:16px;margin-top:14px;max-width:520px}
+.tabs{display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:4px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:16px;margin-top:14px;max-width:560px}
 .tabs button{height:46px;padding:0 14px;border:0;border-radius:12px;background:transparent;font-weight:700;color:var(--muted)}
 .tabs button[aria-selected="true"]{background:var(--fg);color:var(--bg)}
 
@@ -133,6 +133,48 @@ header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .forf .li::before{content:"•";position:absolute;left:-22px}
 .forf .acc{font-size:17.5px;line-height:26px!important}
 .forf .fine{left:0;right:0;top:990px;font-size:16.5px}
+.dl{display:flex;flex-direction:column;gap:8px}
+.dline{border:1px solid var(--line);border-radius:14px;background:var(--sunken);padding:8px;display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:6px;align-items:end}
+.dline .des{grid-column:1/-1}
+.dline input,.dline select{height:44px;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:0 8px;width:100%;min-width:0;font-size:15px}
+.dline label{display:flex;flex-direction:column;gap:3px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;min-width:0}
+.dline .x{width:44px;height:44px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font-size:20px}
+.qadd{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.qadd .btn{height:auto;min-height:46px;font-size:14px;padding:6px 8px;line-height:1.2}
+/* ===== Page devis (A4) : sobre et classique, logo et couleurs Double B ===== */
+.page.devis{background:#fff;color:#1d1b17;font-family:"Figtree",system-ui,sans-serif;--fs:1}
+.page.devis .content{position:absolute;top:52px;left:56px;right:56px;bottom:40px;display:flex;flex-direction:column;align-items:stretch;text-align:left;gap:calc(14px * var(--fs))}
+.devis .dh{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}
+.devis .dh img{width:190px;height:auto}
+.devis .dt{text-align:right}
+.devis .dt h2{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:40px;font-weight:800;letter-spacing:.04em;margin:0;line-height:1}
+.devis .dt div{font-size:13px;color:#6f695d;margin-top:6px;line-height:1.5}
+.devis .dt b{color:#1d1b17}
+.devis .band{height:4px;background:#f2a516;border-radius:2px}
+.devis .parties{display:grid;grid-template-columns:1fr 1fr;gap:18px;font-size:12.5px;line-height:1.5}
+.devis .parties .box2{border:1px solid #e6e1d5;border-radius:10px;padding:10px 12px}
+.devis .parties h4{margin:0 0 4px;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:#9a6a00}
+.devis .parties .nm{font-weight:800;font-size:14px}
+.devis .obj{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:13px;background:#fdf6e6;border-radius:10px;padding:10px 12px}
+.devis .obj span b{font-weight:800}
+.devis table{width:100%;border-collapse:collapse;font-size:calc(13px * var(--fs))}
+.devis th{background:#1d1b17;color:#fff;font-size:11px;text-transform:uppercase;letter-spacing:.06em;padding:8px 10px;text-align:right}
+.devis th:first-child{text-align:left;border-radius:8px 0 0 0} .devis th:last-child{border-radius:0 8px 0 0}
+.devis td{padding:calc(8px * var(--fs)) 10px;border-bottom:1px solid #eee7d8;text-align:right;font-variant-numeric:tabular-nums;vertical-align:top}
+.devis td:first-child{text-align:left}
+.devis td.vide{color:#b7ae9c;text-align:center;font-style:italic}
+.devis .tot{display:flex;justify-content:flex-end}
+.devis .tot table{width:300px}
+.devis .tot td{border:0;padding:4px 10px;font-size:13px;white-space:nowrap}
+.devis .tot td:first-child{white-space:normal}
+.devis .tot table{width:340px}
+.devis .tot tr.big td{background:#f2a516;color:#2a1d00;font-weight:800;font-size:16px;padding:9px 10px}
+.devis .tot tr.big td:first-child{border-radius:8px 0 0 8px} .devis .tot tr.big td:last-child{border-radius:0 8px 8px 0}
+.devis .tot tr.ac td{font-weight:700;padding-top:8px}
+.devis .cond{text-align:left;font-size:11.5px;color:#4a453d;line-height:1.55;white-space:pre-line}
+.devis .sign{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:auto}
+.devis .sign div{border:1px dashed #cfc6b3;border-radius:10px;height:92px;padding:8px 10px;font-size:11.5px;color:#6f695d}
+.devis .foot{font-size:9.5px;color:#8a8273;text-align:center;line-height:1.5;border-top:1px solid #eee7d8;padding-top:8px}
 .modal{position:fixed;inset:0;background:rgba(10,8,4,.6);display:grid;place-items:center;z-index:20;padding:20px}
 .modal .box{background:var(--surface);border-radius:18px;padding:16px;max-width:520px;width:100%;max-height:90vh;overflow:auto;display:flex;flex-direction:column;gap:10px}
 .modal img{width:100%;height:auto;border-radius:8px;border:1px solid var(--line)}
@@ -150,6 +192,7 @@ header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
   <div class="tabs" role="tablist">
     <button role="tab" data-tab="menu" aria-selected="true">Menu</button>
     <button role="tab" data-tab="forfaits" aria-selected="false">Forfaits apéritifs</button>
+    <button role="tab" data-tab="devis" aria-selected="false">Devis</button>
   </div>
 
   <div class="grid">
@@ -198,6 +241,40 @@ Monaco</textarea></div>
         <button class="btn soft" id="fpng" type="button">Télécharger en image</button>
       </div>
       <button class="btn soft" id="freset" type="button">Revenir au modèle d'origine</button>
+    </section>
+
+    <!-- Saisie : Devis -->
+    <section class="panel" id="panel-devis" hidden>
+      <h2>Devis</h2>
+      <div class="row2">
+        <div class="field"><label for="dNum">N° de devis</label><input id="dNum" maxlength="20"></div>
+        <div class="field"><label for="dDate">Date du devis</label><input id="dDate" type="date"></div>
+      </div>
+      <div class="field"><label for="dClient">Client</label><input id="dClient" maxlength="80" placeholder="ex. Mme Claire Dupont"></div>
+      <div class="field"><label for="dAdr">Adresse / contact du client <span style="text-transform:none;font-weight:600">(facultatif)</span></label><textarea id="dAdr" style="min-height:70px" placeholder="ex. 3 rue des Roses, 57730 Folschviller&#10;06 12 34 56 78"></textarea></div>
+      <div class="field"><label for="dObjet">Objet</label><input id="dObjet" maxlength="80" placeholder="ex. Privatisation – anniversaire"></div>
+      <div class="row2">
+        <div class="field"><label for="dJour">Date de l'événement</label><input id="dJour" type="date"></div>
+        <div class="field"><label for="dPers">Nombre de personnes</label><input id="dPers" inputmode="numeric" placeholder="ex. 40"></div>
+      </div>
+      <span class="lbl">Lignes du devis</span>
+      <div id="dLignes" class="dl"></div>
+      <div class="qadd">
+        <button class="btn soft" type="button" data-qa="menu">＋ Menu</button>
+        <button class="btn soft" type="button" data-qa="f1">＋ Forfait apéritif classique</button>
+        <button class="btn soft" type="button" data-qa="f2">＋ Forfait apéritif réception</button>
+        <button class="btn soft" type="button" data-qa="libre">＋ Ligne libre</button>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="dAcompte">Acompte demandé</label><div class="euro"><input id="dAcompte" inputmode="numeric" value="30"><span>%</span></div></div>
+        <div class="field"><label for="dValid">Validité</label><div class="euro"><input id="dValid" inputmode="numeric" value="30"><span style="font-size:12px">jours</span></div></div>
+      </div>
+      <div class="field"><label for="dCond">Conditions</label><textarea id="dCond" style="min-height:90px"></textarea></div>
+      <div class="btns">
+        <button class="btn" id="dpdf" type="button">Télécharger en PDF</button>
+        <button class="btn soft" id="dpng" type="button">Télécharger en image</button>
+      </div>
+      <button class="btn soft" id="dNew" type="button">Nouveau devis (tout vider)</button>
     </section>
 
     <!-- Aperçu -->
@@ -474,7 +551,7 @@ function forfaitPage(f){
 /* ---------- Affichage, mise à l'échelle et ajustement automatique ---------- */
 let TAB="menu";
 function show(){
-  $("#scaler").innerHTML=TAB==="menu"?menuPage(MENU):forfaitPage(readF());
+  $("#scaler").innerHTML=TAB==="menu"?menuPage(MENU):TAB==="devis"?devisPage(DEVIS):forfaitPage(readF());
   if(TAB==="menu")secsUI();
   fit();scale();
 }
@@ -519,6 +596,73 @@ const savedF=store.get("menus2b-forfaits");if(savedF){$("#p1").value=savedF.p1;$
 ["p1","p2","drinks"].forEach(id=>$("#"+id).addEventListener("input",()=>{store.set("menus2b-forfaits",readF());if(TAB==="forfaits")show()}));
 $("#freset").onclick=()=>{$("#p1").value=F_DEFAULT.p1;$("#p2").value=F_DEFAULT.p2;$("#drinks").value=F_DEFAULT.drinks;store.set("menus2b-forfaits",readF());show();toast("Modèle d'origine rétabli")};
 
+/* ---------- Devis ---------- */
+const COND_DEF="Devis valable {v} jours à compter de sa date.\nLa réservation est confirmée à réception du devis signé et d'un acompte de {a} % du montant TTC.\nLe nombre définitif de convives est à confirmer au plus tard 7 jours avant l'événement ; il servira de base à la facturation.\nLe solde est à régler le jour de l'événement.";
+const todayISO=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
+function nextNum(){let n=1;try{n=(+localStorage.getItem("devis2b-compteur")||0)+1;localStorage.setItem("devis2b-compteur",n)}catch{}return `${new Date().getFullYear()}-${String(n).padStart(3,"0")}`}
+function blankDevis(){return {num:nextNum(),date:todayISO(),client:"",adr:"",objet:"",jour:"",pers:"",lignes:[],acompte:30,valid:30,cond:""}}
+let DEVIS=store.get("menus2b-devis")||blankDevis();
+const n2=v=>{const x=parseFloat(String(v??"").replace(/\s|€/g,"").replace(",","."));return isNaN(x)?0:x};
+const eurD=v=>new Intl.NumberFormat("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2}).format(v)+" €";
+const dateFR=s=>{if(!s)return "";const [y,m,d]=s.split("-");return `${d}/${m}/${y}`};
+function devisTotals(){let ttc=0;const tva={10:0,20:0,5.5:0};
+  DEVIS.lignes.forEach(l=>{const t=n2(l.q)*n2(l.pu);ttc+=t;const r=+l.tva||10;tva[r]=(tva[r]||0)+(t-t/(1+r/100))});
+  const tv=Object.values(tva).reduce((a,b)=>a+b,0);return {ttc,ht:ttc-tv,tva}}
+function devisPage(dv){
+  const t=devisTotals();const ac=t.ttc*n2(dv.acompte)/100;
+  const cond=(dv.cond||COND_DEF).replace("{v}",n2(dv.valid)||30).replace("{a}",n2(dv.acompte)||30);
+  const rows=dv.lignes.length?dv.lignes.map(l=>`<tr><td>${esc(l.d||"—")}</td><td>${esc(String(l.q||""))}</td><td>${n2(l.pu)?eurD(n2(l.pu)):""}</td><td>${esc(String(l.tva||10)).replace(".",",")} %</td><td><b>${eurD(n2(l.q)*n2(l.pu))}</b></td></tr>`).join("")
+    :`<tr><td colspan="5" class="vide">Ajoute des lignes : menu, forfait apéritif, boissons…</td></tr>`;
+  const tvaRows=Object.entries(t.tva).filter(([,v])=>v>0.004).map(([r,v])=>`<tr><td>TVA ${String(r).replace(".",",")} %</td><td>${eurD(v)}</td></tr>`).join("");
+  return `<div class="page devis" id="thePage"><div class="content">
+    <div class="dh"><img src="logo-hd.png" alt="Double B"><div class="dt"><h2>DEVIS</h2><div>N° <b>${esc(dv.num)}</b><br>Date : <b>${esc(dateFR(dv.date))}</b><br>Valable ${esc(String(n2(dv.valid)||30))} jours</div></div></div>
+    <div class="band"></div>
+    <div class="parties">
+      <div class="box2"><h4>Restaurant</h4><div class="nm">Double B</div>59 avenue Foch, 57730 Folschviller<br>06 13 10 05 03 · doubleb57500@outlook.fr</div>
+      <div class="box2"><h4>Client</h4><div class="nm">${esc(dv.client||"—")}</div>${esc(dv.adr||"").replace(/\n/g,"<br>")}</div>
+    </div>
+    <div class="obj">${dv.objet?`<span>Objet : <b>${esc(dv.objet)}</b></span>`:""}${dv.jour?`<span>Date de l'événement : <b>${esc(dateFR(dv.jour))}</b></span>`:""}${dv.pers?`<span>Nombre de personnes : <b>${esc(String(dv.pers))}</b></span>`:""}${!dv.objet&&!dv.jour&&!dv.pers?"<span>Prestation Double B</span>":""}</div>
+    <table><thead><tr><th>Désignation</th><th>Qté</th><th>Prix unit. TTC</th><th>TVA</th><th>Total TTC</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="tot"><table><tbody><tr><td>Total HT</td><td>${eurD(t.ht)}</td></tr>${tvaRows}<tr class="big"><td>Total TTC</td><td>${eurD(t.ttc)}</td></tr>${n2(dv.acompte)?`<tr class="ac"><td>Acompte à la signature (${String(n2(dv.acompte)).replace(".",",")} %)</td><td>${eurD(ac)}</td></tr>`:""}</tbody></table></div>
+    <div class="cond">${esc(cond)}</div>
+    <div class="sign"><div>Bon pour accord<br>Date et signature du client :</div><div>Pour le Double B :</div></div>
+    <div class="foot">DOUBLE B — SAS au capital de 10 000 € — Siège : 12 rue des Loriots, 57500 Saint-Avold — RCS Sarreguemines 915 267 595<br>SIRET 915 267 595 00022 — TVA intracommunautaire FR32915267595</div>
+  </div></div>`;
+}
+function saveDevis(){store.set("menus2b-devis",DEVIS)}
+function linesUI(){
+  $("#dLignes").innerHTML=DEVIS.lignes.map((l,i)=>`<div class="dline" data-li="${i}">
+    <label class="des">Désignation<input data-k="d" value="${esc(l.d||"")}" maxlength="120"></label>
+    <label>Qté<input data-k="q" inputmode="decimal" value="${esc(String(l.q??""))}"></label>
+    <label>Prix unit. TTC<input data-k="pu" inputmode="decimal" value="${esc(String(l.pu??"").replace(".",","))}"></label>
+    <label>TVA<select data-k="tva"><option value="10"${+l.tva===10?" selected":""}>10 %</option><option value="20"${+l.tva===20?" selected":""}>20 %</option><option value="5.5"${+l.tva===5.5?" selected":""}>5,5 %</option></select></label>
+    <button class="x" type="button" data-lx="${i}" aria-label="Supprimer la ligne">×</button></div>`).join("")||`<p class="hint">Aucune ligne pour l'instant : utilise les boutons ci-dessous.</p>`;
+}
+function fillDevisForm(){
+  $("#dNum").value=DEVIS.num;$("#dDate").value=DEVIS.date;$("#dClient").value=DEVIS.client;$("#dAdr").value=DEVIS.adr;$("#dObjet").value=DEVIS.objet;
+  $("#dJour").value=DEVIS.jour;$("#dPers").value=DEVIS.pers;$("#dAcompte").value=DEVIS.acompte;$("#dValid").value=DEVIS.valid;
+  $("#dCond").value=DEVIS.cond||"";$("#dCond").placeholder=COND_DEF.replace("{v}","30").replace("{a}","30");linesUI();
+}
+const DMAP={dNum:"num",dDate:"date",dClient:"client",dAdr:"adr",dObjet:"objet",dJour:"jour",dPers:"pers",dAcompte:"acompte",dValid:"valid",dCond:"cond"};
+Object.keys(DMAP).forEach(id=>$("#"+id).addEventListener("input",()=>{DEVIS[DMAP[id]]=$("#"+id).value;saveDevis();clearTimeout(saveDevis.t);saveDevis.t=setTimeout(()=>{if(TAB==="devis")show()},250)}));
+$("#dLignes").addEventListener("input",e=>{const r=e.target.closest("[data-li]");if(!r)return;const l=DEVIS.lignes[+r.dataset.li];l[e.target.dataset.k]=e.target.value;saveDevis();clearTimeout(saveDevis.t);saveDevis.t=setTimeout(()=>show(),250)});
+$("#dLignes").addEventListener("change",e=>{const r=e.target.closest("[data-li]");if(!r||e.target.tagName!=="SELECT")return;DEVIS.lignes[+r.dataset.li].tva=e.target.value;saveDevis();show()});
+$("#dLignes").addEventListener("click",e=>{const x=e.target.closest("[data-lx]");if(!x)return;DEVIS.lignes.splice(+x.dataset.lx,1);saveDevis();linesUI();show()});
+document.querySelectorAll("[data-qa]").forEach(b=>b.onclick=()=>{
+  const pers=n2(DEVIS.pers)||"";const f=readF();let l;
+  if(b.dataset.qa==="menu"){const nom=["Menu",MENU.sousTitre].filter(Boolean).join(" – ");l={d:nom+(MENU.sections&&MENU.sections.length?" (voir menu joint)":""),q:pers,pu:priceNum(MENU.prix)||"",tva:10}}
+  else if(b.dataset.qa==="f1")l={d:"Forfait apéritif classique (une consommation)",q:pers,pu:n2(f.p1)||"",tva:20};
+  else if(b.dataset.qa==="f2")l={d:"Forfait apéritif réception (deux consommations)",q:pers,pu:n2(f.p2)||"",tva:20};
+  else l={d:"",q:1,pu:"",tva:10};
+  DEVIS.lignes.push(l);saveDevis();linesUI();show();
+  if(b.dataset.qa==="libre"){const inp=$(`#dLignes [data-li="${DEVIS.lignes.length-1}"] [data-k="d"]`);inp&&inp.focus()}
+});
+$("#dNew").onclick=()=>{if(!confirm("Vider ce devis et en commencer un nouveau ?"))return;DEVIS=blankDevis();saveDevis();fillDevisForm();show();toast("Nouveau devis n° "+DEVIS.num)};
+$("#dpdf").onclick=e=>exportAs("pdf",e.currentTarget);$("#dpng").onclick=e=>exportAs("png",e.currentTarget);
+// Arrivée depuis une fiche Événement : on préremplit le devis
+function prefillFromEvent(){let p=null;try{p=JSON.parse(localStorage.getItem("devis2b-prefill")||"null");localStorage.removeItem("devis2b-prefill")}catch{}
+  if(!p)return false;DEVIS=blankDevis();Object.assign(DEVIS,{client:p.client||"",adr:p.adr||"",objet:p.objet||"",jour:p.jour||"",pers:p.pers??""});saveDevis();return true}
+
 /* ---------- Export PDF / image ---------- */
 async function capture(){
   if(document.fonts&&document.fonts.ready)await document.fonts.ready;
@@ -529,7 +673,7 @@ async function capture(){
   holder.appendChild(clone);document.body.appendChild(holder);
   try{return await html2canvas(clone,{scale:3,backgroundColor:null,useCORS:true,logging:false})}finally{holder.remove()}
 }
-function fileBase(){const t=TAB==="menu"?[MENU.titre,MENU.sousTitre].filter(Boolean).join(" - "):"Forfaits apéritifs";return (t||"Menu").replace(/[\\/:*?"<>|]/g,"").slice(0,80)}
+function fileBase(){const t=TAB==="menu"?[MENU.titre,MENU.sousTitre].filter(Boolean).join(" - "):TAB==="devis"?["Devis",DEVIS.num,DEVIS.client].filter(Boolean).join(" "):"Forfaits apéritifs";return (t||"Menu").replace(/[\\/:*?"<>|]/g,"").slice(0,80)}
 function saveLink(blob,name){const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000)}
 async function share(file){await navigator.share({files:[file],title:file.name})}
 async function offer(blob,name){
@@ -561,7 +705,7 @@ $("#fpdf").onclick=e=>exportAs("pdf",e.currentTarget);$("#fpng").onclick=e=>expo
 /* ---------- Onglets ---------- */
 document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{
   TAB=b.dataset.tab;document.querySelectorAll("[data-tab]").forEach(x=>x.setAttribute("aria-selected",x===b));
-  $("#panel-menu").hidden=TAB!=="menu";$("#panel-forfaits").hidden=TAB!=="forfaits";
+  $("#panel-menu").hidden=TAB!=="menu";$("#panel-forfaits").hidden=TAB!=="forfaits";$("#panel-devis").hidden=TAB!=="devis";if(TAB==="devis")fillDevisForm();
   $("#editnote").textContent=TAB==="menu"?"Aperçu au format A4. Touche un texte de la page pour le retoucher.":"Aperçu au format A4.";show();
 });
 
@@ -572,6 +716,7 @@ $("#raw").value=RAW;
 if(!MENU||!Array.isArray(MENU.sections))build();
 $("#editnote").textContent="Aperçu au format A4. Touche un texte de la page pour le retoucher.";
 show();
+if(location.hash==="#devis"){const pre=prefillFromEvent();history.replaceState(null,"",location.pathname);document.querySelector('[data-tab="devis"]').click();if(pre)toast("Devis préparé depuis la fiche événement")}
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
 <script src="profil.js"></script>

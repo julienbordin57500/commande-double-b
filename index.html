@@ -231,6 +231,18 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
 .okc.on .ring svg{opacity:1}
 .cmd-item.gone{transition:transform .3s ease-in,opacity .3s ease-in,height .3s ease .05s,min-height .3s ease .05s,padding .3s ease .05s;transform:translateX(60%);opacity:0;height:0!important;min-height:0;padding-block:0;overflow:hidden}
 .cmd-item .name{flex:1 1 170px}
+.sup-head{cursor:pointer}
+.fiche{width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--muted);display:inline-grid;place-items:center;margin-left:8px;vertical-align:3px;padding:0}
+.fiche svg{width:17px;height:17px}
+.fiche.has{color:var(--accent-ink);background:var(--accent-soft);border-color:var(--accent)}
+.sendb{flex:none;width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--muted);display:grid;place-items:center;padding:0}
+.sendb svg{width:16px;height:16px}
+.seg a.btn{text-decoration:none}
+.hc{border:1px solid var(--line);border-radius:12px;margin-top:8px;background:var(--sunken)}
+.hc summary{padding:12px;cursor:pointer;font-size:15px;list-style-position:inside}
+.hc .hn{color:var(--muted);font-size:13px;font-weight:600}
+.hc ul{margin:0;padding:0 14px 12px 30px;font-size:15px}
+.hc li span{color:var(--muted)}
 .sup-name small .count{display:inline-block;margin-left:6px;padding:2px 8px;font-size:12px}
 </style>
 </head>
@@ -287,10 +299,12 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
     <div class="links">
       <button class="linkbtn" id="invite" type="button">Inviter l'équipe</button>
       <button class="linkbtn" id="logout" type="button">Changer de code</button>
+      <button class="linkbtn" id="backup" type="button">Télécharger une sauvegarde</button>
     </div>
   </section>
 
-  <section id="view-commande" hidden><div id="commande"></div></section>
+  <section id="view-commande" hidden><div id="commande"></div>
+    <div class="links"><button class="linkbtn" id="histBtn" type="button">🕘 Historique des commandes</button></div></section>
 </div>
 <div class="toast" id="toast" hidden></div>
 
@@ -301,7 +315,7 @@ const KEY="sb_publishable_HIJXH1eJ_CP-A4G3AecDKg_NbBUD0m2";
 const CK="commande2b-code";
 const DEFAULT_SUPS=["Maraîcher","Sysco","Coup de Pâtes"];
 const UNITS=["pièce","kg","g","L","carton","colis","botte","sac","seau","barquette","bouteille","fût","pack"];
-const S={items:new Map(),sups:[...DEFAULT_SUPS],supSec:{},ready:false,open:{},copen:{},q:"",code:null,pending:0,sec:"cuisine",busy:false};
+const S={items:new Map(),sups:[...DEFAULT_SUPS],supSec:{},fiches:{},ready:false,open:{},copen:{},q:"",code:null,pending:0,sec:"cuisine",busy:false};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
 const fold=s=>s.normalize("NFD").replace(/\p{Diacritic}/gu,"").toLowerCase().replace(/œ/g,"oe").replace(/æ/g,"ae");
@@ -341,12 +355,27 @@ function showApp(){$("#gate").hidden=true;$("#app").hidden=false;refresh();start
 let pollT=null;
 function startPolling(){clearInterval(pollT);pollT=setInterval(()=>{if(document.visibilityState==="visible")refresh()},5000)}
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&S.code)refresh()});
+/* Hors connexion : chaque action est gardée sur le téléphone et envoyée dès que le réseau revient */
+const QK="commande2b-file";
+let OUT=[];try{OUT=JSON.parse(store.get(QK)||"[]")}catch{OUT=[]}
+const saveOut=()=>store.set(QK,JSON.stringify(OUT));
+const isNet=e=>e instanceof TypeError||(!e.code&&!e.status);
+const waitTxt=()=>`${OUT.length} modification${OUT.length>1?"s":""} en attente de réseau`;
+let flushing=false;
+async function flush(){
+  if(flushing||!OUT.length||!S.code)return;flushing=true;
+  try{while(OUT.length){const [fn,args]=OUT[0];try{await rpc(fn,args)}catch(e){if(isNet(e))break}OUT.shift();saveOut()}}
+  finally{flushing=false}
+  if(OUT.length)setSync(waitTxt(),"err");else{toast("Réseau revenu : tout est envoyé ✓");refresh()}
+}
+addEventListener("online",flush);setInterval(()=>{if(OUT.length)flush()},15000);
 async function refresh(){
+  if(OUT.length){flush();return}
   if(S.pending>0||S.busy)return;
   try{
     const d=await rpc("etat");if(S.pending>0||S.busy)return;
     S.items=new Map(d.produits.map(p=>[p.id,{...p,section:p.section||"cuisine",qte:p.qte==null?null:+p.qte}]));
-    S.sups=d.fournisseurs.length?d.fournisseurs:[...DEFAULT_SUPS];S.supSec=d.sections||{};S.ready=true;
+    S.sups=d.fournisseurs.length?d.fournisseurs:[...DEFAULT_SUPS];S.supSec=d.sections||{};S.fiches=d.fiches||{};S.ready=true;
     setSync("À jour","ok");
     const a=document.activeElement;if(!(a&&(a.matches(".qty")||a.matches(".unit")))&&!document.querySelector(".sheet"))render();
   }catch(e){
@@ -355,10 +384,15 @@ async function refresh(){
   }
 }
 async function send(fn,args){
+  if(OUT.length){OUT.push([fn,args]);saveOut();setSync(waitTxt(),"err");return null}
   S.pending++;setSync("Enregistrement…");
   try{const r=await rpc(fn,args);S.pending--;if(!S.pending)refresh();return r}
-  catch(e){S.pending--;toast(e.code==="28000"?"Code refusé":"Pas enregistré : vérifie la connexion");refresh();throw e}
+  catch(e){S.pending--;
+    if(isNet(e)){OUT.push([fn,args]);saveOut();setSync(waitTxt(),"err");toast("Pas de réseau : c'est gardé sur le téléphone et envoyé dès qu'il revient");return null}
+    toast(e.code==="28000"?"Code refusé":"Pas enregistré");refresh();throw e}
 }
+const profil=()=>{try{return localStorage.getItem("2b-profil")||""}catch{return ""}};
+function trace(f,sec,ps){const l=ps.map(p=>({n:p.nom,q:p.qte??null,u:p.qte?p.unite:null}));if(l.length)send("commande_trace",{p_fournisseur:f,p_section:sec,p_lignes:l,p_par:profil()}).catch(()=>{})}
 
 /* Icônes fournisseurs */
 const ICONS={
@@ -371,6 +405,8 @@ const ICONS={
 const CHECK='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3L13 4.5"/></svg>';
 const CHEV='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
 const PEN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>';
+const CARD='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="11" r="2.2"/><path d="M5.8 16c.6-1.6 1.8-2.4 3.2-2.4s2.6.8 3.2 2.4M14.5 10h4M14.5 13.5h3"/></svg>';
+const PLANE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3L10 14M21 3l-7 18-4-7-7-4z"/></svg>';
 const CROSS='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 function supKind(name){const n=fold(name);
   if(/marai|primeur|fruit|legume/.test(n))return "mar";
@@ -460,11 +496,11 @@ function supHTML(f){
   const body=ps.length?ps.map(itemHTML).join("")
     :`<div class="sup-empty"><span>Aucun produit pour l'instant.</span>${!hasAny&&!DEFAULT_SUPS.includes(f)?`<button class="del" data-delsup="${esc(f)}">Supprimer ce fournisseur</button>`:""}</div>`;
   return `<section class="sup" data-open="${open}" style="${supStyle(f)}">
-    <button class="sup-head" data-sup="${esc(f)}" aria-expanded="${open}">
+    <div class="sup-head" role="button" tabindex="0" data-sup="${esc(f)}" aria-expanded="${open}">
       <span class="ico" aria-hidden="true">${supIcon(f)}</span>
-      <span class="sup-name"><h2>${esc(f)}</h2><small>${ts.length?`${ps.length} sur ${all.length} produits`:`${all.length} produit${all.length>1?"s":""}`}${k?` <span class="count">${k} à commander</span>`:""}</small></span>
+      <span class="sup-name"><h2>${esc(f)}<button class="fiche${S.fiches[f]?" has":""}" type="button" data-fiche="${esc(f)}" aria-label="Fiche du fournisseur ${esc(f)}">${CARD}</button></h2><small>${ts.length?`${ps.length} sur ${all.length} produits`:`${all.length} produit${all.length>1?"s":""}`}${k?` <span class="count">${k} à commander</span>`:""}</small></span>
       <span class="chev" aria-hidden="true">${CHEV}</span>
-    </button>
+    </div>
     <div class="sup-body">${body}</div></section>`;
 }
 function itemHTML(p){
@@ -480,7 +516,7 @@ function renderCmd(sups){
   const groups=sups.map(f=>[f,itemsOf(f).filter(p=>p.acommander)]).filter(g=>g[1].length);
   if(!groups.length){el.innerHTML=`<div class="empty"><strong>Rien à commander en ${SECN[S.sec].toLowerCase()}</strong>Dans l'onglet Produits, appuie sur « Commander » à côté de ce qui manque. La quantité est facultative.</div>`;return}
   el.innerHTML=groups.map(([f,ps])=>{const open=isCOpen(f);return `<section class="cmd-sup" data-open="${open}" data-cmdsup="${esc(f)}" style="${supStyle(f)}">
-    <header role="button" tabindex="0" data-ctog="${esc(f)}" aria-expanded="${open}"><span class="ico" aria-hidden="true">${supIcon(f)}</span><h2>${esc(f)}</h2><span>${ps.length} article${ps.length>1?"s":""}</span><span class="chev" aria-hidden="true">${CHEV}</span></header>
+    <header role="button" tabindex="0" data-ctog="${esc(f)}" aria-expanded="${open}"><span class="ico" aria-hidden="true">${supIcon(f)}</span><h2>${esc(f)}</h2><span>${ps.length} article${ps.length>1?"s":""}</span>${supKind(f)==="mar"?`<button class="sendb" type="button" data-send="${esc(f)}" aria-label="Envoyer la commande à ${esc(f)}">${PLANE}</button>`:""}<span class="chev" aria-hidden="true">${CHEV}</span></header>
     <div class="cmd-body">${ps.map(p=>`<div class="cmd-item"><div class="name"><span>${esc(p.nom)}</span>${chip(p)}</div>${p.qte?`<span class="qpill">${fmt(p.qte)} ${esc(p.unite)}</span>`:`<span class="qpill none">quantité libre</span>`}<button class="okc" data-ok="${p.id}" aria-label="${esc(p.nom)} est commandé"><span class="ring">${CHECK}</span>Commandé</button><button class="del" data-t="${p.id}" aria-label="Retirer ${esc(p.nom)} de la commande">Retirer</button></div>`).join("")}
     <div class="cmd-done"><button class="btn" type="button" data-done="${esc(f)}">Commande effectuée chez ${esc(f)}</button></div></div></section>`}).join("");
 }
@@ -503,6 +539,8 @@ document.addEventListener("click",async e=>{
   if(e.target.id==="qAdd"){$("#nNom").value=S.q.trim();$("#addForm").scrollIntoView({behavior:"smooth",block:"center"});setTimeout(()=>$("#nFour").focus(),300);return}
   const pc=e.target.closest("[data-prix]");if(pc){openPrice(pc.dataset.prix);return}
   const ed=e.target.closest("[data-edit]");if(ed){openEdit(ed.dataset.edit);return}
+  const fi=e.target.closest("[data-fiche]");if(fi){openFiche(fi.dataset.fiche);return}
+  const sd=e.target.closest("[data-send]");if(sd){sendSupplier(sd.dataset.send);return}
   const h=e.target.closest("[data-sup]");
   if(h){if(terms().length)return;const f=h.dataset.sup;setOpen(f,!isOpen(f));const sec=h.closest(".sup");sec.dataset.open=isOpen(f);h.setAttribute("aria-expanded",isOpen(f));return}
   const ct=e.target.closest("[data-ctog]");
@@ -523,6 +561,7 @@ document.addEventListener("click",async e=>{
     ok.classList.add("on");const row=ok.closest(".cmd-item");S.busy=true;
     await new Promise(r=>setTimeout(r,matchMedia("(prefers-reduced-motion: reduce)").matches?0:260));
     if(row){row.style.height=row.offsetHeight+"px";row.classList.add("gone");await new Promise(r=>setTimeout(r,matchMedia("(prefers-reduced-motion: reduce)").matches?0:320))}
+    trace(p.fournisseur,p.section||"cuisine",[p]);
     p.acommander=false;p.qte=null;S.busy=false;render();
     send("maj_produit",{p_id:p.id,p_champs:{acommander:false,qte:""}}).then(()=>toast(p.nom+" : commandé ✓")).catch(()=>{});return}
   const dn=e.target.closest("[data-done]");
@@ -530,11 +569,62 @@ document.addEventListener("click",async e=>{
     if(!dn.classList.contains("confirm")){dn.classList.add("confirm");dn.textContent="Touche encore pour confirmer";setTimeout(()=>{if(dn.isConnected){dn.classList.remove("confirm");dn.textContent="Commande effectuée chez "+f}},4000);return}
     const block=dn.closest(".cmd-sup");const sec=S.sec;S.busy=true;
     await knife(block);
+    trace(f,sec,[...S.items.values()].filter(p=>p.fournisseur===f&&(p.section||"cuisine")===sec&&p.acommander));
     [...S.items.values()].forEach(p=>{if(p.fournisseur===f&&(p.section||"cuisine")===sec&&p.acommander){p.acommander=false;p.qte=null}});
     S.busy=false;render();
     send("commande_effectuee_fournisseur",{p_fournisseur:f,p_section:sec}).then(()=>toast("Commande "+f+" effectuée")).catch(()=>{})}
 });
-document.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches("[data-ctog]")){e.preventDefault();e.target.click()}});
+document.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches("[data-ctog],[data-sup]")){e.preventDefault();e.target.click()}});
+
+/* Envoi de la commande au maraîcher : message tout prêt (WhatsApp, SMS…) */
+function sendSupplier(f){
+  const ps=itemsOf(f).filter(p=>p.acommander);if(!ps.length)return;
+  const pl=(u,q)=>q>1&&/^(pièce|botte|barquette|bouteille|carton|colis|sac|seau|pack|douzaine)$/.test(u)?u+"s":u;
+  const lignes=ps.map(p=>`- ${p.nom}${p.qte?` : ${fmt(p.qte)} ${pl(p.unite,p.qte)}`:""}`).join("\n");
+  const text=`Bonjour, si possible en livraison demain au Double B :\n\n${lignes}\n\nMerci !`;
+  const tel=(S.fiches[f]&&S.fiches[f].tel||"").replace(/[^\d+]/g,"");
+  if(navigator.share){navigator.share({text}).catch(()=>{});return}
+  if(tel){location.href=`sms:${tel}?&body=${encodeURIComponent(text)}`;return}
+  navigator.clipboard.writeText(text).then(()=>toast("Message copié : colle-le dans WhatsApp ou SMS")).catch(()=>prompt("Copie ce message :",text));
+}
+
+/* Fiche fournisseur : téléphone, commercial, jours de commande et de livraison… */
+const FICHE=[["tel","📞 Téléphone","tel","ex. 06 12 34 56 78"],["commercial","👤 Commercial / contact","text","ex. M. Martin"],["email","✉️ E-mail","email","ex. commandes@fournisseur.fr"],
+  ["jours_commande","🗓️ Jours de commande","text","ex. lundi et jeudi avant 11 h"],["jours_livraison","🚚 Jours de livraison","text","ex. mardi et vendredi matin"],["minimum","💶 Minimum de commande","text","ex. 150 € HT"],["notes","📝 Notes","text","ex. code client 12345"]];
+function openFiche(f){
+  const c=S.fiches[f]||{};const tel=(c.tel||"").replace(/[^\d+]/g,"");
+  const m=document.createElement("div");m.className="sheet";
+  m.innerHTML=`<div class="box" role="dialog" aria-label="Fiche ${esc(f)}"><h3>${esc(f)}</h3><div class="sub">Fiche fournisseur, partagée avec toute l'équipe</div>
+    ${tel||c.email?`<div class="seg">${tel?`<a class="btn" href="tel:${esc(tel)}">📞 Appeler</a>`:""}${c.email?`<a class="btn soft" href="mailto:${esc(c.email)}">✉️ Écrire</a>`:""}</div>`:""}
+    ${FICHE.map(([k,l,t,ph])=>`<div class="field"><label for="fi_${k}">${l}</label>${k==="notes"?`<textarea id="fi_${k}" maxlength="500" placeholder="${ph}" style="font:inherit;font-size:17px;min-height:70px;border:1.5px solid var(--line);border-radius:14px;background:var(--sunken);padding:10px 12px;font-size:17px">${esc(c[k]||"")}</textarea>`:`<input id="fi_${k}" type="${t}" maxlength="200" placeholder="${ph}" value="${esc(c[k]||"")}">`}</div>`).join("")}
+    <div class="acts"><button class="btn" type="button" id="fiSave">Enregistrer la fiche</button><button class="btn soft" type="button" id="fiClose">Fermer</button></div></div>`;
+  document.body.appendChild(m);const close=()=>m.remove();
+  m.addEventListener("click",e=>{if(e.target===m)close()});$("#fiClose").onclick=close;
+  $("#fiSave").onclick=()=>{const fiche={};FICHE.forEach(([k])=>{const v=$("#fi_"+k).value.trim();if(v)fiche[k]=v});
+    S.fiches[f]=Object.keys(fiche).length?fiche:undefined;close();render();
+    send("fournisseur_fiche",{p_nom:f,p_fiche:fiche}).then(r=>{if(r!==null||!OUT.length)toast("Fiche enregistrée ✓")}).catch(()=>{})};
+}
+
+/* Historique des commandes passées (les 60 dernières de la partie affichée) */
+$("#histBtn").onclick=async()=>{
+  const m=document.createElement("div");m.className="sheet";
+  m.innerHTML=`<div class="box" role="dialog" aria-label="Historique des commandes"><h3>🕘 Historique — ${esc(SECN[S.sec])}</h3><div id="hList"><div class="sub">Chargement…</div></div><button class="btn soft" type="button" id="hClose">Fermer</button></div>`;
+  document.body.appendChild(m);const close=()=>m.remove();m.addEventListener("click",e=>{if(e.target===m)close()});$("#hClose").onclick=close;
+  try{const h=await rpc("commandes_historique",{p_section:S.sec});const N={julien:"Julien",eric:"Eric",thierry:"Thierry",claire:"Claire"};
+    $("#hList").innerHTML=h.length?h.map(c=>`<details class="hc"><summary><b>${esc(new Date(c.le).toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"}))}</b> · ${esc(c.fournisseur)} <span class="hn">${c.lignes.length} article${c.lignes.length>1?"s":""}${c.par&&N[c.par]?" · "+N[c.par]:""}</span></summary>
+      <ul>${c.lignes.map(l=>`<li>${esc(l.n)}${l.q?` <span>${fmt(+l.q)} ${esc(l.u||"")}</span>`:""}</li>`).join("")}</ul></details>`).join("")
+      :`<div class="sub">Pas encore de commande enregistrée. Elles apparaîtront ici dès la prochaine « Commande effectuée » ou case « Commandé ».</div>`;
+  }catch{$("#hList").innerHTML=`<div class="sub">Historique indisponible (connexion).</div>`}
+};
+
+/* Sauvegarde manuelle : un fichier avec toutes les données de l'appli */
+$("#backup").onclick=async()=>{
+  try{const d=await rpc("sauvegarde");const blob=new Blob([JSON.stringify(d,null,1)],{type:"application/json"});const name=`Sauvegarde Double B ${new Date().toISOString().slice(0,10)}.json`;
+    const file=new File([blob],name,{type:"application/json"});
+    if(navigator.canShare&&navigator.canShare({files:[file]})&&/iPhone|iPad|Android/i.test(navigator.userAgent)){await navigator.share({files:[file],title:name}).catch(()=>{});return}
+    const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();toast("Sauvegarde téléchargée")}
+  catch{toast("Sauvegarde impossible : vérifie la connexion")}
+};
 document.addEventListener("change",e=>{
   const q=e.target.closest("[data-q]");
   if(q){const p=S.items.get(q.dataset.q);if(!p)return;

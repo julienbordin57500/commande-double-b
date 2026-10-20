@@ -52,6 +52,17 @@
   .pick .card.cur{border-color:#f2a516;box-shadow:0 0 0 4px rgba(242,165,22,.25)}
   .pick .card:active{transform:scale(.97)}
   .pick .cancel{margin-top:22px;height:50px;border-radius:14px;border:1px solid var(--line,#e6e1d5);background:var(--surface,#fff);font:inherit;font-weight:700;padding:0 22px;color:var(--fg,#1d1b17)}
+  .tour{position:fixed;inset:0;z-index:60;background:rgba(10,8,4,.6);display:flex;align-items:center;justify-content:center;padding:20px;animation:pIn .25s ease-out}
+  .tour .tb{background:var(--surface,#fff);color:var(--fg,#1d1b17);border-radius:26px;max-width:420px;width:100%;padding:26px 22px 20px;text-align:center;display:flex;flex-direction:column;gap:12px;font-family:"Figtree",system-ui,sans-serif}
+  .tour .em{font-size:64px;line-height:1}
+  .tour h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:26px;font-weight:800;margin:0}
+  .tour p{margin:0;font-size:18px;line-height:1.45;color:var(--muted,#6f695d)}
+  .tour .dots{display:flex;gap:7px;justify-content:center;margin:4px 0}
+  .tour .dots i{width:9px;height:9px;border-radius:50%;background:var(--line,#e6e1d5)}
+  .tour .dots i.on{background:#f2a516;width:24px;border-radius:5px}
+  .tour .tbtn{display:grid;grid-template-columns:1fr 1.6fr;gap:8px}
+  .tour button{height:56px;border-radius:16px;border:0;font:inherit;font-weight:800;font-size:17px;cursor:pointer}
+  .tour .nx{background:#f2a516;color:#2a1d00} .tour .sk{background:var(--sunken,#f9f7f2);color:var(--fg,#1d1b17);border:1px solid var(--line,#e6e1d5)}
   @keyframes pIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   @media (prefers-reduced-motion:reduce){.pick{animation:none}}`;
   const st=document.createElement("style");st.textContent=css;document.head.appendChild(st);
@@ -66,7 +77,7 @@
     m.addEventListener("click",e=>{
       const b=e.target.closest("[data-p]");
       if(b){const changed=b.dataset.p!==cur;set(b.dataset.p);document.documentElement.style.overflow="";m.remove();
-        if(changed&&cur)location.reload();else bar();return}
+        if(changed&&cur)location.reload();else{bar();tour()}return}
       if(e.target.closest(".cancel")){document.documentElement.style.overflow="";m.remove()}
     });
   }
@@ -76,7 +87,24 @@
     b.innerHTML=`<div class="who">${avatar(id,40)}<div>${AV[id].nom}<small>Profil sur ce téléphone</small></div></div><button type="button">Changer de profil</button>`;
     b.querySelector("button").onclick=()=>picker(true);
   }
-  function ensure(){if(!get())picker(false);else bar()}
+  /* Mini visite guidée : une seule fois par téléphone */
+  function tour(){
+    try{if(localStorage.getItem("2b-visite"))return;localStorage.setItem("2b-visite","1")}catch{return}
+    const nom=AV[get()]?AV[get()].nom:"";
+    const S=[["👋",`Bienvenue ${nom} !`,"Voici l'appli du Double B. Elle a 4 parties, en haut de l'écran. On fait le tour en 30 secondes."],
+      ["🛒","Commande","Appuie sur « Commander » à côté de ce qui manque. Tout se retrouve dans « À commander ». En haut, choisis Cuisine ou Bar & Salle."],
+      ["📄","Menus & devis","Colle un menu : il se met tout seul dans la belle trame. Les forfaits apéritifs et les devis sont prêts à envoyer."],
+      ["📊","Chiffres","Chaque jour : clients sur place, à emporter et CA du midi et du soir. Les totaux se calculent tout seuls."],
+      ["📅","Événements","Privatisations, traiteur et petites notes, dans un calendrier que toute l'équipe voit."],
+      ["✅","C'est parti !","Tout s'enregistre tout seul. Tu peux changer de profil à tout moment, tout en haut."]];
+    let i=0;const m=document.createElement("div");m.className="tour";m.setAttribute("role","dialog");m.setAttribute("aria-label","Visite guidée");
+    const draw=()=>{const [e,t,p]=S[i];m.innerHTML=`<div class="tb"><div class="em" aria-hidden="true">${e}</div><h3>${t}</h3><p>${p}</p>
+      <div class="dots">${S.map((_,k)=>`<i class="${k===i?"on":""}"></i>`).join("")}</div>
+      <div class="tbtn">${i<S.length-1?`<button class="sk" type="button" data-t="skip">Passer</button><button class="nx" type="button" data-t="next">Suivant</button>`:`<button class="nx" type="button" data-t="skip" style="grid-column:1/-1">Commencer</button>`}</div></div>`};
+    draw();document.body.appendChild(m);
+    m.addEventListener("click",e=>{const b=e.target.closest("[data-t]");if(!b)return;if(b.dataset.t==="next"){i++;draw()}else m.remove()});
+  }
+  function ensure(){if(!get())picker(false);else{bar();tour()}}
   window.Profil={get,ensure,avatar,noms:Object.fromEntries(Object.entries(AV).map(([k,v])=>[k,v.nom]))};
   let hasCode=false;try{hasCode=!!localStorage.getItem("commande2b-code")}catch{}
   if(hasCode&&!document.getElementById("gate"))ensure();   // l'écran Commande l'appelle lui-même après le code
