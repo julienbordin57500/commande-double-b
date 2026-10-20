@@ -53,8 +53,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .gate .err{color:var(--danger);font-weight:600;font-size:15px}
 
 /* Bascule entre les deux parties de l'appli */
-.apps{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:14px}
-.apps a{height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:var(--muted);text-decoration:none;text-align:center;line-height:1.1}
+.apps{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:14px}
+.apps a{min-height:42px;padding:2px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--muted);text-decoration:none;text-align:center;line-height:1.1}
 .apps a[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
 
 /* En-tête */
@@ -248,7 +248,7 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
 </div>
 
 <div class="wrap" id="app" hidden>
-  <nav class="apps" aria-label="Parties de l'appli"><a href="./" aria-current="page">Commande</a><a href="menus.html">Menus &amp; devis</a><a href="chiffres.html">Chiffres</a></nav>
+  <nav class="apps" aria-label="Parties de l'appli"><a href="./" aria-current="page">Commande</a><a href="menus.html">Menus &amp; devis</a><a href="chiffres.html">Chiffres</a><a href="evenements.html">Événements</a></nav>
   <div class="sync" id="sync">Connexion…</div>
   <header class="top">
     <div class="logo"><img src="logo-hd.png" alt="Double B"></div>

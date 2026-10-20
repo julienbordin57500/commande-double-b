@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Événements Double B</title>
+<meta name="description" content="Privatisations et prestations traiteur du Double B : fiches clients et calendrier partagé.">
+<meta name="theme-color" content="#f2a516">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Commande 2B">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout : en-tête commun ; bouton « Nouvel événement », calendrier du mois, détail du jour choisi, prochains événements. */
+:root{
+  --bg:#f4f2ec; --surface:#ffffff; --sunken:#f9f7f2; --line:#e6e1d5; --fg:#1d1b17; --muted:#6f695d;
+  --accent:#f2a516; --accent-ink:#2a1d00; --accent-soft:#fdf1d6; --go:#2f7d4f; --danger:#c23a2b;
+  --priv:#c2410c; --priv-soft:#fde4d3; --trait:#2f5d9e; --trait-soft:#e2ebf8;
+  --display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
+  --body:"Figtree","Segoe UI",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#141310; --surface:#1f1d18; --sunken:#191814; --line:#34312a; --fg:#f3efe5; --muted:#a69f90;
+  --accent:#f5b232; --accent-ink:#231800; --accent-soft:#3a2e12; --go:#4fae78; --danger:#e8705f;
+  --priv:#fb923c; --priv-soft:#3b2414; --trait:#8db7ee; --trait-soft:#1b2a40; color-scheme:dark}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.35;-webkit-tap-highlight-color:transparent;
+  padding:env(safe-area-inset-top,0px) max(16px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(16px,env(safe-area-inset-left,0px))}
+[hidden]{display:none!important}
+.wrap{max-width:760px;margin:0 auto;padding-block:16px 60px}
+h1,h2,h3{font-family:var(--display);margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.apps{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:14px;max-width:680px;margin:0 auto 14px}
+.apps a{min-height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--muted);text-decoration:none;text-align:center;line-height:1.1;padding:2px}
+.apps a[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
+header.top{display:flex;align-items:center;gap:14px}
+.logo{flex:none;width:112px;height:62px;border-radius:16px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;padding:6px 10px}
+.logo img{width:100%;height:auto;display:block}
+.titles{flex:1;min-width:0}
+.titles h1{font-size:30px;font-weight:800;letter-spacing:-.5px;line-height:1}
+.titles p{margin:6px 0 0;font-size:15px;color:var(--muted);font-weight:500}
+.sync{font-size:12px;color:var(--muted);text-align:right;margin-bottom:6px}
+.sync::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--muted);margin-right:6px;vertical-align:1px}
+.sync.ok::before{background:var(--go)} .sync.err::before{background:var(--danger)}
+
+.btn{height:52px;border-radius:14px;border:0;padding:0 18px;font-weight:800;background:var(--accent);color:var(--accent-ink);display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:16px}
+.btn.soft{background:var(--sunken);border:1px solid var(--line);color:var(--fg)}
+.btn.danger{background:var(--danger);color:#fff}
+.btn:disabled{opacity:.55}
+.new{width:100%;height:62px;font-size:18px;margin-top:16px;border-radius:16px}
+.new span{font-size:24px;line-height:1}
+
+/* Calendrier */
+.cal{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:10px}
+.calhead{display:flex;align-items:center;gap:8px}
+.calhead h2{flex:1;text-align:center;font-size:22px;font-weight:800;text-transform:capitalize}
+.arrow{width:48px;height:48px;border-radius:13px;border:0;background:var(--sunken);display:grid;place-items:center;color:var(--fg);flex:none}
+.arrow svg{width:22px;height:22px}
+.todayb{height:34px;border-radius:10px;border:1px solid var(--line);background:var(--sunken);padding:0 10px;font-size:13px;font-weight:700;display:block;margin:6px auto 0}
+.dow{display:grid;grid-template-columns:repeat(7,1fr);margin-top:10px;font-size:12px;font-weight:800;color:var(--muted);text-align:center;text-transform:uppercase;letter-spacing:.04em}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:6px}
+.day{position:relative;min-height:62px;border-radius:12px;border:1.5px solid transparent;background:var(--sunken);padding:5px 3px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;font-weight:700;font-size:15px;min-width:0}
+.day.out{opacity:.35}
+.day.today .n{background:var(--fg);color:var(--bg);border-radius:8px;padding:0 6px}
+.day.sel{border-color:var(--accent);background:var(--accent-soft)}
+.day .tags{display:flex;flex-direction:column;gap:2px;width:100%}
+.day .t{display:block;height:7px;border-radius:4px;width:100%;overflow:hidden;font-size:0;color:transparent;line-height:0}
+.day .t.privatisation{background:var(--priv)} .day .t.traiteur{background:var(--trait)}
+.day .t.option{opacity:.45}
+.day .more{font-size:10px;font-weight:800;color:var(--muted);line-height:1}
+@media (min-width:560px){.day{min-height:78px}.day .t{height:auto;line-height:1.3;font-size:11px;font-weight:700;color:#fff;padding:1px 4px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+.legend{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;font-size:13px;color:var(--muted);font-weight:600;margin-top:10px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:4px;vertical-align:-1px;margin-right:5px}
+
+/* Jour choisi et liste */
+.panel{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:14px}
+.panel .ph{display:flex;align-items:center;gap:8px}
+.panel .ph h3{flex:1;text-align:center;font-size:19px;font-weight:800}
+.panel .ph h3 small{display:block;font-family:var(--body);font-size:13px;font-weight:600;color:var(--muted)}
+.list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.ev{display:flex;gap:12px;align-items:stretch;padding:12px;border-radius:16px;border:1px solid var(--line);background:var(--sunken);text-align:left;width:100%}
+.ev .bar{flex:none;width:6px;border-radius:3px}
+.ev.privatisation .bar{background:var(--priv)} .ev.traiteur .bar{background:var(--trait)}
+.ev .body{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.ev .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ev b{font-size:18px;font-weight:800}
+.ty{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;border-radius:7px;padding:2px 7px}
+.ty.privatisation{color:var(--priv);background:var(--priv-soft)} .ty.traiteur{color:var(--trait);background:var(--trait-soft)}
+.st{font-size:12px;font-weight:800;border-radius:7px;padding:2px 7px}
+.st.option{background:var(--accent-soft);color:var(--fg)} .st.confirme{background:var(--go);color:#fff} .st.annule{background:var(--line);color:var(--muted);text-decoration:line-through}
+.ev .meta{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:14px;color:var(--muted);font-weight:600}
+.ev .meta span{white-space:nowrap}
+.ev .who{font-size:12px;color:var(--muted)}
+.ev .date{font-size:13px;font-weight:800;color:var(--fg)}
+.empty{color:var(--muted);text-align:center;padding:16px 8px;font-size:15px}
+.addday{width:100%;margin-top:12px}
+
+/* Fiche client */
+.sheet{position:fixed;inset:0;background:rgba(10,8,4,.55);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet .box{background:var(--surface);width:100%;max-width:560px;border-radius:22px 22px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));max-height:92vh;overflow:auto;display:flex;flex-direction:column;gap:12px}
+@media (min-width:600px){.sheet{align-items:center}.sheet .box{border-radius:22px}}
+.sheet h3{font-size:22px;font-weight:800}
+.sheet .sub{color:var(--muted);font-size:14px;margin-top:-6px}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field label{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.field label em{font-style:normal;text-transform:none;letter-spacing:0;font-weight:600}
+.field input,.field textarea{height:54px;border:1.5px solid var(--line);border-radius:14px;background:var(--sunken);padding:0 12px;width:100%;font-size:17px}
+.field textarea{height:auto;min-height:84px;padding:10px 12px;resize:vertical}
+.field .in{position:relative}
+.field .in span{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-weight:800;color:var(--muted)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg.three{grid-template-columns:1fr 1fr 1fr}
+.seg button{min-height:56px;border-radius:14px;border:2px solid var(--line);background:var(--surface);font-weight:800;font-size:15px;color:var(--muted);padding:4px;line-height:1.15}
+.seg button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--fg)}
+.seg button .e{display:block;font-size:20px}
+.warn{background:var(--accent-soft);border:1px solid var(--accent);border-radius:12px;padding:10px 12px;font-size:14px;font-weight:600}
+.acts{display:grid;gap:8px}
+.acts .btn{height:56px;font-size:17px}
+.call{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 12px;border-radius:10px;background:var(--go);color:#fff;font-weight:800;text-decoration:none;font-size:15px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:11px 16px;border-radius:12px;font-weight:600;font-size:15px;z-index:30;max-width:calc(100% - 32px)}
+@media (max-width:400px){.titles h1{font-size:25px}header.top .logo{width:92px;height:54px}.apps a{font-size:12px}.calhead h2{font-size:19px}.day{font-size:14px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="apps" aria-label="Parties de l'appli">
+    <a href="./">Commande</a><a href="menus.html">Menus &amp; devis</a><a href="chiffres.html">Chiffres</a><a href="evenements.html" aria-current="page">Événements</a>
+  </nav>
+  <div class="sync" id="sync">Connexion…</div>
+  <header class="top">
+    <div class="logo"><img src="logo-hd.png" alt="Double B"></div>
+    <div class="titles"><h1>Événements</h1><p>Privatisations et traiteur, visibles par toute l'équipe.</p></div>
+  </header>
+
+  <button class="btn new" id="newBtn" type="button"><span>＋</span> Nouvel événement</button>
+
+  <section class="cal" aria-label="Calendrier">
+    <div class="calhead">
+      <button class="arrow" id="mPrev" aria-label="Mois précédent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <h2 id="mName">&nbsp;</h2>
+      <button class="arrow" id="mNext" aria-label="Mois suivant"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+    </div>
+    <button class="todayb" id="today" type="button">Revenir à aujourd'hui</button>
+    <div class="dow"><span>Lun</span><span>Mar</span><span>Mer</span><span>Jeu</span><span>Ven</span><span>Sam</span><span>Dim</span></div>
+    <div class="grid" id="grid"></div>
+    <div class="legend"><span><i style="background:var(--priv)"></i>Privatisation</span><span><i style="background:var(--trait)"></i>Traiteur</span><span><i style="background:var(--muted);opacity:.45"></i>Pâle = en option</span></div>
+  </section>
+
+  <section class="panel" aria-label="Jour choisi">
+    <div class="ph">
+      <button class="arrow" id="dPrev" aria-label="Jour précédent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <h3 id="dName">&nbsp;</h3>
+      <button class="arrow" id="dNext" aria-label="Jour suivant"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+    </div>
+    <div class="list" id="dayList"></div>
+    <button class="btn soft addday" id="addDay" type="button">＋ Ajouter un événement ce jour-là</button>
+  </section>
+
+  <section class="panel" aria-label="Prochains événements">
+    <h3 style="font-size:19px;font-weight:800">À venir</h3>
+    <div class="list" id="upList"></div>
+  </section>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* Connexion : même base et même code d'équipe que le reste de l'appli */
+const API="https://kokjumjhpasxxxrpspng.supabase.co/rest/v1/rpc/";
+const KEY="sb_publishable_HIJXH1eJ_CP-A4G3AecDKg_NbBUD0m2";
+const CK="commande2b-code";
+let CODE=null;try{CODE=localStorage.getItem(CK)}catch{}
+if(!CODE)location.replace("./");
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2600)}
+async function rpc(fn,args={}){
+  const r=await fetch(API+fn,{method:"POST",headers:{"apikey":KEY,"Content-Type":"application/json"},body:JSON.stringify({p_code:CODE,...args})});
+  if(!r.ok){let e={};try{e=await r.json()}catch{}const err=new Error(e.message||"Erreur réseau");err.code=e.code;throw err}
+  const t=await r.text();return t?JSON.parse(t):null;
+}
+function setSync(t,cls){const s=$("#sync");s.textContent=t;s.className="sync"+(cls?" "+cls:"")}
+function lost(e){if(e&&e.code==="28000"){try{localStorage.removeItem(CK)}catch{}location.replace("./");return true}return false}
+
+/* ---------- Dates (heure locale) ---------- */
+const pad=n=>String(n).padStart(2,"0");
+const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parse=s=>{const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)};
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+const longDay=d=>cap(d.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"}));
+const shortDay=d=>cap(d.toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"}));
+const now=new Date();const TODAY=iso(now);
+const S={y:now.getFullYear(),m:now.getMonth(),sel:TODAY,evs:[],up:[]};
+
+/* ---------- Libellés ---------- */
+const TYPES={privatisation:{l:"Privatisation",e:"🏠"},traiteur:{l:"Traiteur",e:"🚚"}};
+const STATUTS={option:"En option",confirme:"Confirmé",annule:"Annulé"};
+const eur=v=>new Intl.NumberFormat("fr-FR",{maximumFractionDigits:2}).format(v)+" €";
+const who=()=>{try{return localStorage.getItem("2b-profil")||""}catch{return ""}};
+const NOMS={julien:"Julien",eric:"Eric",thierry:"Thierry",claire:"Claire"};
+
+/* ---------- Chargement ----------
+   On charge les 6 semaines visibles du calendrier + les 4 prochains mois pour « À venir ». */
+function range(){const first=new Date(S.y,S.m,1);const start=new Date(first);start.setDate(1-((first.getDay()+6)%7));const end=new Date(start);end.setDate(start.getDate()+41);return [start,end]}
+async function load(){
+  const [a,b]=range();const upEnd=new Date(now);upEnd.setMonth(upEnd.getMonth()+6);
+  try{
+    const [evs,up]=await Promise.all([rpc("evenements_liste",{p_debut:iso(a),p_fin:iso(b)}),rpc("evenements_liste",{p_debut:TODAY,p_fin:iso(upEnd)})]);
+    S.evs=evs||[];S.up=(up||[]).filter(e=>e.statut!=="annule");setSync("À jour","ok");render();
+  }catch(e){if(lost(e))return;setSync("Hors ligne","err");render()}
+}
+setInterval(()=>{if(document.visibilityState==="visible"&&!document.querySelector(".sheet"))load()},20000);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")load()});
+
+/* ---------- Affichage ---------- */
+const byDay=d=>S.evs.filter(e=>e.jour===d);
+function render(){
+  $("#mName").textContent=new Date(S.y,S.m,1).toLocaleDateString("fr-FR",{month:"long",year:"numeric"});
+  const [a]=range();let html="";
+  for(let i=0;i<42;i++){const d=new Date(a);d.setDate(a.getDate()+i);const k=iso(d);const evs=byDay(k).filter(e=>e.statut!=="annule");
+    const cls=["day",d.getMonth()!==S.m?"out":"",k===TODAY?"today":"",k===S.sel?"sel":""].join(" ");
+    const tags=evs.slice(0,2).map(e=>`<span class="t ${e.type} ${e.statut==="option"?"option":""}">${esc(e.client)}</span>`).join("");
+    html+=`<button class="${cls}" data-d="${k}" aria-label="${esc(longDay(d))}${evs.length?`, ${evs.length} événement${evs.length>1?"s":""}`:""}"><span class="n">${d.getDate()}</span><span class="tags">${tags}</span>${evs.length>2?`<span class="more">+${evs.length-2}</span>`:""}</button>`}
+  $("#grid").innerHTML=html;
+  const sd=parse(S.sel);
+  $("#dName").innerHTML=`${esc(longDay(sd))}<small>${S.sel===TODAY?"Aujourd'hui":"&nbsp;"}</small>`;
+  const de=byDay(S.sel);
+  $("#dayList").innerHTML=de.length?de.map(e=>card(e,false)).join(""):`<div class="empty">Rien de prévu ce jour-là.</div>`;
+  $("#upList").innerHTML=S.up.length?S.up.slice(0,8).map(e=>card(e,true)).join(""):`<div class="empty">Aucune privatisation ni prestation à venir.</div>`;
+}
+function card(e,withDate){
+  const t=TYPES[e.type]||TYPES.privatisation;const meta=[];
+  if(e.heure)meta.push(`🕒 ${esc(e.heure)}`);
+  if(e.personnes!=null)meta.push(`👥 ${e.personnes} pers.`);
+  if(e.budget!=null)meta.push(`💶 ${eur(+e.budget)}`);
+  if(e.acompte!=null)meta.push(`✅ Acompte ${eur(+e.acompte)}`);
+  if(e.type==="traiteur"&&e.lieu)meta.push(`📍 ${esc(e.lieu)}`);
+  if(e.telephone)meta.push(`📞 ${esc(e.telephone)}`);
+  return `<button class="ev ${e.type}" data-ev="${e.id}"><span class="bar"></span><span class="body">
+    ${withDate?`<span class="date">${esc(shortDay(parse(e.jour)))}</span>`:""}
+    <span class="top"><b>${esc(e.client)}</b><span class="ty ${e.type}">${t.e} ${t.l}</span><span class="st ${e.statut}">${STATUTS[e.statut]||""}</span></span>
+    ${meta.length?`<span class="meta">${meta.map(m=>`<span>${m}</span>`).join("")}</span>`:""}
+    ${e.notes?`<span class="meta" style="white-space:normal">📝 ${esc(e.notes.length>90?e.notes.slice(0,90)+"…":e.notes)}</span>`:""}
+    ${e.cree_par?`<span class="who">Ajouté par ${esc(NOMS[e.cree_par]||e.cree_par)}</span>`:""}</span></button>`;
+}
+
+/* ---------- Navigation ---------- */
+function goMonth(delta){const d=new Date(S.y,S.m+delta,1);S.y=d.getFullYear();S.m=d.getMonth();
+  S.sel=(S.y===now.getFullYear()&&S.m===now.getMonth())?TODAY:iso(d);render();load()}
+function goDay(delta){const d=parse(S.sel);d.setDate(d.getDate()+delta);S.sel=iso(d);
+  if(d.getMonth()!==S.m||d.getFullYear()!==S.y){S.y=d.getFullYear();S.m=d.getMonth();render();load()}else render()}
+$("#mPrev").onclick=()=>goMonth(-1);$("#mNext").onclick=()=>goMonth(1);
+$("#dPrev").onclick=()=>goDay(-1);$("#dNext").onclick=()=>goDay(1);
+$("#today").onclick=()=>{S.y=now.getFullYear();S.m=now.getMonth();S.sel=TODAY;render();load()};
+$("#grid").addEventListener("click",e=>{const b=e.target.closest("[data-d]");if(!b)return;const d=parse(b.dataset.d);S.sel=b.dataset.d;
+  if(d.getMonth()!==S.m){S.y=d.getFullYear();S.m=d.getMonth();render();load()}else render();
+  if(matchMedia("(max-width:700px)").matches)document.querySelector(".panel").scrollIntoView({behavior:"smooth",block:"start"})});
+document.addEventListener("click",e=>{const c=e.target.closest("[data-ev]");if(!c)return;const ev=[...S.evs,...S.up].find(x=>x.id===c.dataset.ev);if(ev)openForm(ev)});
+$("#newBtn").onclick=()=>openForm(null,S.sel<TODAY?TODAY:S.sel);
+$("#addDay").onclick=()=>openForm(null,S.sel);
+
+/* ---------- Fiche client ---------- */
+function ask(title,text,buttons){return new Promise(res=>{
+  const m=document.createElement("div");m.className="sheet";
+  m.innerHTML=`<div class="box" role="dialog" aria-label="${esc(title)}"><h3>${esc(title)}</h3>${text?`<div class="sub" style="margin-top:0">${text}</div>`:""}<div class="acts">${buttons.map((b,i)=>`<button class="btn ${b.cls||""}" type="button" data-i="${i}">${esc(b.label)}</button>`).join("")}</div></div>`;
+  document.body.appendChild(m);const close=v=>{m.remove();res(v)};
+  m.addEventListener("click",e=>{const b=e.target.closest("[data-i]");if(b)close(buttons[+b.dataset.i].value);else if(e.target===m)close(null)});
+})}
+const num=v=>{v=String(v||"").replace(/\s|€/g,"").replace(",",".");if(v==="")return "";const n=parseFloat(v);return isNaN(n)||n<0?null:n};
+function openForm(ev,day){
+  const isNew=!ev;const e=ev||{type:"privatisation",statut:"option",jour:day||TODAY};
+  let type=e.type,statut=e.statut;
+  const m=document.createElement("div");m.className="sheet";
+  m.innerHTML=`<div class="box" role="dialog" aria-label="Fiche client">
+    <h3>${isNew?"Nouvel événement":"Fiche client"}</h3>
+    ${!isNew&&e.cree_par?`<div class="sub">Ajouté par ${esc(NOMS[e.cree_par]||e.cree_par)}</div>`:""}
+    <div class="field"><label>Type</label><div class="seg">
+      <button type="button" data-ty="privatisation" aria-pressed="${type==="privatisation"}"><span class="e">🏠</span>Privatisation de la salle</button>
+      <button type="button" data-ty="traiteur" aria-pressed="${type==="traiteur"}"><span class="e">🚚</span>Traiteur extérieur</button></div></div>
+    <div class="field"><label for="fClient">Nom du client</label><input id="fClient" maxlength="120" autocomplete="off" placeholder="ex. Mme Dupont – anniversaire" value="${esc(e.client||"")}"></div>
+    <div class="row2">
+      <div class="field"><label for="fJour">Date</label><input id="fJour" type="date" value="${esc(e.jour)}"></div>
+      <div class="field"><label for="fHeure">Heure <em>(facultatif)</em></label><input id="fHeure" type="time" value="${esc(e.heure||"")}"></div>
+    </div>
+    <div class="warn" id="fWarn" hidden></div>
+    <div class="row2">
+      <div class="field"><label for="fPers">Personnes <em>(facult.)</em></label><input id="fPers" inputmode="numeric" placeholder="–" value="${e.personnes??""}"></div>
+      <div class="field"><label for="fBudget">Budget <em>(facult.)</em></label><div class="in"><input id="fBudget" inputmode="decimal" placeholder="–" value="${e.budget!=null?String(+e.budget).replace(".",","):""}"><span>€</span></div></div>
+    </div>
+    <div class="field"><label for="fTel">Téléphone <em>(facultatif)</em></label><input id="fTel" type="tel" inputmode="tel" autocomplete="off" placeholder="ex. 06 12 34 56 78" value="${esc(e.telephone||"")}"></div>
+    ${!isNew&&e.telephone?`<a class="call" href="tel:${esc(e.telephone.replace(/[^\d+]/g,""))}">📞 Appeler ${esc(e.client)}</a>`:""}
+    <div class="field" id="fLieuF"><label for="fLieu">Lieu de la prestation <em>(facultatif)</em></label><input id="fLieu" maxlength="200" placeholder="ex. Salle des fêtes de Faulquemont" value="${esc(e.lieu||"")}"></div>
+    <div class="field"><label>Statut</label><div class="seg three">
+      <button type="button" data-st="option" aria-pressed="${statut==="option"}"><span class="e">⏳</span>En option</button>
+      <button type="button" data-st="confirme" aria-pressed="${statut==="confirme"}"><span class="e">✅</span>Confirmé</button>
+      <button type="button" data-st="annule" aria-pressed="${statut==="annule"}"><span class="e">✖️</span>Annulé</button></div></div>
+    <div class="field"><label for="fAcompte">Acompte reçu <em>(facultatif)</em></label><div class="in"><input id="fAcompte" inputmode="decimal" placeholder="–" value="${e.acompte!=null?String(+e.acompte).replace(".",","):""}"><span>€</span></div></div>
+    <div class="field"><label for="fNotes">Notes <em>(menu choisi, allergies, déco…)</em></label><textarea id="fNotes" maxlength="2000">${esc(e.notes||"")}</textarea></div>
+    <div class="acts">
+      <button class="btn" type="button" id="fSave">${isNew?"Ajouter au calendrier":"Enregistrer"}</button>
+      ${isNew?"":`<button class="btn danger" type="button" id="fDel">Supprimer l'événement</button>`}
+      <button class="btn soft" type="button" id="fCancel">Annuler</button>
+    </div></div>`;
+  document.body.appendChild(m);
+  const close=()=>m.remove();m.addEventListener("click",x=>{if(x.target===m)close()});$("#fCancel").onclick=close;
+  const showLieu=()=>{$("#fLieuF").hidden=type!=="traiteur"};showLieu();
+  m.querySelectorAll("[data-ty]").forEach(b=>b.onclick=()=>{type=b.dataset.ty;m.querySelectorAll("[data-ty]").forEach(x=>x.setAttribute("aria-pressed",x===b));showLieu()});
+  m.querySelectorAll("[data-st]").forEach(b=>b.onclick=()=>{statut=b.dataset.st;m.querySelectorAll("[data-st]").forEach(x=>x.setAttribute("aria-pressed",x===b))});
+  // prévenir s'il y a déjà quelque chose ce jour-là
+  async function checkDay(){
+    const d=$("#fJour").value;if(!d){$("#fWarn").hidden=true;return}
+    let list=S.evs.filter(x=>x.jour===d);
+    if(!list.length&&(d<iso(range()[0])||d>iso(range()[1]))){try{list=await rpc("evenements_liste",{p_debut:d,p_fin:d})}catch{list=[]}}
+    list=list.filter(x=>x.id!==e.id&&x.statut!=="annule");
+    $("#fWarn").hidden=!list.length;
+    $("#fWarn").innerHTML=list.length?`⚠️ Déjà prévu ce jour-là : ${list.map(x=>`<b>${esc(x.client)}</b> (${TYPES[x.type].l.toLowerCase()}${x.heure?", "+esc(x.heure):""})`).join(", ")}`:"";
+  }
+  $("#fJour").addEventListener("change",checkDay);checkDay();
+  if(isNew)setTimeout(()=>$("#fClient").focus(),200);
+  $("#fSave").onclick=async()=>{
+    const client=$("#fClient").value.trim(),jour=$("#fJour").value;
+    if(!client){toast("Mets au moins le nom du client");$("#fClient").focus();return}
+    if(!jour){toast("Choisis une date");$("#fJour").focus();return}
+    const pers=num($("#fPers").value),budget=num($("#fBudget").value),acompte=num($("#fAcompte").value);
+    if(pers===null||budget===null||acompte===null){toast("Un chiffre n'est pas valable");return}
+    const champs={type,client,jour,heure:$("#fHeure").value,telephone:$("#fTel").value.trim(),personnes:pers===""?"":Math.round(pers),budget,acompte,
+      lieu:type==="traiteur"?$("#fLieu").value.trim():"",statut,notes:$("#fNotes").value.trim()};
+    if(isNew)champs.cree_par=who();
+    $("#fSave").disabled=true;
+    try{await rpc("evenement_enregistrer",{p_id:isNew?null:e.id,p_champs:champs});close();
+      const d=parse(jour);S.sel=jour;S.y=d.getFullYear();S.m=d.getMonth();await load();
+      toast(isNew?"Ajouté au calendrier ✓":"Fiche enregistrée ✓")}
+    catch(err){if(lost(err))return;toast("Pas enregistré : vérifie la connexion");$("#fSave").disabled=false}
+  };
+  if(!isNew)$("#fDel").onclick=async()=>{
+    const ok=await ask("Supprimer cet événement ?",`<b>${esc(e.client)}</b> le ${esc(longDay(parse(e.jour)))}. Si c'est juste annulé, choisis plutôt le statut « Annulé ».`,[{label:"Oui, supprimer",value:true,cls:"danger"},{label:"Annuler",value:false,cls:"soft"}]);
+    if(!ok)return;
+    try{await rpc("evenement_supprimer",{p_id:e.id});close();await load();toast("Événement supprimé")}catch(err){if(!lost(err))toast("Pas supprimé : vérifie la connexion")}
+  };
+}
+
+render();load();
+if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+<script src="profil.js"></script>
+</body>
+</html>
