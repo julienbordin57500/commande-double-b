@@ -1,5 +1,5 @@
 // Garde l'appli disponible hors connexion (l'écran s'ouvre ; les données se synchronisent au retour du réseau).
-const CACHE = "commande-2b-v3";
+const CACHE = "commande-2b-v4";
 const SHELL = ["./", "index.html", "menus.html", "chiffres.html", "manifest.webmanifest", "logo.png", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 
 self.addEventListener("install", e => {

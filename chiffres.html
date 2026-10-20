@@ -118,6 +118,18 @@ tbody tr.today td.d::after{content:"aujourd'hui";margin-left:6px;font-size:11px;
 td.e{color:var(--line)}
 tfoot td{font-weight:800;background:var(--sunken);border-bottom:0;border-top:2px solid var(--fg)}
 tfoot td.d{background:var(--sunken)}
+.compact{display:none;width:100%;min-width:0;table-layout:fixed;font-size:14px;border-top:1px solid var(--line)}
+.compact th,.compact td{white-space:normal;padding:6px 6px;vertical-align:top;text-align:right}
+.compact col.c0{width:58px}
+.compact thead th{font-size:11px}
+.compact td.d{text-align:left;position:static}
+.compact td.d small{margin-left:4px;font-size:12px}
+.compact b{display:block;font-weight:800;font-size:14px}
+.compact i{display:block;font-style:normal;font-size:12px;color:var(--muted);margin-top:2px}
+.compact i.x{color:var(--mamie)}
+.compact td.e{color:var(--line);text-align:right}
+.compact tr.today-c td.d{color:var(--midi)}
+@media (max-width:760px){.scroll{display:none}.compact{display:table}}
 .note{font-size:13px;color:var(--muted);padding:10px 14px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:11px 16px;border-radius:12px;font-weight:600;font-size:15px;z-index:30;max-width:calc(100% - 32px)}
 .modal{position:fixed;inset:0;background:rgba(10,8,4,.6);display:grid;place-items:center;z-index:20;padding:20px}
@@ -198,7 +210,8 @@ tfoot td.d{background:var(--sunken)}
       <button class="btn soft" id="csv" type="button">Fichier Excel</button>
     </header>
     <div class="scroll"><table id="tbl"></table></div>
-    <p class="note">Touche une ligne pour la remplir. Les totaux se calculent tout seuls. Refusés = clients qu'on n'a pas pu accueillir faute de place.</p>
+    <table class="compact" id="cmp"></table>
+    <p class="note">Touche une ligne pour la remplir. 👥 = clients, 🍔 = burgers du mois. Les totaux se calculent tout seuls. Refusés = clients qu'on n'a pas pu accueillir faute de place.</p>
   </section>
 </div>
 <div class="print" id="print" aria-hidden="true"></div>
@@ -286,7 +299,7 @@ function render(keepInputs){
   const kp=[["CA du mois",s.ca==null?"–":eur(s.ca)],["Clients du mois",s.clients==null?"–":int(s.clients)],["Ticket moyen",s.ca&&s.clients?eur(Math.round(s.ca/s.clients*100)/100):"–"],["Burgers du mois",s.burgers==null?"–":int(s.burgers)]];
   $("#kpis").innerHTML=kp.map(([a,b])=>`<div class="kpi"><small>${a}</small><b class="num">${b}</b></div>`).join("");
   $("#tTitle").textContent="Tableau de "+monthName(S.y,S.m);
-  $("#tbl").innerHTML=tableHTML(true);
+  $("#tbl").innerHTML=tableHTML(true);$("#cmp").innerHTML=compactHTML();
 }
 const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
 function cell(k,v){return v==null?`<td class="e">–</td>`:`<td>${esc(fmt(k,v))}</td>`}
@@ -306,6 +319,26 @@ function tableHTML(live){
     <tr><th class="gm">Clients</th><th class="gm">CA</th><th class="gm">Burger du mois</th><th class="gs">Clients</th><th class="gs">CA</th><th class="gs">Burger du mois</th><th>Total clients</th><th>CA total</th></tr></thead>
     <tbody>${body}</tbody>
     <tfoot><tr><td class="d">TOTAL</td>${f("clients_midi",s.clients_midi)}${f("ca_midi",s.ca_midi)}${f("burgers_midi",s.burgers_midi)}${f("clients_soir",s.clients_soir)}${f("ca_soir",s.ca_soir)}${f("burgers_soir",s.burgers_soir)}${f("x",s.clients)}${f("ca_midi",s.ca)}${f("mamie",s.mamie)}${f("refuses",s.refuses)}</tr></tfoot>`;
+}
+
+/* Tableau compact pour téléphone : 4 colonnes, deux lignes par case, sans défilement de côté */
+const e0=v=>new Intl.NumberFormat("fr-FR",{maximumFractionDigits:0}).format(Math.round(v))+" €";
+function svc(ca,cl,bg){if(ca==null&&cl==null&&bg==null)return `<td class="e">–</td>`;
+  const sub=[cl!=null?int(cl)+" 👥":"",bg?int(bg)+" 🍔":""].filter(Boolean).join(" · ");
+  return `<td><b>${ca==null?"–":e0(ca)}</b>${sub?`<i>${sub}</i>`:""}</td>`}
+function dayCell(t,mamie,ref){if(t.ca==null&&t.clients==null&&mamie==null&&ref==null)return `<td class="e">–</td>`;
+  const x=[mamie!=null?"Mamie "+e0(mamie):"",ref?int(ref)+" refusé"+(ref>1?"s":""):""].filter(Boolean).join(" · ");
+  return `<td><b>${t.ca==null?"–":e0(t.ca)}</b>${t.clients!=null?`<i>${int(t.clients)} 👥</i>`:""}${x?`<i class="x">${x}</i>`:""}</td>`}
+function compactHTML(){
+  const n=daysIn(S.y,S.m);let body="";
+  for(let d=1;d<=n;d++){const r=S.data[key(S.y,S.m,d)]||{};const t=totals(r);const w=new Date(S.y,S.m,d).getDay();
+    const cls=[w===0||w===6?"we":"",d===S.d?"sel":"",S.y===now.getFullYear()&&S.m===now.getMonth()&&d===now.getDate()?"today-c":""].join(" ").trim();
+    body+=`<tr data-day="${d}" class="${cls}"><td class="d">${pad(d)}<small>${esc(wd(S.y,S.m,d).slice(0,3))}.</small></td>
+      ${svc(val(r,"ca_midi"),val(r,"clients_midi"),val(r,"burgers_midi"))}${svc(val(r,"ca_soir"),val(r,"clients_soir"),val(r,"burgers_soir"))}${dayCell(t,val(r,"mamie"),val(r,"refuses"))}</tr>`}
+  const s=monthSums();
+  return `<colgroup><col class="c0"><col><col><col></colgroup>
+    <thead><tr><th class="d">Jour</th><th class="gm">Midi</th><th class="gs">Soir</th><th>Journée</th></tr></thead><tbody>${body}</tbody>
+    <tfoot><tr><td class="d">Total</td>${svc(s.ca_midi,s.clients_midi,s.burgers_midi)}${svc(s.ca_soir,s.clients_soir,s.burgers_soir)}${dayCell(s,s.mamie,s.refuses)}</tr></tfoot>`;
 }
 
 /* ---------- Saisie ---------- */
@@ -330,8 +363,9 @@ function goMonth(delta){
 }
 $("#dPrev").onclick=()=>goDay(-1);$("#dNext").onclick=()=>goDay(1);
 $("#mPrev").onclick=()=>goMonth(-1);$("#mNext").onclick=()=>goMonth(1);
-$("#tbl").addEventListener("click",e=>{const tr=e.target.closest("tr[data-day]");if(!tr)return;S.d=+tr.dataset.day;render();
-  $(".day").scrollIntoView({behavior:"smooth",block:"start"});setTimeout(()=>$("#clients_midi").focus({preventScroll:true}),350)});
+const pickRow=e=>{const tr=e.target.closest("tr[data-day]");if(!tr)return;S.d=+tr.dataset.day;render();
+  $(".day").scrollIntoView({behavior:"smooth",block:"start"});setTimeout(()=>$("#clients_midi").focus({preventScroll:true}),350)};
+$("#tbl").addEventListener("click",pickRow);$("#cmp").addEventListener("click",pickRow);
 
 /* ---------- Export ---------- */
 const fileBase=()=>"Chiffres Double B - "+cap(monthName(S.y,S.m));
