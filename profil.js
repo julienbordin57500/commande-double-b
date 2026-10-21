@@ -34,11 +34,18 @@
   const set=v=>{try{localStorage.setItem(KEY,v)}catch{}};
 
   const css=`
-  .pbar{display:flex;align-items:center;gap:10px;max-width:680px;margin:0 auto 10px;padding:6px 6px 6px 8px;background:var(--surface,#fff);border:1px solid var(--line,#e6e1d5);border-radius:16px}
+  .pbar{height:58px;line-height:1.2;font-size:16px;box-sizing:border-box;display:flex;align-items:center;gap:10px;max-width:680px;margin:0 auto 10px;padding:6px 6px 6px 8px;background:var(--surface,#fff);border:1px solid var(--line,#e6e1d5);border-radius:16px}
   .pbar .who{display:flex;align-items:center;gap:10px;flex:1;min-width:0;font-weight:800;font-size:17px}
-  .pbar .who small{display:block;font-size:12px;font-weight:600;color:var(--muted,#6f695d)}
+  .pbar .who small{display:block;font-size:12px;font-weight:600;color:var(--muted,#6f695d);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pbar .who>div{min-width:0}
   .pbar button{height:44px;border-radius:12px;border:1px solid var(--line,#e6e1d5);background:var(--sunken,#f9f7f2);color:var(--fg,#1d1b17);font:inherit;font-weight:700;font-size:15px;padding:0 14px;cursor:pointer}
   .pick{position:fixed;inset:0;z-index:50;background:var(--bg,#f4f2ec);overflow:auto;display:flex;flex-direction:column;align-items:center;padding:max(28px,env(safe-area-inset-top)) 18px calc(28px + env(safe-area-inset-bottom));animation:pIn .25s ease-out}
+  .biglogo{display:flex;align-items:center;gap:14px;justify-content:center}
+  .biglogo img{width:84px;height:84px;border-radius:20px;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+  .biglogo .bl-n{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:800;font-size:40px;line-height:1;letter-spacing:-.5px;color:var(--fg,#1d1b17);text-align:left}
+  .biglogo .bl-n b{color:#f2a516}
+  .biglogo .bl-t{font-family:"Figtree",system-ui,sans-serif;font-weight:800;font-size:11px;letter-spacing:.2em;margin-top:7px;color:var(--fg,#1d1b17);text-align:left}
+  .biglogo .bl-t b{color:#f2a516}
   .pick .lg{width:min(300px,78vw);height:auto;margin-top:6px}
   .pick .tag{font-family:"Figtree",system-ui,sans-serif;font-weight:800;font-size:14px;letter-spacing:.24em;color:var(--fg,#1d1b17);margin-top:8px;text-align:center}
   .pick .tag b{color:#f2a516}
@@ -69,7 +76,7 @@
 
   function picker(canCancel){
     const cur=get();const m=document.createElement("div");m.className="pick";m.setAttribute("role","dialog");m.setAttribute("aria-label","Choisis ton profil");
-    m.innerHTML=`<img class="lg" src="logo-hd.png" alt="Double B"><div class="tag">COMMANDE <b>·</b> DEVIS <b>·</b> ANALYSE</div>
+    m.innerHTML=`<div class="biglogo"><img src="icone-appli.svg" alt="" width="84" height="84"><div><div class="bl-n">Double <b>B</b></div><div class="bl-t">COMMANDE <b>·</b> DEVIS <b>·</b> ANALYSE</div></div></div>
       <h2>Qui es-tu ?</h2><p>Touche ton prénom. C'est retenu sur ce téléphone.</p>
       <div class="cards">${Object.keys(AV).map(id=>`<button class="card${id===cur?" cur":""}" data-p="${id}">${avatar(id,96)}<span>${AV[id].nom}</span></button>`).join("")}</div>
       ${canCancel?`<button class="cancel" type="button">Annuler</button>`:""}`;
@@ -82,8 +89,9 @@
     });
   }
   function bar(){
-    const id=get();if(!id)return;const wrap=document.querySelector(".wrap:not([hidden]):not(.gate)")||document.querySelector("#app");if(!wrap)return;
-    let b=document.querySelector(".pbar");if(!b){b=document.createElement("div");b.className="pbar";wrap.prepend(b)}
+    const id=get();if(!id)return;
+    let b=document.getElementById("pbar")||document.querySelector(".pbar");
+    if(!b){const wrap=document.querySelector(".wrap:not([hidden]):not(.gate)")||document.querySelector("#app");if(!wrap)return;b=document.createElement("div");b.className="pbar";wrap.prepend(b)}
     b.innerHTML=`<div class="who">${avatar(id,40)}<div>${AV[id].nom}<small>Profil sur ce téléphone</small></div></div><button type="button">Changer de profil</button>`;
     b.querySelector("button").onclick=()=>picker(true);
   }
@@ -108,4 +116,5 @@
   window.Profil={get,ensure,avatar,noms:Object.fromEntries(Object.entries(AV).map(([k,v])=>[k,v.nom]))};
   let hasCode=false;try{hasCode=!!localStorage.getItem("commande2b-code")}catch{}
   if(hasCode&&!document.getElementById("gate"))ensure();   // l'écran Commande l'appelle lui-même après le code
+  else if(get())bar();                                      // barre remplie tout de suite : rien ne bouge à l'affichage
 })();

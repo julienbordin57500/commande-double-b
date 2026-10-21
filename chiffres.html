@@ -13,9 +13,8 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700;800&display=swap">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 /* Layout : même en-tête que le reste de l'appli ; mois, chiffres clés, saisie du jour, puis tableau du mois et export. */
 :root{
@@ -166,16 +165,24 @@ tfoot td.d{background:var(--sunken)}
 .print td.e{color:#d8d2c4}
 .print tfoot td{background:#f4f2ec;border-top:1.5px solid #1d1b17;height:22px;font-size:11.5px}
 .print .pn{font-size:10px;color:#6f695d;margin-top:8px}
+
+/* Passage d'un onglet à l'autre : fondu court, la barre du haut ne bouge pas */
+@view-transition{navigation:auto}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.16s;animation-timing-function:ease-out}
+.pbar{view-transition-name:pbar}.apps{view-transition-name:apps}
+@media (prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}}
+.logo img{aspect-ratio:1000/403}
 </style>
 </head>
 <body>
 <div class="wrap">
+  <div class="pbar" id="pbar"></div><script src="profil.js"></script>
   <nav class="apps" aria-label="Parties de l'appli">
     <a href="./">Commande</a><a href="menus.html">Menus &amp; devis</a><a href="chiffres.html" aria-current="page">Chiffres</a><a href="evenements.html">Événements</a>
   </nav>
   <div class="sync" id="sync">Connexion…</div>
   <header class="top">
-    <div class="logo"><img src="logo-hd.png" alt="Double B"></div>
+    <div class="logo"><img src="logo-hd.png" alt="Double B" width="1000" height="403"></div>
     <div class="titles"><h1>Chiffres</h1><p>Le suivi de l'activité, service par service.</p></div>
   </header>
 
@@ -232,6 +239,10 @@ tfoot td.d{background:var(--sunken)}
 <div class="toast" id="toast" hidden></div>
 
 <script>
+/* Outils d'export chargés seulement quand on télécharge (l'onglet s'ouvre plus vite) */
+function loadLibs(){if(window.html2canvas&&window.jspdf)return Promise.resolve();if(loadLibs.p)return loadLibs.p;
+  const add=src=>new Promise((ok,ko)=>{const s=document.createElement("script");s.src=src;s.onload=ok;s.onerror=ko;document.head.appendChild(s)});
+  loadLibs.p=Promise.all([add("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"),add("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js")]).catch(e=>{loadLibs.p=null;throw e});return loadLibs.p}
 /* Connexion : même base et même code d'équipe que l'appli Commande */
 const API="https://kokjumjhpasxxxrpspng.supabase.co/rest/v1/rpc/";
 const KEY="sb_publishable_HIJXH1eJ_CP-A4G3AecDKg_NbBUD0m2";
@@ -301,13 +312,15 @@ function monthSums(){
 /* ---------- Chargement et enregistrement ----------
    Une case en cours de saisie (ou pas encore envoyée) n'est JAMAIS réécrite par le rafraîchissement automatique. */
 const DIRTY=new Map();   // "jour|champ" → valeur saisie, en attente d'envoi
+const CC="chiffres2b-cache-";
+function fromCache(mk){try{const c=JSON.parse(localStorage.getItem(CC+mk)||"null");if(c&&!Object.keys(S.data).length){S.data=c.d||{};S.prev=c.p||{};S.ly=c.l||{};render()}}catch{}}
 async function load(){
-  const mk=key(S.y,S.m,1);
+  const mk=key(S.y,S.m,1);fromCache(mk);   // dernières valeurs connues affichées tout de suite
   try{
     const pm=new Date(S.y,S.m-1,1),ly=new Date(S.y-1,S.m,1);
     const [d,dp,dl]=await Promise.all([rpc("suivi_mois",{p_mois:mk}),rpc("suivi_mois",{p_mois:key(pm.getFullYear(),pm.getMonth(),1)}).catch(()=>({})),rpc("suivi_mois",{p_mois:key(ly.getFullYear(),ly.getMonth(),1)}).catch(()=>({}))]);
     if(mk!==key(S.y,S.m,1))return;
-    S.data=d||{};S.prev=dp||{};S.ly=dl||{};
+    S.data=d||{};S.prev=dp||{};S.ly=dl||{};try{localStorage.setItem(CC+mk,JSON.stringify({d:S.data,p:S.prev,l:S.ly}))}catch{}
     DIRTY.forEach((v,id)=>{const [dk,k]=id.split("|");if(v!=="…"&&dk.slice(0,7)===mk.slice(0,7)){S.data[dk]={...(S.data[dk]||{})};if(v==null)delete S.data[dk][k];else S.data[dk][k]=v}});
     S.loaded=mk;if(!S.pending)setSync("À jour","ok");render();
   }catch(e){if(lost(e))return;setSync("Hors ligne","err");render()}
@@ -471,7 +484,7 @@ function printHTML(){
 $("#pdf").onclick=async e=>{
   const b=e.currentTarget,old=b.textContent;b.disabled=true;b.innerHTML="Préparation…";
   try{
-    if(!window.html2canvas||!window.jspdf)throw new Error("libs");
+    await loadLibs().catch(()=>{throw new Error("libs")});
     if(document.fonts&&document.fonts.ready)await document.fonts.ready;
     const p=$("#print");p.innerHTML=printHTML();
     await new Promise(r=>{const im=p.querySelector("img");if(im.complete)r();else{im.onload=r;im.onerror=r}});
@@ -495,6 +508,5 @@ $("#csv").onclick=()=>{
 render();load();retryFile();
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
-<script src="profil.js"></script>
 </body>
 </html>

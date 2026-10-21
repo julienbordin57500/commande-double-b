@@ -10,11 +10,12 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Commande 2B">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script>try{if(localStorage.getItem("commande2b-code"))document.documentElement.classList.add("has-code")}catch(e){}</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png" type="image/png">
-<script src="profil.js" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
 <style>
 /* Layout : en-tête logo + « Commande » + date, recherche, onglets, cartes repliables par fournisseur, ajout en bas. */
@@ -37,6 +38,7 @@ html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.35;-webkit-tap-highlight-color:transparent;
   padding:env(safe-area-inset-top,0px) max(16px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(16px,env(safe-area-inset-left,0px))}
 [hidden]{display:none!important}
+html.has-code #app{display:block!important}html.has-code #gate{display:none!important}
 .wrap{max-width:680px;margin:0 auto;padding-block:16px 60px}
 h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance}
 button,input,select{font:inherit;color:inherit}
@@ -222,7 +224,6 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
 .cut>.cmd-sup{position:absolute;inset:0;margin:0!important;transition:transform .32s cubic-bezier(.5,0,.75,0),opacity .32s ease-in}
 .cut .knife{position:absolute;left:0;top:0;width:84px;height:84px;z-index:3;filter:drop-shadow(0 3px 4px rgba(0,0,0,.3))}
 .cut svg.slash{position:absolute;inset:0;width:100%;height:100%;z-index:2;overflow:visible}
-.pbar{margin-bottom:12px}
 .cmd-item{flex-wrap:wrap}
 .okc{flex:none;height:44px;display:flex;align-items:center;gap:7px;padding:0 12px 0 6px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);font-weight:800;font-size:14px;color:var(--go)}
 .okc .ring{width:30px;height:30px;border-radius:50%;border:2.5px solid var(--go);display:grid;place-items:center;transition:background .15s,transform .15s}
@@ -244,13 +245,25 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
 .hc ul{margin:0;padding:0 14px 12px 30px;font-size:15px}
 .hc li span{color:var(--muted)}
 .sup-name small .count{display:inline-block;margin-left:6px;padding:2px 8px;font-size:12px}
+
+.biglogo{display:flex;align-items:center;gap:14px;justify-content:center}
+.biglogo img{width:84px;height:84px;border-radius:20px;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.biglogo .bl-n{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:800;font-size:40px;line-height:1;letter-spacing:-.5px;color:var(--fg,#1d1b17);text-align:left}
+.biglogo .bl-n b{color:#f2a516}
+.biglogo .bl-t{font-family:"Figtree",system-ui,sans-serif;font-weight:800;font-size:11px;letter-spacing:.2em;margin-top:7px;color:var(--fg,#1d1b17);text-align:left}
+.biglogo .bl-t b{color:#f2a516}
+/* Passage d'un onglet à l'autre : fondu court, la barre du haut ne bouge pas */
+@view-transition{navigation:auto}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.16s;animation-timing-function:ease-out}
+.pbar{view-transition-name:pbar}.apps{view-transition-name:apps}
+@media (prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}}
+.logo img{aspect-ratio:1000/403}
 </style>
 </head>
 <body>
 
 <div class="wrap gate" id="gate" hidden>
-  <img src="logo-hd.png" alt="Double B" style="width:min(280px,76vw);height:auto">
-  <div style="font-weight:800;letter-spacing:.24em;font-size:14px">COMMANDE <span style="color:var(--accent)">·</span> DEVIS <span style="color:var(--accent)">·</span> ANALYSE</div>
+  <div class="biglogo"><img src="icone-appli.svg" alt="" width="84" height="84"><div><div class="bl-n">Double <b>B</b></div><div class="bl-t">COMMANDE <b>·</b> DEVIS <b>·</b> ANALYSE</div></div></div>
   <p>Entre le code d'accès de l'équipe. Il est demandé une seule fois sur ce téléphone.</p>
   <form id="gateForm" autocomplete="off">
     <input id="gateCode" placeholder="Code d'accès" autocapitalize="off" autocorrect="off" spellcheck="false" required aria-label="Code d'accès">
@@ -260,10 +273,11 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
 </div>
 
 <div class="wrap" id="app" hidden>
+  <div class="pbar" id="pbar"></div><script src="profil.js"></script>
   <nav class="apps" aria-label="Parties de l'appli"><a href="./" aria-current="page">Commande</a><a href="menus.html">Menus &amp; devis</a><a href="chiffres.html">Chiffres</a><a href="evenements.html">Événements</a></nav>
   <div class="sync" id="sync">Connexion…</div>
   <header class="top">
-    <div class="logo"><img src="logo-hd.png" alt="Double B"></div>
+    <div class="logo"><img src="logo-hd.png" alt="Double B" width="1000" height="403"></div>
     <div class="titles"><h1>Commande</h1><div class="date" id="now">&nbsp;</div></div>
   </header>
 
@@ -338,17 +352,23 @@ async function boot(){
   if(h){store.set(CK,h.trim());history.replaceState(null,"",location.pathname+location.search)}
   S.code=store.get(CK);
   if(!S.code){showGate();return}
-  try{const ok=await rpc("verifier");if(!ok){store.del(CK);showGate("Ce code n'est plus valable.");return}}
-  catch(e){/* hors ligne : on ouvre quand même, la synchro reprendra */}
-  showApp();
+  showApp();   // on affiche tout de suite (dernières données connues), le code est vérifié en arrière-plan
+  try{const ok=await rpc("verifier");if(!ok){store.del(CK);showGate("Ce code n'est plus valable.")}}
+  catch(e){/* hors ligne : la synchro reprendra */}
 }
-function showGate(msg){$("#app").hidden=true;$("#gate").hidden=false;const er=$("#gateErr");er.hidden=!msg;er.textContent=msg||"";setTimeout(()=>$("#gateCode").focus(),100)}
+function showGate(msg){document.documentElement.classList.remove("has-code");$("#app").hidden=true;$("#gate").hidden=false;const er=$("#gateErr");er.hidden=!msg;er.textContent=msg||"";setTimeout(()=>$("#gateCode").focus(),100)}
 $("#gateForm").addEventListener("submit",async e=>{
   e.preventDefault();const c=$("#gateCode").value.trim();if(!c)return;S.code=c;
   try{const ok=await rpc("verifier");if(ok){store.set(CK,c);showApp()}else showGate("Code incorrect. Vérifie avec le gérant.")}
   catch{showGate("Pas de connexion internet. Réessaie dans un instant.")}
 });
-function showApp(){$("#gate").hidden=true;$("#app").hidden=false;refresh();startPolling();
+function useData(d){
+  S.items=new Map(d.produits.map(p=>[p.id,{...p,section:p.section||"cuisine",qte:p.qte==null?null:+p.qte}]));
+  S.sups=d.fournisseurs.length?d.fournisseurs:[...DEFAULT_SUPS];S.supSec=d.sections||{};S.fiches=d.fiches||{};S.ready=true;
+}
+function showApp(){$("#gate").hidden=true;$("#app").hidden=false;
+  if(!S.ready){try{const c=JSON.parse(store.get("commande2b-cache")||"null");if(c&&c.produits){useData(c);render()}}catch{}}
+  refresh();startPolling();
   const go=()=>window.Profil&&window.Profil.ensure();if(window.Profil)go();else addEventListener("load",go)}
 
 /* Synchronisation : rafraîchit toutes les 5 s quand l'appli est ouverte */
@@ -374,8 +394,7 @@ async function refresh(){
   if(S.pending>0||S.busy)return;
   try{
     const d=await rpc("etat");if(S.pending>0||S.busy)return;
-    S.items=new Map(d.produits.map(p=>[p.id,{...p,section:p.section||"cuisine",qte:p.qte==null?null:+p.qte}]));
-    S.sups=d.fournisseurs.length?d.fournisseurs:[...DEFAULT_SUPS];S.supSec=d.sections||{};S.fiches=d.fiches||{};S.ready=true;
+    useData(d);store.set("commande2b-cache",JSON.stringify(d));
     setSync("À jour","ok");
     const a=document.activeElement;if(!(a&&(a.matches(".qty")||a.matches(".unit")))&&!document.querySelector(".sheet"))render();
   }catch(e){

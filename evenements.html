@@ -13,6 +13,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700;800&display=swap">
 <style>
 /* Layout : en-tête commun ; bouton « Nouvel événement », calendrier du mois, détail du jour choisi, prochains événements. */
@@ -143,16 +144,24 @@ input[type=date]::-webkit-date-and-time-value,input[type=time]::-webkit-date-and
 .call{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 12px;border-radius:10px;background:var(--go);color:#fff;font-weight:800;text-decoration:none;font-size:15px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:11px 16px;border-radius:12px;font-weight:600;font-size:15px;z-index:30;max-width:calc(100% - 32px)}
 @media (max-width:400px){.titles h1{font-size:25px}header.top .logo{width:92px;height:54px}.apps a{font-size:12px}.calhead h2{font-size:19px}.day{font-size:14px}}
+
+/* Passage d'un onglet à l'autre : fondu court, la barre du haut ne bouge pas */
+@view-transition{navigation:auto}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.16s;animation-timing-function:ease-out}
+.pbar{view-transition-name:pbar}.apps{view-transition-name:apps}
+@media (prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}}
+.logo img{aspect-ratio:1000/403}
 </style>
 </head>
 <body>
 <div class="wrap">
+  <div class="pbar" id="pbar"></div><script src="profil.js"></script>
   <nav class="apps" aria-label="Parties de l'appli">
     <a href="./">Commande</a><a href="menus.html">Menus &amp; devis</a><a href="chiffres.html">Chiffres</a><a href="evenements.html" aria-current="page">Événements</a>
   </nav>
   <div class="sync" id="sync">Connexion…</div>
   <header class="top">
-    <div class="logo"><img src="logo-hd.png" alt="Double B"></div>
+    <div class="logo"><img src="logo-hd.png" alt="Double B" width="1000" height="403"></div>
     <div class="titles"><h1>Événements</h1><p>Privatisations et traiteur, visibles par toute l'équipe.</p></div>
   </header>
 
@@ -228,10 +237,11 @@ const NOMS={julien:"Julien",eric:"Eric",thierry:"Thierry",claire:"Claire"};
    On charge les 6 semaines visibles du calendrier + les 4 prochains mois pour « À venir ». */
 function range(){const first=new Date(S.y,S.m,1);const start=new Date(first);start.setDate(1-((first.getDay()+6)%7));const end=new Date(start);end.setDate(start.getDate()+41);return [start,end]}
 async function load(){
-  const [a,b]=range();const upEnd=new Date(now);upEnd.setMonth(upEnd.getMonth()+6);
+  const [a,b]=range();const upEnd=new Date(now);upEnd.setMonth(upEnd.getMonth()+6);const ck="evenements2b-cache-"+iso(a);
+  if(!S.evs.length){try{const c=JSON.parse(localStorage.getItem(ck)||"null");if(c){S.evs=c.e;S.up=c.u;render()}}catch{}}
   try{
     const [evs,up]=await Promise.all([rpc("evenements_liste",{p_debut:iso(a),p_fin:iso(b)}),rpc("evenements_liste",{p_debut:TODAY,p_fin:iso(upEnd)})]);
-    S.evs=evs||[];S.up=(up||[]).filter(e=>e.statut!=="annule");setSync("À jour","ok");render();refreshDay();
+    S.evs=evs||[];S.up=(up||[]).filter(e=>e.statut!=="annule");try{localStorage.setItem(ck,JSON.stringify({e:S.evs,u:S.up}))}catch{}setSync("À jour","ok");render();refreshDay();
   }catch(e){if(lost(e))return;setSync("Hors ligne","err");render()}
 }
 setInterval(()=>{if(document.visibilityState==="visible"&&!document.querySelector(".sheet"))load()},20000);
@@ -426,6 +436,5 @@ function openForm(ev,day){
 render();load();
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
-<script src="profil.js"></script>
 </body>
 </html>
