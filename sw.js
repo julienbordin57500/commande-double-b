@@ -2,7 +2,7 @@
 // Pages : réseau d'abord mais jamais plus de 1,2 s d'attente (sinon la version gardée s'affiche tout de suite).
 // Images, scripts, polices : version gardée tout de suite, mise à jour en arrière-plan.
 // L'API Supabase passe toujours par le réseau.
-const CACHE = "commande-2b-v12";
+const CACHE = "commande-2b-v13";
 const SHELL = ["./", "index.html", "menus.html", "chiffres.html", "evenements.html", "manifest.webmanifest", "logo-hd.png", "icone-appli.svg", "profil.js", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 const STATIC_HOSTS = ["fonts.googleapis.com", "fonts.gstatic.com", "cdnjs.cloudflare.com"];
 

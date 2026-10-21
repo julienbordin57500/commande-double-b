@@ -142,7 +142,7 @@ tfoot td.d{background:var(--sunken)}
 @media (max-width:760px){.scroll{display:none}.compact{display:table}}
 .note{font-size:13px;color:var(--muted);padding:10px 14px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:11px 16px;border-radius:12px;font-weight:600;font-size:15px;z-index:30;max-width:calc(100% - 32px)}
-.modal{position:fixed;inset:0;background:rgba(10,8,4,.6);display:grid;place-items:center;z-index:20;padding:20px}
+.modal{position:fixed;inset:0;background:rgba(10,8,4,.6);display:grid;place-items:center;z-index:40;padding:20px}
 .modal .box{background:var(--surface);border-radius:18px;padding:16px;max-width:420px;width:100%;display:flex;flex-direction:column;gap:10px}
 @media (max-width:400px){.titles h1{font-size:25px}header.top .logo{width:92px;height:54px}.apps a{font-size:13px}.month h2{font-size:20px}}
 
@@ -172,6 +172,77 @@ tfoot td.d{background:var(--sunken)}
 .pbar{view-transition-name:pbar}.apps{view-transition-name:apps}
 @media (prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}}
 .logo img{aspect-ratio:1000/403}
+
+/* Choix de l'affichage : le mois ou le coût des plats */
+.vue{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:16px}
+.vue button{min-height:48px;border:0;border-radius:12px;background:transparent;font-weight:800;font-size:16px;color:var(--muted);padding:0 6px;line-height:1.1}
+.vue button[aria-selected="true"]{background:var(--fg);color:var(--bg)}
+#vPlats{display:none}
+html.vue-plats #vPlats{display:block} html.vue-plats #vMois{display:none}
+
+/* Coût des plats */
+:root{--ok:#2f7d4f;--ok-soft:#e3f2e8;--mid:#b86e00;--mid-soft:#fdf1d6;--bad:#c23a2b;--bad-soft:#fbe5e1}
+@media (prefers-color-scheme: dark){:root{--ok:#5fbf86;--ok-soft:#16301f;--mid:#f5b232;--mid-soft:#3a2e12;--bad:#ef8a7a;--bad-soft:#3d1c17}}
+.psum{margin-top:12px;font-size:15px;color:var(--muted);font-weight:600;text-align:center;min-height:20px}
+.psum b{color:var(--fg)}
+.pnew{width:100%;height:54px;margin-top:10px;font-size:17px;border-radius:16px}
+.plist{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;margin-top:12px}
+@media (max-width:400px){.plist{grid-template-columns:1fr}}
+.pcard{display:flex;flex-direction:column;gap:8px;text-align:left;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px;font:inherit;color:var(--fg)}
+.pcard:active{transform:scale(.99)}
+.pc-top{display:flex;align-items:flex-start;gap:10px}
+.pc-top b{flex:1;min-width:0;font-family:var(--display);font-size:20px;font-weight:800;line-height:1.15;overflow-wrap:anywhere}
+.pill{flex:none;font-weight:800;font-size:15px;padding:4px 10px;border-radius:999px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pill.g{background:var(--ok-soft);color:var(--ok)} .pill.o{background:var(--mid-soft);color:var(--mid)} .pill.r{background:var(--bad-soft);color:var(--bad)} .pill.n{background:var(--sunken);color:var(--muted)}
+.t-g{color:var(--ok)} .t-o{color:var(--mid)} .t-r{color:var(--bad)}
+.pc-nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.pc-nums span{background:var(--sunken);border-radius:10px;padding:6px 8px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;min-width:0}
+.pc-nums span b{display:block;font-size:17px;color:var(--fg);text-transform:none;letter-spacing:0;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc-chg{font-size:14px;font-weight:600;color:var(--muted)} .pc-chg.up b{color:var(--bad)} .pc-chg.down b{color:var(--ok)}
+.pc-warn{font-size:14px;font-weight:700;color:var(--mid)}
+.pempty{background:var(--surface);border:1px dashed var(--line);border-radius:18px;padding:22px 16px;text-align:center;color:var(--muted);font-size:16px}
+.pempty b{display:block;font-size:40px;margin-bottom:6px}
+.pnote{padding:12px 4px;line-height:1.5}
+
+/* Fiche d'un plat (plein écran) */
+.sheet{position:fixed;inset:0;z-index:25;background:var(--bg);overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.sh{max-width:640px;margin:0 auto;padding:max(12px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 0 max(16px,env(safe-area-inset-left))}
+.sh-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.sh-head h3{flex:1;font-size:22px;font-weight:800;min-width:0}
+.lf{display:flex;flex-direction:column;gap:5px;font-size:14px;font-weight:700;color:var(--muted);margin-bottom:12px;position:relative}
+.lf input,.ln input,.ln select,.srch{width:100%;min-width:0;height:50px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;font-size:17px;font-weight:700;padding:0 12px}
+.lf .in{position:relative}.lf .in span{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-weight:700}
+.lf small{font-weight:600;font-size:13px}
+.ln select{appearance:none;-webkit-appearance:none;padding:0 22px 0 10px;background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23888' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 8px center/10px 7px}
+.lf input:focus,.ln input:focus,.ln select:focus,.srch:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
+.sh h4{font-family:var(--display);font-size:18px;font-weight:800;margin:6px 0 8px}
+.ln{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px 10px 10px 12px;margin-bottom:8px;display:flex;flex-direction:column;gap:8px}
+.ln-top{display:flex;align-items:flex-start;gap:8px}
+.ln-top div{flex:1;min-width:0}
+.ln-top b{display:block;font-size:17px;font-weight:800;overflow-wrap:anywhere;line-height:1.2}
+.ln-top small{display:block;font-size:13px;color:var(--muted);font-weight:600;margin-top:2px}
+.ln-x{flex:none;width:40px;height:40px;border-radius:11px;border:1px solid var(--line);background:var(--sunken);color:var(--muted);font-size:18px;font-weight:700}
+.ln-q{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr) minmax(0,1fr);gap:8px;align-items:center}
+.ln-c{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:center;font-size:14px;font-weight:700;color:var(--muted)}
+.ln-c.m{grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr)}
+.lc{text-align:right;font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.lc.err{font-size:13px;font-weight:700;color:var(--mid);white-space:normal;line-height:1.2}
+.addbox{position:relative;margin:4px 0 12px}
+.res{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.res button{display:flex;align-items:center;gap:10px;text-align:left;min-height:50px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;padding:8px 12px}
+.res button span{flex:1;min-width:0;font-weight:700;overflow-wrap:anywhere}
+.res button small{flex:none;color:var(--muted);font-weight:600;font-size:13px}
+.res button.free{border-style:dashed;color:var(--muted)}
+.tot{position:sticky;bottom:0;margin:6px calc(-1 * max(16px,env(safe-area-inset-left))) 0;padding:12px max(16px,env(safe-area-inset-left)) calc(12px + env(safe-area-inset-bottom));background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid var(--line)}
+.tot-nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:10px}
+.tot-nums span{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:6px 8px;font-size:13px;font-weight:700;color:var(--muted);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tot-nums span b{display:block;font-size:18px;color:var(--fg);text-transform:none;letter-spacing:0;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tot-nums span.g{border-color:var(--ok);background:var(--ok-soft)} .tot-nums span.g b{color:var(--ok)}
+.tot-nums span.o{border-color:var(--mid);background:var(--mid-soft)} .tot-nums span.o b{color:var(--mid)}
+.tot-nums span.r{border-color:var(--bad);background:var(--bad-soft)} .tot-nums span.r b{color:var(--bad)}
+.tot-btns{display:grid;grid-template-columns:1fr auto;gap:8px}
+.tot-btns .btn{height:52px;font-size:17px}
+.btn.del{background:var(--sunken);border:1px solid var(--line);color:var(--danger)}
 </style>
 </head>
 <body>
@@ -186,6 +257,21 @@ tfoot td.d{background:var(--sunken)}
     <div class="titles"><h1>Chiffres</h1><p>Le suivi de l'activité, service par service.</p></div>
   </header>
 
+  <div class="vue" role="tablist" aria-label="Affichage">
+    <button type="button" role="tab" data-v="mois" aria-selected="true">📊 Le mois</button>
+    <button type="button" role="tab" data-v="plats" aria-selected="false">🍔 Coût des plats</button>
+  </div>
+  <script>try{if(localStorage.getItem("chiffres2b-vue")==="plats")document.documentElement.classList.add("vue-plats")}catch(e){}</script>
+
+  <div id="vPlats">
+    <div class="psum" id="pSum"></div>
+    <button class="btn pnew" id="pNew" type="button">＋ Nouveau plat</button>
+    <div class="plist" id="pList"></div>
+    <p class="note pnote">Le coût se calcule tout seul avec les prix notés dans <b>Commande</b>. Quand un prix change, tous les plats se mettent à jour.<br>
+      La pastille montre la part de la marchandise dans le prix de vente hors TVA (10 %) : <b class="t-g">vert</b> moins de 30 %, <b class="t-o">orange</b> de 30 à 35 %, <b class="t-r">rouge</b> plus de 35 %.</p>
+  </div>
+
+  <div id="vMois">
   <div class="month">
     <button class="arrow" id="mPrev" aria-label="Mois précédent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
     <h2 id="mName">&nbsp;</h2>
@@ -234,7 +320,9 @@ tfoot td.d{background:var(--sunken)}
     <table class="compact" id="cmp"></table>
     <p class="note">Touche une ligne pour la remplir. 🍽️ = sur place, 🥡 = à emporter, 🍔 = burgers du mois. Les totaux se calculent tout seuls. Refusés = clients qu'on n'a pas pu accueillir faute de place.</p>
   </section>
+  </div>
 </div>
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="shTitle"></div>
 <div class="print" id="print" aria-hidden="true"></div>
 <div class="toast" id="toast" hidden></div>
 
@@ -505,7 +593,196 @@ $("#csv").onclick=()=>{
   offer(new Blob(["﻿"+lines.join("\r\n")],{type:"text/csv"}),fileBase()+".csv");
 };
 
+/* ---------- Coût des plats ----------
+   Chaque plat = une liste d'ingrédients pris dans les produits de Commande (ou tapés à la main).
+   Le coût utilise le dernier prix noté ; un prix promo est ignoré s'il existe un prix normal juste avant. */
+const P={plats:[],prods:new Map(),loaded:false};
+const PK="plats2b-cache";
+const DIM={g:["m",1],kg:["m",1000],ml:["v",1],cl:["v",10],L:["v",1000],"pièce":["n",1],douzaine:["n",12]};
+const QUNITS=["g","kg","cl","ml","L","pièce"];
+const CUNITS=["kg","g","L","cl","pièce"];
+const VAT=1.10;
+const eur2=v=>nf2f.format(v)+" €";
+const norm=s=>String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/œ/g,"oe").replace(/æ/g,"ae");
+const shortDate=s=>new Date(s).toLocaleDateString("fr-FR",{day:"numeric",month:"short"});
+function priceOf(L){
+  const p=L.id&&P.prods.get(L.id);
+  if(p&&p.prix){const promoOff=p.prix.promo&&p.avant&&!p.avant.promo;return {p:+(promoOff?p.avant.p:p.prix.p),u:promoOff?p.avant.u:p.prix.u,promoOff,src:"cmd"}}
+  if(L.pm>0)return {p:+L.pm,u:L.pu||"kg",src:"main"};
+  return null;
+}
+function perBase(L,pr){
+  if(DIM[pr.u])return {dim:DIM[pr.u][0],per:pr.p/DIM[pr.u][1]};
+  const c=L.c;if(!c||!(c.n>0)||!DIM[c.u])return null;     // carton, colis… : il faut savoir ce qu'il contient
+  return {dim:DIM[c.u][0],per:pr.p/(c.n*DIM[c.u][1])};
+}
+function lineCost(L,pr=priceOf(L)){
+  if(!pr)return {err:"Prix à taper"};
+  const b=perBase(L,pr);if(!b)return {err:"Contenu à préciser"};
+  const q=DIM[L.u];if(!(L.q>0))return {err:"Quantité ?"};
+  if(!q||q[0]!==b.dim)return {err:"Unité à revoir"};
+  return {v:L.q*q[1]*b.per};
+}
+function platCost(pl){
+  let cost=0,miss=0,prev=0,chg=[],last="";
+  (pl.lignes||[]).forEach(L=>{const r=lineCost(L);if(r.err){miss++;return}cost+=r.v;
+    // Variation : dernier prix changé il y a moins de 60 jours → coût avec l'ancien prix
+    const p=L.id&&P.prods.get(L.id);let pv=r.v;
+    if(p&&p.prix&&p.avant&&!p.prix.promo&&Date.now()-new Date(p.prix.le)<60*864e5){
+      const o=lineCost(L,{p:+p.avant.p,u:p.avant.u});if(!o.err&&Math.abs(o.v-r.v)>=0.005){pv=o.v;chg.push(L.nom);if(p.prix.le>last)last=p.prix.le}}
+    prev+=pv});
+  const ht=pl.prix_vente>0?pl.prix_vente/VAT:null;const pct=ht&&cost?cost/ht*100:null;
+  return {cost,miss,n:(pl.lignes||[]).length,ht,pct,marge:ht!=null?ht-cost:null,delta:cost-prev,chg,last};
+}
+const level=p=>{if(p==null)return "n";const r=Math.round(p);return r<30?"g":r<=35?"o":"r"};
+const pctTxt=p=>p==null?"–":(level(p)==="g"?"✓ ":"! ")+Math.round(p)+" %";
+
+function usePlats(d){P.plats=d.plats||[];P.prods=new Map((d.produits||[]).map(p=>[p.id,p]));P.loaded=true;renderPlats()}
+function platsFromCache(){try{const c=JSON.parse(localStorage.getItem(PK)||"null");if(c&&!P.loaded)usePlats(c)}catch{}}
+async function loadPlats(){
+  platsFromCache();
+  try{const [pl,et]=await Promise.all([rpc("plats_liste"),rpc("etat")]);
+    const d={plats:pl||[],produits:(et&&et.produits)||[]};try{localStorage.setItem(PK,JSON.stringify(d))}catch{}
+    if(!$("#sheet").hidden){P.prods=new Map(d.produits.map(p=>[p.id,p]));return}   // fiche ouverte : on ne touche pas à la liste
+    usePlats(d);setSync("À jour","ok");
+  }catch(e){if(lost(e))return;setSync("Hors ligne","err");if(!P.loaded){P.loaded=true;renderPlats()}}
+}
+function renderPlats(){
+  const box=$("#pList");
+  if(!P.loaded){box.innerHTML=`<div class="pempty">Chargement…</div>`;$("#pSum").textContent="";return}
+  if(!P.plats.length){$("#pSum").textContent="";box.innerHTML=`<div class="pempty"><b>🍔</b>Pas encore de plat.<br>Appuie sur « Nouveau plat » et ajoute ses ingrédients : le coût se calcule tout seul.</div>`;return}
+  const cs=P.plats.map(pl=>[pl,platCost(pl)]);
+  const withPct=cs.filter(([,c])=>c.pct!=null);
+  const avg=withPct.length?withPct.reduce((s,[,c])=>s+c.pct,0)/withPct.length:null;
+  $("#pSum").innerHTML=`${P.plats.length} plat${P.plats.length>1?"s":""}${avg!=null?` · en moyenne la marchandise fait <b class="t-${level(avg)}">${Math.round(avg)} %</b> du prix`:""}`;
+  box.innerHTML=cs.map(([pl,c])=>`<button class="pcard" type="button" data-pid="${esc(pl.id)}">
+    <div class="pc-top"><b>${esc(pl.nom)}</b><span class="pill ${level(c.pct)}">${pctTxt(c.pct)}</span></div>
+    <div class="pc-nums"><span>Coût<b>${c.n?eur2(c.cost):"–"}</b></span><span>Vendu<b>${pl.prix_vente>0?eur(+pl.prix_vente):"–"}</b></span><span>Marge<b>${c.marge!=null&&c.n?eur2(c.marge):"–"}</b></span></div>
+    ${Math.abs(c.delta)>=0.01?`<div class="pc-chg ${c.delta>0?"up":"down"}"><b>${c.delta>0?"▲ +":"▼ −"}${eur2(Math.abs(c.delta))}</b> depuis le ${esc(shortDate(c.last))} (${esc(c.chg.join(", "))})</div>`:""}
+    ${c.miss?`<div class="pc-warn">⚠️ ${c.miss} ingrédient${c.miss>1?"s":""} à compléter</div>`:""}
+    ${!(pl.prix_vente>0)?`<div class="pc-warn">⚠️ Prix de vente à taper</div>`:""}</button>`).join("");
+}
+$("#pList").addEventListener("click",e=>{const b=e.target.closest("[data-pid]");if(b)openPlat(P.plats.find(p=>p.id===b.dataset.pid))});
+$("#pNew").onclick=()=>openPlat(null);
+
+/* Fiche d'un plat */
+let E=null;
+function defUnit(pr,L){if(!pr)return "g";if(pr.u==="kg")return "g";if(pr.u==="L")return "cl";if(DIM[pr.u])return "pièce";return L.c&&L.c.u?({kg:"g",L:"cl"}[L.c.u]||L.c.u):"pièce"}
+function knownC(id){for(const pl of P.plats)for(const L of pl.lignes||[])if(L.id===id&&L.c&&L.c.n>0)return {...L.c};return null}
+function openPlat(pl){
+  E={id:pl?pl.id:null,nom:pl?pl.nom:"",prix:pl&&pl.prix_vente>0?+pl.prix_vente:null,lignes:JSON.parse(JSON.stringify(pl?pl.lignes||[]:[])),dirty:false};
+  const s=$("#sheet");
+  s.innerHTML=`<div class="sh">
+    <div class="sh-head"><button class="arrow" type="button" data-close aria-label="Fermer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><h3 id="shTitle">${pl?"Modifier le plat":"Nouveau plat"}</h3></div>
+    <label class="lf">Nom du plat<input id="eNom" maxlength="120" autocomplete="off" placeholder="Ex. : Burger Classic" value="${esc(E.nom)}"></label>
+    <label class="lf">Prix de vente sur la carte (TTC)<div class="in"><input id="ePrix" inputmode="decimal" autocomplete="off" placeholder="Ex. : 14" value="${E.prix!=null?String(E.prix).replace(".",","):""}"><span>€</span></div></label>
+    <h4>Ingrédients pour 1 portion</h4>
+    <div id="eLines"></div>
+    <div class="addbox"><input class="srch" id="eSrch" autocomplete="off" placeholder="＋ Ajouter un ingrédient : tape son nom"><div class="res" id="eRes"></div></div>
+    <div class="tot"><div class="tot-nums" id="eTot"></div>
+      <div class="tot-btns"><button class="btn" type="button" id="eSave">Enregistrer</button>${pl?`<button class="btn del" type="button" id="eDel" aria-label="Supprimer le plat">🗑️ Supprimer</button>`:`<button class="btn soft" type="button" data-close>Annuler</button>`}</div></div>
+  </div>`;
+  s.hidden=false;s.scrollTop=0;document.documentElement.style.overflow="hidden";
+  drawLines();
+  if(!pl)setTimeout(()=>$("#eNom").focus(),50);
+}
+function closePlat(force){
+  if(!force&&E&&E.dirty){askBox("Quitter sans enregistrer ?","Les changements de ce plat seront perdus.","Quitter",()=>closePlat(true));return}
+  $("#sheet").hidden=true;$("#sheet").innerHTML="";document.documentElement.style.overflow="";E=null;renderPlats();
+}
+function askBox(title,text,yes,fn){
+  const m=document.createElement("div");m.className="modal";
+  m.innerHTML=`<div class="box" role="alertdialog" aria-label="${esc(title)}"><b style="font-size:19px">${esc(title)}</b><p style="margin:0;color:var(--muted);font-size:16px">${esc(text)}</p><button class="btn" type="button" data-y style="background:var(--danger);color:#fff;height:52px">${esc(yes)}</button><button class="btn soft" type="button" data-n style="height:52px">Annuler</button></div>`;
+  m.querySelector("[data-y]").onclick=()=>{m.remove();fn()};m.querySelector("[data-n]").onclick=()=>m.remove();document.body.appendChild(m);
+}
+function priceInfo(L,pr){
+  const p=L.id&&P.prods.get(L.id);const f=p&&p.fournisseur?" · "+p.fournisseur:"";
+  if(!pr)return p?"Pas encore de prix dans Commande":"Ingrédient tapé à la main";
+  return pr.src==="main"?"Prix tapé à la main":`${eur2(pr.p)} / ${pr.u}${pr.promoOff?" (prix normal, la promo est ignorée)":p&&p.prix&&p.prix.promo?" (prix promo)":""}${f}`;
+}
+const opts=(list,cur)=>(list.includes(cur)||!cur?list:[cur,...list]).map(u=>`<option${u===cur?" selected":""}>${esc(u)}</option>`).join("");
+function drawLines(){
+  $("#eLines").innerHTML=E.lignes.length?E.lignes.map((L,i)=>{
+    const pr=priceOf(L);const needC=pr&&!DIM[pr.u];const needP=!(L.id&&P.prods.get(L.id)&&P.prods.get(L.id).prix);
+    return `<div class="ln" data-i="${i}">
+      <div class="ln-top"><div><b>${esc(L.nom)}</b><small>${esc(priceInfo(L,pr))}</small></div><button class="ln-x" type="button" data-rm="${i}" aria-label="Retirer ${esc(L.nom)}">✕</button></div>
+      ${needP?`<div class="ln-c m"><span>Prix</span><input data-f="pm" inputmode="decimal" placeholder="€" aria-label="Prix de ${esc(L.nom)} en euros" value="${L.pm>0?String(L.pm).replace(".",","):""}"><span>€ par</span><select data-f="pu" aria-label="Unité du prix">${opts(["kg","L","pièce"],L.pu||"kg")}</select></div>`:""}
+      ${needC?`<div class="ln-c"><span>1 ${esc(pr.u)} =</span><input data-f="cn" inputmode="decimal" placeholder="combien ?" aria-label="Contenu d'un ${esc(pr.u)}" value="${L.c&&L.c.n>0?String(L.c.n).replace(".",","):""}"><select data-f="cu" aria-label="Unité du contenu">${opts(CUNITS,(L.c&&L.c.u)||"pièce")}</select></div>`:""}
+      <div class="ln-q"><input data-f="q" inputmode="decimal" placeholder="Qté" aria-label="Quantité de ${esc(L.nom)}" value="${L.q>0?String(L.q).replace(".",","):""}"><select data-f="u" aria-label="Unité">${opts(QUNITS,L.u)}</select><span class="lc" data-lc="${i}"></span></div>
+    </div>`}).join(""):`<div class="pempty" style="padding:14px">Ajoute les ingrédients un par un avec la case ci-dessous.</div>`;
+  updCosts();
+}
+function updCosts(){
+  E.lignes.forEach((L,i)=>{const el=document.querySelector(`[data-lc="${i}"]`);if(!el)return;const r=lineCost(L);el.className="lc"+(r.err?" err":"");el.textContent=r.err?r.err:eur2(r.v)});
+  const c=platCost({prix_vente:E.prix,lignes:E.lignes});const lv=level(c.pct);
+  $("#eTot").innerHTML=`<span>Coût<b>${eur2(c.cost)}</b></span><span>Marge HT<b>${c.marge!=null?eur2(c.marge):"–"}</b></span><span class="${lv==="n"?"":lv}">Marchandise<b>${c.pct!=null?Math.round(c.pct)+" %":"–"}</b></span>`;
+}
+const numIn=s=>{s=String(s).replace(/\s|€/g,"").replace(",",".");if(s==="")return null;const n=parseFloat(s);return isNaN(n)||n<0?null:n};
+$("#sheet").addEventListener("input",e=>{
+  const t=e.target;if(!E)return;
+  if(t.id==="eNom"){E.nom=t.value;E.dirty=true;return}
+  if(t.id==="ePrix"){E.prix=numIn(t.value);E.dirty=true;updCosts();return}
+  if(t.id==="eSrch"){search(t.value);return}
+  const ln=t.closest(".ln");if(!ln||!t.dataset.f)return;const L=E.lignes[+ln.dataset.i];E.dirty=true;
+  const f=t.dataset.f;
+  if(f==="q")L.q=numIn(t.value);else if(f==="pm")L.pm=numIn(t.value);
+  else if(f==="cn")L.c={...(L.c||{u:"pièce"}),n:numIn(t.value)};
+  if(f==="u"||f==="pu"||f==="cu"){if(f==="u")L.u=t.value;if(f==="pu"){L.pu=t.value;if(DIM[L.pu]&&DIM[L.u]&&DIM[L.pu][0]!==DIM[L.u][0])L.u=defUnit({u:L.pu},L)}
+    if(f==="cu"){L.c={...(L.c||{}),u:t.value};if(DIM[L.u]&&DIM[L.u][0]!==DIM[t.value][0])L.u=defUnit(priceOf(L),L)}
+    const foc=document.activeElement;drawLines();if(foc&&foc.dataset.f)document.querySelector(`.ln[data-i="${ln.dataset.i}"] [data-f="${foc.dataset.f}"]`)?.focus({preventScroll:true});return}
+  updCosts();
+});
+function search(q){
+  const r=$("#eRes");const n=norm(q).trim();if(!n){r.innerHTML="";return}
+  const used=new Set(E.lignes.map(L=>L.id).filter(Boolean));
+  const hits=[...P.prods.values()].filter(p=>norm(p.nom).includes(n)&&!used.has(p.id)).sort((a,b)=>norm(a.nom).indexOf(n)-norm(b.nom).indexOf(n)||a.nom.localeCompare(b.nom)).slice(0,8);
+  r.innerHTML=hits.map(p=>`<button type="button" data-add="${esc(p.id)}"><span>${esc(p.nom)}</span><small>${p.prix?esc(eur2(+p.prix.p)+" / "+p.prix.u):"pas de prix"}</small></button>`).join("")+
+    `<button type="button" class="free" data-free="1"><span>＋ « ${esc(q.trim())} » (pas dans Commande, je tape son prix)</span></button>`;
+}
+$("#sheet").addEventListener("click",e=>{
+  if(!E)return;
+  if(e.target.closest("[data-close]")){closePlat(false);return}
+  const a=e.target.closest("[data-add]"),fr=e.target.closest("[data-free]"),rm=e.target.closest("[data-rm]");
+  if(a||fr){
+    let L;
+    if(a){const p=P.prods.get(a.dataset.add);L={id:p.id,nom:p.nom,q:null};const c=knownC(p.id);if(c)L.c=c;L.u=defUnit(priceOf(L),L)}
+    else{L={id:null,nom:$("#eSrch").value.trim().slice(0,80),q:null,pm:null,pu:"kg",u:"g"};if(!L.nom)return}
+    E.lignes.push(L);E.dirty=true;$("#eSrch").value="";$("#eRes").innerHTML="";drawLines();
+    const ln=document.querySelector(`.ln[data-i="${E.lignes.length-1}"]`);ln.scrollIntoView({block:"center",behavior:"smooth"});
+    setTimeout(()=>(ln.querySelector('[data-f="pm"]')||ln.querySelector('[data-f="cn"]')||ln.querySelector('[data-f="q"]')).focus({preventScroll:true}),300);return}
+  if(rm){E.lignes.splice(+rm.dataset.rm,1);E.dirty=true;drawLines();return}
+  if(e.target.closest("#eSave")){savePlat();return}
+  if(e.target.closest("#eDel")){askBox("Supprimer ce plat ?",`« ${E.nom||"Sans nom"} » sera supprimé pour toute l'équipe.`,"Supprimer",delPlat)}
+});
+$("#sheet").addEventListener("keydown",e=>{if(e.key==="Escape")closePlat(false);if(e.key==="Enter"&&e.target.id==="eSrch"){e.preventDefault();const b=$("#eRes button");if(b)b.click()}});
+const clean=L=>{const o={id:L.id||null,nom:String(L.nom||"").slice(0,80),q:L.q>0?L.q:null,u:L.u};if(L.c&&L.c.n>0)o.c={n:L.c.n,u:L.c.u||"pièce"};if(!L.id||L.pm>0){o.pm=L.pm>0?L.pm:null;o.pu=L.pu||"kg"}return o};
+async function savePlat(){
+  const nom=E.nom.trim();if(!nom){toast("Donne un nom au plat");$("#eNom").focus();return}
+  const b=$("#eSave");b.disabled=true;b.textContent="Enregistrement…";
+  const champs={nom,prix_vente:E.prix,lignes:E.lignes.map(clean),par:(window.Profil&&Profil.get())||null};
+  try{const id=await rpc("plat_enregistrer",{p_id:E.id,p_champs:champs});
+    const pl={id,nom,prix_vente:E.prix,lignes:champs.lignes};const i=P.plats.findIndex(p=>p.id===id);if(i>=0)P.plats[i]=pl;else P.plats.push(pl);
+    closePlat(true);toast("Plat enregistré");loadPlats();
+  }catch(e){if(lost(e))return;b.disabled=false;b.textContent="Enregistrer";toast("Pas de réseau : réessaie dans un instant")}
+}
+async function delPlat(){
+  try{await rpc("plat_supprimer",{p_id:E.id});P.plats=P.plats.filter(p=>p.id!==E.id);closePlat(true);toast("Plat supprimé");loadPlats()}
+  catch(e){if(lost(e))return;toast("Pas de réseau : réessaie dans un instant")}
+}
+
+/* Bascule Le mois / Coût des plats */
+function setVue(v){
+  document.documentElement.classList.toggle("vue-plats",v==="plats");
+  document.querySelectorAll(".vue [data-v]").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===v));
+  try{localStorage.setItem("chiffres2b-vue",v)}catch{}
+  if(v==="plats")loadPlats();
+}
+document.querySelectorAll(".vue [data-v]").forEach(b=>b.onclick=()=>{flushAll();setVue(b.dataset.v)});
+const vuePlats=()=>document.documentElement.classList.contains("vue-plats");
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&vuePlats()&&$("#sheet").hidden)loadPlats()});
+
 render();load();retryFile();
+if(vuePlats())setVue("plats");
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
 </body>

@@ -102,7 +102,7 @@
     const S=[["👋",`Bienvenue ${nom} !`,"Voici l'appli du Double B. Elle a 4 parties, en haut de l'écran. On fait le tour en 30 secondes."],
       ["🛒","Commande","Appuie sur « Commander » à côté de ce qui manque. Tout se retrouve dans « À commander ». En haut, choisis Cuisine ou Bar & Salle."],
       ["📄","Menus & devis","Colle un menu : il se met tout seul dans la belle trame. Les forfaits apéritifs et les devis sont prêts à envoyer."],
-      ["📊","Chiffres","Chaque jour : clients sur place, à emporter et CA du midi et du soir. Les totaux se calculent tout seuls."],
+      ["📊","Chiffres","Chaque jour : clients sur place, à emporter et CA du midi et du soir. Les totaux se calculent tout seuls. Dans « Coût des plats », tu vois ce que coûte chaque plat."],
       ["📅","Événements","Privatisations, traiteur et petites notes, dans un calendrier que toute l'équipe voit."],
       ["✅","C'est parti !","Tout s'enregistre tout seul. Tu peux changer de profil à tout moment, tout en haut."]];
     let i=0;const m=document.createElement("div");m.className="tour";m.setAttribute("role","dialog");m.setAttribute("aria-label","Visite guidée");
