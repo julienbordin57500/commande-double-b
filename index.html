@@ -81,6 +81,20 @@ header.top{display:flex;align-items:center;gap:14px}
 .qinfo{margin:10px 4px 0;font-size:14px;color:var(--muted);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .qinfo .btn{height:40px;font-size:14px;padding:0 14px}
 mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:0 1px}
+/* Résultats de recherche : liste compacte juste sous la barre, visible au-dessus du clavier */
+.qres{margin-top:8px;background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.qr{display:flex;align-items:center;gap:8px;padding:7px 8px 7px 14px;border-top:1px solid var(--line);min-height:62px;position:relative}
+.qr:first-child{border-top:0}
+.qr::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:transparent}
+.qr.on{background:var(--accent-soft)}.qr.on::before{background:var(--accent)}
+.qr-t{flex:1;min-width:0}
+.qr-t b{display:block;font-weight:700;font-size:16px;line-height:1.2;overflow-wrap:anywhere}
+.qr-t small{display:block;font-size:13px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qr-t small i{font-style:normal;font-weight:700;color:var(--fg)}
+.qr .qty{width:60px;height:46px;flex:none}
+.qr .toggle{height:48px;padding:0 14px 0 10px}
+.qr .toggle[aria-pressed="true"]{width:48px;padding:0;justify-content:center}
+.qr-more{padding:12px 14px;font-size:14px;color:var(--muted);text-align:center;border-top:1px solid var(--line)}
 
 /* Onglets */
 .tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:14px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:16px;position:sticky;top:env(safe-area-inset-top,0px);z-index:4}
@@ -480,6 +494,31 @@ function chip(p){
 }
 const tools=p=>`<button class="ib" data-edit="${p.id}" aria-label="Modifier ${esc(p.nom)}">${PEN}</button><button class="ib x" data-del="${p.id}" aria-label="Supprimer ${esc(p.nom)}">${CROSS}</button>`;
 
+/* Recherche rapide : tous les fournisseurs, Cuisine et Bar & Salle, tolérante aux accents et à une petite faute de frappe */
+function lev1(a,b){if(Math.abs(a.length-b.length)>1)return false;let i=0,j=0,e=0;
+  while(i<a.length&&j<b.length){if(a[i]===b[j]){i++;j++;continue}if(++e>1)return false;
+    if(a.length>b.length)i++;else if(a.length<b.length)j++;else if(a[i+1]===b[j]&&a[i]===b[j+1]){i+=2;j+=2}else{i++;j++}}
+  return e+(a.length-i)+(b.length-j)<=1}
+function quickHits(ts){
+  const all=[...S.items.values()];
+  const score=(p,fuzzy)=>{const h=fold(p.nom),ws=fold(p.nom+" "+p.fournisseur).split(/[^a-z0-9]+/).filter(Boolean);let sc=0;
+    for(const t of ts){if(h.startsWith(t))sc+=3;else if(ws.some(w=>w.startsWith(t)))sc+=2;else if(ws.some(w=>w.includes(t)))sc+=1;
+      else if(fuzzy&&t.length>=3&&ws.some(w=>lev1(w.slice(0,t.length),t)||lev1(w,t)))sc+=.5;else return null}
+    return sc+(inSec(p)?.5:0)};
+  let r=all.map(p=>[p,score(p,false)]).filter(x=>x[1]!=null),fuzzy=false;
+  if(!r.length){r=all.map(p=>[p,score(p,true)]).filter(x=>x[1]!=null);fuzzy=r.length>0}
+  const out=r.sort((a,b)=>b[1]-a[1]||a[0].nom.localeCompare(b[0].nom,"fr")).map(x=>x[0]);out.fuzzy=fuzzy;return out}
+function qrHTML(p){
+  const other=!inSec(p)?` · <i>${(p.section||"cuisine")==="boissons"?"🍸 Bar & Salle":"🍳 Cuisine"}</i>`:"";
+  return `<div class="qr${p.acommander?" on":""}"><div class="qr-t"><b>${label(p.nom)}</b><small>${esc(p.fournisseur)}${other}${p.acommander&&p.unite?` · qté en ${esc(p.unite)}`:""}</small></div>
+    ${p.acommander?`<input class="qty" type="number" inputmode="decimal" min="0" max="10000" step="any" placeholder="Qté" value="${p.qte??""}" data-q="${p.id}" aria-label="Quantité de ${esc(p.nom)} (facultatif)">`:""}
+    <button class="toggle" type="button" data-t="${p.id}" aria-pressed="${p.acommander}" aria-label="${p.acommander?`Retirer ${esc(p.nom)} de la commande`:`Commander ${esc(p.nom)}`}"><span class="box">${CHECK}</span>${p.acommander?"":"Commander"}</button></div>`}
+/* La liste des résultats s'arrête juste au-dessus du clavier */
+function fitQres(){const el=$(".qres");if(!el)return;const vv=window.visualViewport;const h=vv?vv.height:innerHeight;
+  const top=el.getBoundingClientRect().top-(vv?vv.offsetTop:0);el.style.maxHeight=Math.max(180,Math.round(h-top-10))+"px"}
+if(window.visualViewport){visualViewport.addEventListener("resize",fitQres);visualViewport.addEventListener("scroll",fitQres)}
+addEventListener("scroll",fitQres,{passive:true});
+
 /* Rendu */
 const inSec=p=>(p.section||"cuisine")===S.sec;
 function allSups(){const extra=[...new Set([...S.items.values()].map(p=>p.fournisseur))].filter(f=>!S.sups.includes(f));return [...S.sups,...extra]}
@@ -498,10 +537,12 @@ function render(){
   if(!S.ready)return;
   const ts=terms();
   if(ts.length){
-    const hits=mine.filter(p=>matches(p,ts)).length;const info=$("#qinfo");info.hidden=false;
-    info.innerHTML=hits?`<span>${hits} produit${hits>1?"s":""} trouvé${hits>1?"s":""}</span>`
+    const res=quickHits(ts);const hits=res.length;const info=$("#qinfo");info.hidden=false;
+    info.innerHTML=hits?`<span>${hits} produit${hits>1?"s":""} trouvé${hits>1?"s":""}${res.fuzzy?" (en corrigeant la faute)":""}</span>`
       :`<span>Aucun produit ne correspond à « ${esc(S.q.trim())} ».</span><button class="btn soft" type="button" id="qAdd">Ajouter « ${esc(S.q.trim())} »</button>`;
-    $("#suppliers").innerHTML=sups.filter(f=>itemsOf(f).some(p=>matches(p,ts))).map(supHTML).join("");
+    const old=$(".qres"),top=old?old.scrollTop:0;
+    $("#suppliers").innerHTML=hits?`<div class="qres">${res.slice(0,40).map(qrHTML).join("")}${hits>40?`<div class="qr-more">Tape quelques lettres de plus pour voir les autres.</div>`:""}</div>`:"";
+    const nw=$(".qres");if(nw){nw.scrollTop=top;fitQres()}
   }else{
     $("#qinfo").hidden=true;
     $("#suppliers").innerHTML=sups.map(supHTML).join("")||`<div class="empty"><strong>Aucun fournisseur ${S.sec==="boissons"?"pour le bar et la salle":""}</strong>Crée-en un avec le formulaire ci-dessous.</div>`;
@@ -552,6 +593,10 @@ function ask(title,text,buttons){return new Promise(res=>{
 /* Actions */
 $("#q").addEventListener("input",e=>{S.q=e.target.value;$("#qClear").hidden=!S.q;render()});
 $("#q").addEventListener("keydown",e=>{if(e.key==="Escape"){e.target.value="";S.q="";$("#qClear").hidden=true;render()}});
+document.addEventListener("mousedown",e=>{if(e.target.closest(".qres .toggle")&&document.activeElement===$("#q"))e.preventDefault()});
+/* En tapant, la barre de recherche remonte juste sous les onglets (qui restent collés en haut) : les résultats ont toute la place au-dessus du clavier */
+$("#q").addEventListener("focus",()=>setTimeout(()=>{const tb=$(".tabs"),r=$(".search").getBoundingClientRect();const want=tb.offsetHeight+(parseFloat(getComputedStyle(tb).top)||0)+8;
+  if(Math.abs(r.top-want)>24)window.scrollBy({top:r.top-want,behavior:"smooth"});setTimeout(fitQres,350)},280));
 $("#qClear").onclick=()=>{$("#q").value="";S.q="";$("#qClear").hidden=true;render();$("#q").focus()};
 document.querySelectorAll("[data-sec]").forEach(b=>b.onclick=()=>{S.sec=b.dataset.sec;store.set("commande2b-sec",S.sec);render()});
 document.addEventListener("click",async e=>{
@@ -567,7 +612,9 @@ document.addEventListener("click",async e=>{
   const t=e.target.closest("[data-t]");
   if(t){const p=S.items.get(t.dataset.t);if(!p)return;
     p.acommander=!p.acommander;const champs={acommander:p.acommander};if(!p.acommander){p.qte=null;champs.qte=""}
-    render();send("maj_produit",{p_id:p.id,p_champs:champs}).catch(()=>{});return}
+    render();send("maj_produit",{p_id:p.id,p_champs:champs}).catch(()=>{});
+    if(t.closest(".qres")){if(p.acommander&&navigator.vibrate)navigator.vibrate(12);const q=$("#q");if(document.activeElement===q||e.detail===0){q.focus({preventScroll:true});q.setSelectionRange(0,q.value.length)}}
+    return}
   const d=e.target.closest("[data-del]");
   if(d){const p=S.items.get(d.dataset.del);if(!p)return;
     const ok=await ask("Supprimer cet article ?",`<b>${esc(p.nom)}</b> chez ${esc(p.fournisseur)}. Son historique de prix sera aussi effacé.`,[{label:"Oui, supprimer",value:true,cls:"danger"},{label:"Annuler",value:false,cls:"soft"}]);

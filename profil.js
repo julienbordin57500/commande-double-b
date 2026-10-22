@@ -90,6 +90,34 @@
   .sheet:not([hidden]),.modal{animation:fIn .18s ease-out}
   .sheet:not([hidden])>.box,.sheet:not([hidden])>.sh,.modal>.box{animation:upIn .28s cubic-bezier(.2,.85,.25,1)}
   .toast:not([hidden]){animation:tIn .26s cubic-bezier(.2,.85,.25,1);box-shadow:0 10px 26px -8px rgba(0,0,0,.45)}
+  /* Sonnette des notifications */
+  .pbar .bell{position:relative;width:46px;height:44px;padding:0;display:grid;place-items:center;flex:none}
+  .pbar .bell svg{width:26px;height:26px;border-radius:0;box-shadow:none}
+  .pbar .bell .w{opacity:0}
+  .pbar .bell.has{background:var(--accent-soft,#fdf1d6);border-color:color-mix(in srgb,var(--accent,#f2a516) 60%,transparent);color:var(--fg,#1d1b17)}
+  .pbar .bell.has .w{opacity:1}
+  .pbar .bell.has svg{animation:ring 2.4s ease-in-out 1}
+  .pbar .bell .nb{position:absolute;top:-6px;right:-6px;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:#d63a2a;color:#fff;font-size:13px;font-weight:800;line-height:22px;text-align:center;box-shadow:0 0 0 2px var(--surface,#fff)}
+  @keyframes ring{0%,40%,100%{transform:rotate(0)}5%{transform:rotate(-14deg)}10%{transform:rotate(12deg)}15%{transform:rotate(-9deg)}20%{transform:rotate(6deg)}25%{transform:rotate(-3deg)}}
+  @media (max-width:400px){.pbar .chg .lg{display:none}}
+  .npan{position:fixed;inset:0;z-index:45;background:rgba(10,8,4,.55);display:flex;align-items:flex-end;justify-content:center;animation:fIn .18s ease-out;font-family:"Figtree",system-ui,sans-serif}
+  .npan .nbx{background:var(--bg,#f4f2ec);color:var(--fg,#1d1b17);width:100%;max-width:560px;max-height:88vh;border-radius:24px 24px 0 0;display:flex;flex-direction:column;animation:upIn .28s cubic-bezier(.2,.85,.25,1);padding-bottom:env(safe-area-inset-bottom,0px)}
+  @media (min-width:700px){.npan{align-items:flex-start;justify-content:flex-end;padding:70px 24px}.npan .nbx{border-radius:24px;max-width:440px;max-height:80vh}}
+  .npan .nh{display:flex;align-items:center;gap:10px;padding:16px 16px 10px}
+  .npan .nh h3{flex:1;margin:0;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:24px;font-weight:800}
+  .npan .nx{width:46px;height:46px;border-radius:14px;border:1px solid var(--line,#e6e1d5);background:var(--surface,#fff);color:var(--fg,#1d1b17);font-size:22px;font-weight:700}
+  .npan .nall{margin:0 16px 10px;height:48px;border-radius:14px;border:1px solid var(--line,#e6e1d5);background:var(--surface,#fff);color:var(--fg,#1d1b17);font:inherit;font-weight:800;font-size:16px}
+  .npan .nl{overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:0 12px 16px;display:flex;flex-direction:column;gap:8px}
+  .npan .ni{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px;min-height:68px;border-radius:16px;border:1px solid var(--line,#e6e1d5);background:var(--surface,#fff);color:var(--fg,#1d1b17);font:inherit;position:relative}
+  .npan .ni .ic{flex:none;width:44px;height:44px;border-radius:13px;display:grid;place-items:center;font-size:22px;background:var(--sunken,#f9f7f2)}
+  .npan .ni .tx{flex:1;min-width:0}
+  .npan .ni b{display:block;font-size:16px;font-weight:600;line-height:1.25;overflow-wrap:anywhere}
+  .npan .ni small{display:block;font-size:13.5px;color:var(--muted,#6f695d);margin-top:3px;line-height:1.3}
+  .npan .ni.new{border-color:color-mix(in srgb,var(--accent,#f2a516) 55%,transparent);background:color-mix(in srgb,var(--accent,#f2a516) 9%,var(--surface,#fff))}
+  .npan .ni.new b{font-weight:800}
+  .npan .ni.new::after{content:"";position:absolute;top:12px;right:12px;width:10px;height:10px;border-radius:50%;background:#d63a2a}
+  .npan .ne{text-align:center;color:var(--muted,#6f695d);padding:30px 16px 40px;font-size:16px;line-height:1.45}
+  .npan .ne b{display:block;font-size:44px;margin-bottom:8px}
   @keyframes fIn{from{opacity:0}to{opacity:1}}
   @keyframes upIn{from{opacity:.4;transform:translateY(28px)}to{opacity:1;transform:none}}
   @keyframes tIn{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
@@ -114,8 +142,10 @@
     const id=get();if(!id)return;
     let b=document.getElementById("pbar")||document.querySelector(".pbar");
     if(!b){const wrap=document.querySelector(".wrap:not([hidden]):not(.gate)")||document.querySelector("#app");if(!wrap)return;b=document.createElement("div");b.className="pbar";wrap.prepend(b)}
-    b.innerHTML=`<div class="who">${avatar(id,40)}<div>${AV[id].nom}<small>Profil sur ce téléphone</small></div></div><button type="button">Changer de profil</button>`;
-    b.querySelector("button").onclick=()=>picker(true);
+    b.innerHTML=`<div class="who">${avatar(id,40)}<div>${AV[id].nom}<small>Profil sur ce téléphone</small></div></div><button type="button" class="chg">Changer<span class="lg"> de profil</span></button><button type="button" class="bell" aria-label="Notifications">${BELL}<span class="nb" hidden></span></button>`;
+    b.querySelector(".chg").onclick=()=>picker(true);
+    b.querySelector(".bell").onclick=()=>Notifs.open();
+    Notifs.badge();Notifs.start();
   }
   /* Mini visite guidée : une seule fois par téléphone */
   function tour(){
@@ -126,6 +156,7 @@
       ["📄","Menus & devis","Colle un menu : il se met tout seul dans la belle trame. Les forfaits apéritifs et les devis sont prêts à envoyer."],
       ["📊","Chiffres","Chaque jour : clients sur place, à emporter et CA du midi et du soir. Les totaux se calculent tout seuls. Dans « Coût des plats », tu vois ce que coûte chaque plat."],
       ["📅","Événements","Privatisations, traiteur et petites notes, dans un calendrier que toute l'équipe voit."],
+      ["🛎️","La sonnette","En haut à droite : quand quelqu'un ajoute un événement, un petit chiffre rouge apparaît. Touche-la pour voir quoi."],
       ["✅","C'est parti !","Tout s'enregistre tout seul. Tu peux changer de profil à tout moment, tout en haut."]];
     let i=0;const m=document.createElement("div");m.className="tour";m.setAttribute("role","dialog");m.setAttribute("aria-label","Visite guidée");
     const draw=()=>{const [e,t,p]=S[i];m.innerHTML=`<div class="tb"><div class="em" aria-hidden="true">${e}</div><h3>${t}</h3><p>${p}</p>
@@ -134,8 +165,59 @@
     draw();document.body.appendChild(m);
     m.addEventListener("click",e=>{const b=e.target.closest("[data-t]");if(!b)return;if(b.dataset.t==="next"){i++;draw()}else m.remove()});
   }
+  /* ---------- Notifications internes (pas d'alerte sur le téléphone) ----------
+     Un ajout dans Événements, un événement confirmé ou annulé, et un rappel la veille.
+     Jamais pour ses propres actions. Lu / non lu retenu pour chaque profil. */
+  const BELL=`<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 8V5.5M13 5.5h6"/><path d="M5.5 22a10.5 10.5 0 0 1 21 0"/><path d="M3.5 22h25v3.2h-25z"/><path d="M11 15.5a6.5 6.5 0 0 1 3-3" opacity=".6"/><path class="w" d="M2.5 11.5l2 1.3M29.5 11.5l-2 1.3M5.5 6.8l1.6 1.8M26.5 6.8l-1.6 1.8"/></svg>`;
+  const API="https://kokjumjhpasxxxrpspng.supabase.co/rest/v1/rpc/",PUB="sb_publishable_HIJXH1eJ_CP-A4G3AecDKg_NbBUD0m2";
+  const code=()=>{try{return localStorage.getItem("commande2b-code")}catch{return null}};
+  async function call(fn,args){const r=await fetch(API+fn,{method:"POST",headers:{"apikey":PUB,"Content-Type":"application/json"},body:JSON.stringify({p_code:code(),...args})});
+    if(!r.ok)throw new Error("net");const t=await r.text();return t?JSON.parse(t):null}
+  const ESC=x=>String(x??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+  const NK=()=>"2b-notifs-"+get();
+  const Notifs={list:[],t:null,
+    load(){try{this.list=JSON.parse(localStorage.getItem(NK())||"[]")}catch{this.list=[]}},
+    save(){try{localStorage.setItem(NK(),JSON.stringify(this.list))}catch{}},
+    unread(){return this.list.filter(n=>!n.lu).length},
+    badge(){if(!this.list.length)this.load();const k=this.unread();
+      document.querySelectorAll(".pbar .bell").forEach(b=>{const nb=b.querySelector(".nb");nb.hidden=!k;nb.textContent=k>9?"9+":k;b.classList.toggle("has",k>0);
+        b.setAttribute("aria-label",k?`Notifications : ${k} non lue${k>1?"s":""}`:"Notifications")})},
+    async refresh(){if(!get()||!code())return;try{const l=await call("notifs_liste",{p_profil:get()});if(Array.isArray(l)){this.list=l;this.save();this.badge();if(document.querySelector(".npan"))this.draw()}}catch{}},
+    start(){if(this.t)return;this.refresh();this.t=setInterval(()=>{if(document.visibilityState==="visible")this.refresh()},60000);
+      document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")this.refresh()})},
+    read(ids){const p=get();this.list.forEach(n=>{if(!ids||ids.includes(n.id))n.lu=true});this.save();this.badge();if(document.querySelector(".npan"))this.draw();
+      call("notifs_lire",{p_profil:p,p_ids:ids||null}).catch(()=>{})},
+    text(n){const T={privatisation:["🏠","privatisation"],traiteur:["🚚","traiteur"],note:["📌","pense-bête"]}[n.ev_type]||["📅","événement"];
+      const today=new Date();today.setHours(0,0,0,0);const d=n.jour?new Date(n.jour+"T00:00"):null;const diff=d?Math.round((d-today)/864e5):null;
+      const quand=diff===0?"aujourd'hui":diff===1?"demain":d?d.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"}):"";
+      const det=[quand&&quand.charAt(0).toUpperCase()+quand.slice(1),n.heure,n.personnes?n.personnes+" pers.":""].filter(Boolean).join(" · ");
+      const c=`« ${ESC(n.client||"Sans nom")} »`;let ic=T[0],t;
+      if(n.quoi==="nouveau")t=n.ev_type==="note"?`Nouveau pense-bête : ${c}`:`Nouvelle ${T[1]} : ${c}`;
+      else if(n.quoi==="confirme"){ic="✅";t=`Confirmé : ${T[1]} ${c}`}
+      else if(n.quoi==="annule"){ic="❌";t=`Annulé : ${T[1]} ${c}`}
+      else{ic="⏰";t=n.ev_type==="note"?`Pense-bête du jour : ${c}`:(diff===1?`Demain : ${T[1]} ${c}`:`Rappel : ${T[1]} ${c}`)}
+      return {ic,t,det}},
+    ago(s){const m=Math.round((Date.now()-new Date(s))/60000);if(m<1)return "à l'instant";if(m<60)return `il y a ${m} min`;const h=Math.round(m/60);if(h<24)return `il y a ${h} h`;
+      const j=Math.round(h/24);return j===1?"hier":`il y a ${j} jours`},
+    draw(){const m=document.querySelector(".npan");if(!m)return;const k=this.unread();
+      m.querySelector(".nall").hidden=!k;
+      m.querySelector(".nl").innerHTML=this.list.length?this.list.map(n=>{const x=this.text(n);const qui=n.par?(AV[n.par]?AV[n.par].nom:n.par):"Rappel automatique";
+        return `<button type="button" class="ni${n.lu?"":" new"}" data-n="${ESC(n.id)}"><span class="ic" aria-hidden="true">${x.ic}</span><span class="tx"><b>${x.t}</b><small>${ESC(x.det)}</small><small>${ESC(qui)} · ${this.ago(n.le)}</small></span></button>`}).join("")
+        :`<div class="ne"><b>🛎️</b>Rien de nouveau pour l'instant.<br>Quand quelqu'un ajoute un événement, tu le verras ici.</div>`},
+    open(){if(document.querySelector(".npan"))return;const m=document.createElement("div");m.className="npan";m.setAttribute("role","dialog");m.setAttribute("aria-label","Notifications");
+      m.innerHTML=`<div class="nbx"><div class="nh"><h3>Notifications</h3><button type="button" class="nx" aria-label="Fermer">✕</button></div><button type="button" class="nall">✓ Tout marquer comme lu</button><div class="nl"></div></div>`;
+      document.body.appendChild(m);document.documentElement.style.overflow="hidden";this.draw();this.refresh();
+      const close=()=>{m.remove();document.documentElement.style.overflow=""};
+      m.addEventListener("click",e=>{if(e.target===m||e.target.closest(".nx")){close();return}
+        if(e.target.closest(".nall")){this.read(null);return}
+        const b=e.target.closest("[data-n]");if(!b)return;const n=this.list.find(x=>x.id===b.dataset.n);if(!n)return;
+        if(!n.lu)this.read([n.id]);close();
+        const h=`ev=${encodeURIComponent(n.ev||"")}&j=${encodeURIComponent(n.jour||"")}`;
+        if(/evenements\.html$/.test(location.pathname))location.hash=h;else location.href="evenements.html#"+h});
+      document.addEventListener("keydown",function k(e){if(e.key==="Escape"){close();document.removeEventListener("keydown",k)}})}
+  };
   function ensure(){if(!get())picker(false);else{bar();tour()}}
-  window.Profil={get,ensure,avatar,noms:Object.fromEntries(Object.entries(AV).map(([k,v])=>[k,v.nom]))};
+  window.Profil={get,ensure,avatar,notifs:Notifs,noms:Object.fromEntries(Object.entries(AV).map(([k,v])=>[k,v.nom]))};
   let hasCode=false;try{hasCode=!!localStorage.getItem("commande2b-code")}catch{}
   if(hasCode&&!document.getElementById("gate"))ensure();   // l'écran Commande l'appelle lui-même après le code
   else if(get())bar();                                      // barre remplie tout de suite : rien ne bouge à l'affichage

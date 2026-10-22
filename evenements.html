@@ -315,7 +315,7 @@ function refreshDay(){if(DAY&&document.querySelector(".sheet.daysheet")&&documen
 
 /* Pense-bête : une note rattachée à un jour */
 async function saveNote(id,champs){
-  try{await rpc("evenement_enregistrer",{p_id:id,p_champs:champs});await load();return true}
+  try{await rpc("evenement_enregistrer",{p_id:id,p_champs:{...champs,par:who()}});await load();return true}
   catch(err){if(!lost(err))toast("Pas enregistré : vérifie la connexion");return false}
 }
 $("#nJour").value=TODAY;
@@ -415,7 +415,7 @@ function openForm(ev,day){
       lieu:type==="traiteur"?$("#fLieu").value.trim():"",statut,notes:$("#fNotes").value.trim()};
     if(isNew)champs.cree_par=who();
     $("#fSave").disabled=true;
-    try{await rpc("evenement_enregistrer",{p_id:isNew?null:e.id,p_champs:champs});close();
+    try{await rpc("evenement_enregistrer",{p_id:isNew?null:e.id,p_champs:{...champs,par:who()}});close();
       const d=parse(jour);S.sel=jour;S.y=d.getFullYear();S.m=d.getMonth();await load();
       toast(isNew?"Ajouté au calendrier ✓":"Fiche enregistrée ✓")}
     catch(err){if(lost(err))return;toast("Pas enregistré : vérifie la connexion");$("#fSave").disabled=false}
@@ -433,7 +433,19 @@ function openForm(ev,day){
   };
 }
 
-render();load();
+/* Ouverture directe depuis une notification : evenements.html#ev=<id>&j=<jour> */
+async function openFromHash(){
+  const H=new URLSearchParams(location.hash.slice(1));const id=H.get("ev"),j=H.get("j");if(!id&&!j)return;
+  history.replaceState(null,"",location.pathname+location.search);
+  document.querySelectorAll(".sheet").forEach(x=>x.remove());
+  if(j&&/^\d{4}-\d{2}-\d{2}$/.test(j)){const d=parse(j);if(d.getMonth()!==S.m||d.getFullYear()!==S.y){S.y=d.getFullYear();S.m=d.getMonth();S.sel=j;render();await load()}}
+  let ev=[...S.evs,...S.up].find(x=>x.id===id);
+  if(!ev&&id&&j){try{ev=(await rpc("evenements_liste",{p_debut:j,p_fin:j})||[]).find(x=>x.id===id)}catch{}}
+  if(ev){ev.type==="note"?openNote(ev):openForm(ev)}else if(j){openDay(j);toast("Cet événement a été supprimé ou déplacé")}
+}
+addEventListener("hashchange",openFromHash);
+{const H=new URLSearchParams(location.hash.slice(1)).get("j");if(H&&/^\d{4}-\d{2}-\d{2}$/.test(H)){const d=parse(H);S.y=d.getFullYear();S.m=d.getMonth();S.sel=H}}
+render();load().then(openFromHash);
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
 </body>
