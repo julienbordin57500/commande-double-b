@@ -86,6 +86,17 @@ a{color:inherit}
 .fill{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;height:52px;border-radius:14px;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:17px;
   background-image:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,0));box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 6px 14px -8px color-mix(in srgb,var(--accent) 90%,#000)}
 
+/* Hygiène : orange tant que les relevés du moment ne sont pas faits, vert ensuite */
+.hyg.todo{border:1.5px solid color-mix(in srgb,var(--accent) 70%,transparent);background:color-mix(in srgb,var(--accent) 7%,var(--surface))}
+.hyg.fine{border:1.5px solid color-mix(in srgb,var(--go) 45%,transparent)}
+.hs{flex:none;font-size:13px;font-weight:800;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.hyg.todo .hs{background:var(--accent);color:var(--accent-ink)} .hyg.fine .hs{background:var(--go);color:#fff}
+.hl{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:15.5px;font-weight:600}
+.hl:first-child{border-top:0;padding-top:0}
+.hl em{font-style:normal;font-size:20px;flex:none;width:26px;text-align:center}
+.hl span{flex:1;min-width:0}
+.hl b{flex:none;font-weight:800;font-variant-numeric:tabular-nums}
+.hl b.ok{color:var(--go)} .hl b.no{color:var(--accent-ink);background:var(--accent);padding:1px 8px;border-radius:8px}
 .card{transition:scale .12s ease}.card:active{scale:.985}
 .card,.bell-cta{box-shadow:0 1px 2px rgba(60,40,10,.04),0 6px 18px -10px rgba(60,40,10,.14)}
 @media (prefers-reduced-motion:no-preference){.card,.bell-cta,.hello{animation:rise .45s cubic-bezier(.2,.8,.2,1) both}.c2{animation-delay:.05s!important}.c3{animation-delay:.1s!important}.c4{animation-delay:.15s!important}}
@@ -107,6 +118,11 @@ a{color:inherit}
   <a class="card c2" href="evenements.html" id="cEv">
     <div class="card-h"><span class="ico" aria-hidden="true">📅</span><h2>Au programme</h2><span class="go" aria-hidden="true">›</span></div>
     <div id="evs"><div class="empty">Chargement…</div></div>
+  </a>
+
+  <a class="card c3 hyg" href="hygiene.html" id="cHyg">
+    <div class="card-h"><span class="ico" aria-hidden="true">🧼</span><h2>Hygiène</h2><span class="hs" id="hygS"></span><span class="go" aria-hidden="true">›</span></div>
+    <div id="hyg"><div class="empty">Chargement…</div></div>
   </a>
 
   <a class="card c3" href="./#acommander" id="cCmd">
@@ -189,14 +205,37 @@ function drawHier(month){
   $("#hier").innerHTML=`<div class="kp"><div><small>Chiffre d'affaires</small><b class="num">${ca==null?"–":nf0.format(ca)+" €"}</b></div><div><small>Clients</small><b class="num">${cl==null?"–":nf0.format(cl)}</b></div></div>`;
 }
 
+/* Hygiène : Julien et Eric voient tout ; Claire et Thierry la vitrine */
+const ME=(window.Profil&&Profil.get())||"";const FULL=!["claire","thierry"].includes(ME);
+const NAPP=FULL?7:1,MOMENT=now.getHours()<15?"matin":"soir";
+function drawHyg(d){
+  if(!d){return}
+  const rel=(d.releves||[]).filter(r=>r.jour===TODAY&&r.moment===MOMENT&&(FULL||r.appareil==="vitrine"));
+  const faits=new Set(rel.map(r=>r.appareil)).size;const tous=faits>=NAPP;
+  const anomalie=rel.some(r=>!r.ok&&!r.action);
+  const c=$("#cHyg");c.classList.toggle("todo",!tous);c.classList.toggle("fine",tous);
+  $("#hygS").textContent=tous?"✓ fait":"à faire";
+  let h=`<div class="hl"><em aria-hidden="true">${FULL?"🌡️":"🍰"}</em><span>${FULL?"Frigos et congélateurs":"Vitrine"} · ${MOMENT}</span><b class="${tous?"ok":"no"}">${tous?"✓":faits+"/"+NAPP}</b></div>`;
+  if(FULL){
+    const days=f=>{const h=(d.huile||[]).filter(x=>x.friteuse===f).sort((a,b)=>String(b.le).localeCompare(String(a.le)))[0];if(!h)return "–";const a=new Date(h.le);a.setHours(0,0,0,0);const b=new Date();b.setHours(0,0,0,0);const n=Math.round((b-a)/864e5);return n===0?"neuve":n+" j"};
+    h+=`<div class="hl"><em aria-hidden="true">🍟</em><span>Huile friteuses</span><b>F1 ${days(1)} · F2 ${days(2)}</b></div>`;
+    const run=(d.refroid||[]).filter(x=>!x.fin);
+    if(run.length){const m=Math.max(...run.map(x=>Math.floor((Date.now()-new Date(x.debut))/60000)));h+=`<div class="hl"><em aria-hidden="true">❄️</em><span>En cellule : ${run.length} produit${run.length>1?"s":""}</span><b class="${m>120?"no":""}">${m<60?m+" min":Math.floor(m/60)+" h "+pad(m%60)}</b></div>`}
+  }
+  if(anomalie)h+=`<div class="hl"><em aria-hidden="true">⚠️</em><span>Une température est trop haute</span></div>`;
+  $("#hyg").innerHTML=h;
+}
+
 /* Affichage immédiat avec les dernières valeurs connues, puis mise à jour */
 const MK=`${Y.getFullYear()}-${pad(Y.getMonth()+1)}-01`;
 drawEv(cache("accueil2b-ev-"+TODAY));
+drawHyg(cache("hyg2b-cache"));
 drawCmd(cache("commande2b-cache"));
 drawHier(cache("chiffres2b-cache-"+MK)&&cache("chiffres2b-cache-"+MK).d);
 async function load(){
-  const [ev,et,mo]=await Promise.allSettled([rpc("evenements_liste",{p_debut:TODAY,p_fin:TOMORROW}),rpc("etat"),rpc("suivi_mois",{p_mois:MK})]);
-  for(const x of [ev,et,mo])if(x.status==="rejected"&&lost(x.reason))return;
+  const [ev,et,mo,hy]=await Promise.allSettled([rpc("evenements_liste",{p_debut:TODAY,p_fin:TOMORROW}),rpc("etat"),rpc("suivi_mois",{p_mois:MK}),rpc("hyg_etat",{p_debut:TODAY,p_fin:TODAY})]);
+  for(const x of [ev,et,mo,hy])if(x.status==="rejected"&&lost(x.reason))return;
+  if(hy.status==="fulfilled")drawHyg(hy.value);
   if(ev.status==="fulfilled"){cache("accueil2b-ev-"+TODAY,ev.value);drawEv(ev.value)}
   if(et.status==="fulfilled"&&et.value){cache("commande2b-cache",et.value);drawCmd(et.value)}
   if(mo.status==="fulfilled"){drawHier(mo.value)}

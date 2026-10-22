@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Hygiène · Double B</title>
+<meta name="description" content="Relevés d'hygiène du Double B : températures, huile des friteuses, refroidissement en cellule.">
+<meta name="theme-color" content="#f2a516">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Commande 2B">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700;800&display=swap">
+<script>try{if(!localStorage.getItem("commande2b-code"))location.replace("./")}catch(e){}</script>
+<style>
+/* Hygiène : 3 parties (températures, friteuses, cellule). Les serveurs ne voient que la vitrine. Rien ne s'efface : une correction s'ajoute. */
+:root{
+  --bg:#f4f2ec; --surface:#ffffff; --sunken:#f9f7f2; --line:#e6e1d5; --fg:#1d1b17; --muted:#6f695d;
+  --accent:#f2a516; --accent-ink:#2a1d00; --accent-soft:#fdf1d6;
+  --ok:#2f7d4f; --ok-soft:#e3f2e8; --bad:#c23a2b; --bad-soft:#fbe5e1; --warn:#b86e00; --warn-soft:#fdf1d6;
+  --cold:#2f5d9e; --cold-soft:#e4ecf8; --oil:#c98a0a; --oil-soft:#fbf0d2;
+  --display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
+  --body:"Figtree","Segoe UI",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#141310; --surface:#1f1d18; --sunken:#191814; --line:#34312a; --fg:#f3efe5; --muted:#a69f90;
+  --accent:#f5b232; --accent-ink:#231800; --accent-soft:#3a2e12;
+  --ok:#5fbf86; --ok-soft:#16301f; --bad:#ef8a7a; --bad-soft:#3d1c17; --warn:#f5b232; --warn-soft:#3a2e12;
+  --cold:#8db7ee; --cold-soft:#1b2a40; --oil:#f5c04a; --oil-soft:#3a2e12; color-scheme:dark}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.35;
+  padding:env(safe-area-inset-top,0px) max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px))}
+[hidden]{display:none!important}
+.wrap{max-width:680px;margin:0 auto;padding-block:16px 24px}
+h1,h2,h3{font-family:var(--display);margin:0}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+.num{font-variant-numeric:tabular-nums}
+
+.top{display:flex;align-items:center;gap:12px;margin:14px 2px 0}
+.top .ti{flex:1;min-width:0}
+.top h1{font-size:32px;font-weight:800;letter-spacing:-.5px;line-height:1}
+.top p{margin:6px 0 0;color:var(--muted);font-weight:600;font-size:15px}
+.pdfb{flex:none;height:46px;padding:0 14px;border-radius:14px;border:1px solid var(--line);background:var(--surface);font-weight:800;font-size:15px}
+.sync{font-size:12px;color:var(--muted);text-align:right;margin-top:6px;min-height:16px}
+
+.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px;margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:16px}
+.seg button{min-height:50px;border:0;border-radius:12px;background:transparent;font-weight:800;font-size:15px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:6px;line-height:1.1;padding:0 4px}
+.seg button[aria-selected="true"]{background:var(--fg);color:var(--bg)}
+.seg .c{font-size:12px;font-weight:800;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--accent);color:var(--accent-ink);display:inline-grid;place-items:center}
+
+/* Matin / Soir + progression */
+.mom{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.mom button{height:54px;border-radius:16px;border:1.5px solid var(--line);background:var(--surface);font-weight:800;font-size:17px;display:flex;align-items:center;justify-content:center;gap:8px}
+.mom button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.mom small{font-size:13px;font-weight:800;padding:2px 8px;border-radius:999px;background:var(--sunken);color:var(--muted)}
+.mom small.full{background:var(--ok);color:#fff}
+.prog{height:8px;border-radius:4px;background:var(--line);margin:12px 2px 0;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--ok));border-radius:4px;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+
+/* Cartes appareils */
+.list{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.ap{background:var(--surface);border:1.5px solid var(--line);border-radius:20px;padding:12px 12px 12px 14px;transition:border-color .25s,background-color .25s}
+.ap-row{display:flex;align-items:center;gap:12px;position:relative}
+.ap .ic{flex:none;width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:24px;background:var(--cold-soft)}
+.ap .nm{flex:1;min-width:0}
+.ap .nm b{display:block;font-size:17px;font-weight:800;line-height:1.15}
+.ap .nm small{display:block;font-size:13.5px;color:var(--muted);font-weight:600;margin-top:2px}
+.tin{flex:none;position:relative;width:104px}
+.tin input{width:100%;height:58px;border-radius:15px;border:2px solid var(--line);background:var(--sunken);text-align:center;font-family:var(--display);font-size:26px;font-weight:800;padding:0 30px 0 8px;font-variant-numeric:tabular-nums;-webkit-appearance:none;appearance:none}
+.tin input:focus{outline:none;border-color:var(--accent);background:var(--surface);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 22%,transparent)}
+.tin .u{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-weight:800;color:var(--muted);pointer-events:none}
+.tin .neg{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-family:var(--display);font-size:26px;font-weight:800;pointer-events:none;color:var(--fg)}
+.tin.cong input{padding-left:24px}
+.ap.ok{border-color:color-mix(in srgb,var(--ok) 55%,transparent)} .ap.ok .tin input{border-color:var(--ok);color:var(--ok)}
+.ap.bad{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 6%,var(--surface))} .ap.bad .tin input{border-color:var(--bad);color:var(--bad)}
+.ap .verdict{position:absolute;right:-6px;top:-9px;z-index:1;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:14px;color:#fff;box-shadow:0 0 0 2.5px var(--surface);transform:scale(0);transition:transform .3s cubic-bezier(.3,1.6,.5,1)}
+.ap.ok .verdict{background:var(--ok);transform:scale(1)} .ap.bad .verdict{background:var(--bad);transform:scale(1)}
+.act{margin-top:10px;padding-top:10px;border-top:1px dashed color-mix(in srgb,var(--bad) 45%,transparent);display:none}
+.ap.bad .act{display:block;animation:dn .25s ease-out}
+.act p{margin:0 0 8px;font-weight:800;color:var(--bad);font-size:15px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{min-height:40px;padding:0 12px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);font-weight:700;font-size:14px}
+.chips button[aria-pressed="true"]{border-color:var(--bad);background:var(--bad);color:#fff}
+.act input{width:100%;height:46px;margin-top:8px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);padding:0 12px;font-size:16px}
+.act.need{animation:shake .35s}
+/* relevé déjà fait */
+.done-v{flex:none;text-align:right}
+.done-v b{display:block;font-family:var(--display);font-size:26px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.done-v small{display:block;font-size:12.5px;color:var(--muted);font-weight:700;margin-top:4px;white-space:nowrap}
+.ap.d-ok .done-v b{color:var(--ok)} .ap.d-bad .done-v b{color:var(--bad)}
+.ap.d-ok{background:color-mix(in srgb,var(--ok) 5%,var(--surface));border-color:color-mix(in srgb,var(--ok) 35%,transparent)}
+.ap.d-bad{border-color:color-mix(in srgb,var(--bad) 55%,transparent)}
+.ap .note{margin:8px 0 0 58px;font-size:13.5px;color:var(--muted);font-weight:600}
+.ap .note b{color:var(--fg)}
+.fix{margin-left:6px;border:0;background:none;color:var(--muted);text-decoration:underline;font-size:13px;font-weight:700;padding:4px}
+.pend{font-size:11px;font-weight:800;color:var(--warn);background:var(--warn-soft);border-radius:6px;padding:1px 6px;margin-left:4px}
+.ap.pop{animation:pop .5s cubic-bezier(.3,1.5,.5,1)}
+
+.allok{display:flex;align-items:center;gap:14px;margin-top:14px;padding:16px;border-radius:20px;background:var(--ok-soft);border:1.5px solid color-mix(in srgb,var(--ok) 45%,transparent);color:var(--fg)}
+.allok svg{flex:none;width:46px;height:46px}
+.allok svg circle{fill:var(--ok)}
+.allok svg path{stroke:#fff;stroke-width:3.2;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:30;stroke-dashoffset:30;animation:draw .55s .15s ease-out forwards}
+.allok b{display:block;font-size:18px;font-weight:800}
+.allok small{color:var(--muted);font-weight:600;font-size:14px}
+
+.savebar{position:sticky;bottom:calc(84px + env(safe-area-inset-bottom,0px));margin-top:14px;z-index:5}
+html.typing .savebar{bottom:12px}
+.big{width:100%;height:58px;border-radius:18px;border:0;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center;gap:10px;
+  background-image:linear-gradient(180deg,rgba(255,255,255,.24),rgba(255,255,255,0));box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 10px 24px -10px color-mix(in srgb,var(--accent) 90%,#000)}
+.big:disabled{background:var(--sunken);background-image:none;color:var(--muted);border:1.5px solid var(--line);box-shadow:0 6px 18px -10px rgba(0,0,0,.25)}
+.big.soft{background:var(--surface);color:var(--fg);border:1.5px solid var(--line);box-shadow:none;background-image:none}
+
+/* Friteuses */
+.fr{background:var(--surface);border:1.5px solid var(--line);border-radius:22px;padding:16px;position:relative;overflow:hidden}
+.fr+.fr{margin-top:12px}
+.fr-h{display:flex;align-items:center;gap:12px}
+.fr-h .ic{flex:none;width:50px;height:50px;border-radius:15px;display:grid;place-items:center;font-size:26px;background:var(--oil-soft)}
+.fr-h h2{flex:1;font-size:22px;font-weight:800}
+.fr-days{display:flex;align-items:baseline;gap:8px;margin-top:12px}
+.fr-days b{font-family:var(--display);font-size:46px;font-weight:800;line-height:1;letter-spacing:-1px}
+.fr-days span{font-size:17px;font-weight:700;color:var(--muted)}
+.fr small.when{display:block;color:var(--muted);font-weight:600;font-size:14px;margin-top:4px}
+.gauge{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:12px 0 14px}
+.gauge i{height:10px;border-radius:5px;background:var(--line)}
+.gauge i.on{background:var(--oil)}
+.fr .wave{position:absolute;left:0;right:0;bottom:0;height:0;background:linear-gradient(180deg,color-mix(in srgb,var(--oil) 55%,transparent),color-mix(in srgb,var(--oil) 25%,transparent));pointer-events:none}
+.fr.fill .wave{animation:oil 1.1s ease-in-out}
+.hist{margin-top:12px;font-size:14px;color:var(--muted);font-weight:600;line-height:1.6}
+
+/* Cellule */
+.run{background:var(--surface);border:1.5px solid color-mix(in srgb,var(--cold) 45%,transparent);border-radius:22px;padding:14px;margin-top:12px}
+.run-h{display:flex;align-items:center;gap:12px}
+.run-h .ic{flex:none;width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:24px;background:var(--cold-soft)}
+.run-h .t{flex:1;min-width:0}
+.run-h .t b{display:block;font-size:18px;font-weight:800;overflow-wrap:anywhere}
+.run-h .t small{display:block;font-size:13.5px;color:var(--muted);font-weight:600;margin-top:2px}
+.chrono{flex:none;text-align:right;font-family:var(--display);font-weight:800;font-size:24px;font-variant-numeric:tabular-nums}
+.chrono small{display:block;font-family:var(--body);font-size:12px;color:var(--muted);font-weight:700}
+.bar{height:10px;border-radius:5px;background:var(--line);margin:12px 0;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:5px;background:var(--cold);transition:width 1s linear}
+.run.late .bar i{background:var(--warn)} .run.over .bar i{background:var(--bad)} .run.over{border-color:var(--bad)}
+.run.over .chrono{color:var(--bad)}
+.past{margin-top:16px}
+.past h3{font-size:17px;font-weight:800;margin:0 2px 8px}
+.pr{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--surface);border:1px solid var(--line);margin-bottom:6px}
+.pr .t{flex:1;min-width:0}
+.pr .t b{display:block;font-weight:700;overflow-wrap:anywhere}
+.pr .t small{color:var(--muted);font-size:13px;font-weight:600}
+.pr .r{flex:none;font-weight:800;font-size:14px;padding:4px 9px;border-radius:999px}
+.pr .r.ok{background:var(--ok-soft);color:var(--ok)} .pr .r.bad{background:var(--bad-soft);color:var(--bad)}
+.empty{text-align:center;color:var(--muted);padding:26px 16px;border:1px dashed var(--line);border-radius:20px;margin-top:12px;background:var(--surface);font-size:16px}
+.empty b{display:block;font-size:40px;margin-bottom:6px}
+
+/* Fenêtres */
+.sheet{position:fixed;inset:0;z-index:30;background:rgba(10,8,4,.55);display:flex;align-items:flex-end;justify-content:center}
+.sheet .box{background:var(--bg);width:100%;max-width:560px;border-radius:24px 24px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));max-height:92vh;overflow:auto;display:flex;flex-direction:column;gap:12px}
+.sheet h3{font-size:23px;font-weight:800}
+.sheet .sub{color:var(--muted);font-weight:600;font-size:15px;margin-top:-6px}
+.lf{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:800;color:var(--muted)}
+.lf input{height:54px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);padding:0 14px;font-size:18px;font-weight:700;color:var(--fg)}
+.lf input:focus{outline:none;border-color:var(--accent)}
+.sugg{display:flex;flex-wrap:wrap;gap:6px}
+.sugg button{min-height:38px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-weight:700;font-size:14px}
+.res{padding:12px 14px;border-radius:14px;font-weight:800;font-size:16px}
+.res.ok{background:var(--ok-soft);color:var(--ok)} .res.bad{background:var(--bad-soft);color:var(--bad)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:12px 16px;border-radius:12px;font-weight:700;font-size:15px;z-index:60;max-width:calc(100% - 32px)}
+
+/* PDF (A4 paysage), toujours clair */
+.print{position:fixed;left:-20000px;top:0;font-family:var(--body);color:#1d1b17}
+.pp{width:1123px;height:794px;background:#fff;padding:28px 32px 20px;display:flex;flex-direction:column}
+.pp .ph{display:flex;align-items:center;gap:16px;margin-bottom:10px}
+.pp .ph img{width:90px}
+.pp .ph h1{font-family:var(--display);font-size:24px;font-weight:800;flex:1}
+.pp .ph h1 small{display:block;font-family:var(--body);font-size:12px;font-weight:500;color:#6f695d;margin-top:3px}
+.pp table{border-collapse:collapse;width:100%;font-size:10.5px;font-variant-numeric:tabular-nums}
+.pp th,.pp td{border:1px solid #e0dacd;padding:0 4px;height:19px;text-align:center}
+.pp thead th{background:#f4f2ec;color:#6f695d;font-size:9.5px;font-weight:800}
+.pp td.d{text-align:left;font-weight:700;white-space:nowrap}
+.pp td.bad{background:#fbe5e1;color:#c23a2b;font-weight:800}
+.pp td.we{background:#faf8f3}
+.pp h2{font-family:var(--display);font-size:16px;margin:4px 0 6px}
+.pp .l td{text-align:left;height:22px}
+.pp .foot{margin-top:auto;font-size:10px;color:#6f695d;display:flex;justify-content:space-between;padding-top:8px}
+
+@keyframes dn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@keyframes pop{0%{transform:scale(.97)}50%{transform:scale(1.02)}100%{transform:none}}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes oil{0%{height:0;opacity:1}55%{height:100%;opacity:1}100%{height:100%;opacity:0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@view-transition{navigation:auto}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.16s;animation-timing-function:ease-out}
+.pbar{view-transition-name:pbar}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="pbar" id="pbar"></div><script src="profil.js"></script>
+  <div class="sync" id="sync">&nbsp;</div>
+  <header class="top"><div class="ti"><h1>Hygiène</h1><p id="sub">&nbsp;</p></div><button class="pdfb" id="pdf" type="button" hidden>📄 PDF du mois</button></header>
+  <div class="seg" role="tablist" id="seg" hidden>
+    <button role="tab" data-t="temp" aria-selected="true">🌡️ Frigos</button>
+    <button role="tab" data-t="huile" aria-selected="false">🍟 Huile</button>
+    <button role="tab" data-t="cell" aria-selected="false">❄️ Cellule <span class="c" id="nCell" hidden></span></button>
+  </div>
+  <section id="v-temp"></section>
+  <section id="v-huile" hidden></section>
+  <section id="v-cell" hidden></section>
+</div>
+<div class="print" id="print" aria-hidden="true"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const API="https://kokjumjhpasxxxrpspng.supabase.co/rest/v1/rpc/";
+const KEY="sb_publishable_HIJXH1eJ_CP-A4G3AecDKg_NbBUD0m2";
+let CODE=null;try{CODE=localStorage.getItem("commande2b-code")}catch{}
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2600)}
+async function rpc(fn,args={}){
+  const r=await fetch(API+fn,{method:"POST",headers:{"apikey":KEY,"Content-Type":"application/json"},body:JSON.stringify({p_code:CODE,...args})});
+  if(!r.ok){let e={};try{e=await r.json()}catch{}const err=new Error(e.message||"net");err.code=e.code;throw err}
+  const t=await r.text();return t?JSON.parse(t):null;
+}
+const lost=e=>{if(e&&e.code==="28000"){try{localStorage.removeItem("commande2b-code")}catch{}location.replace("./");return true}return false};
+const setSync=t=>$("#sync").textContent=t||" ";
+const buzz=()=>{try{navigator.vibrate&&navigator.vibrate(12)}catch{}};
+
+/* ---------- Qui voit quoi : Julien et Eric tout ; Claire et Thierry (salle) la vitrine ---------- */
+const ME=(window.Profil&&Profil.get())||"";
+const NOMS=(window.Profil&&Profil.noms)||{};
+const FULL=!["claire","thierry"].includes(ME);
+const APP=[
+  {k:"frigo_c1",n:"Frigo cuisine 1",e:"🧊",max:4},
+  {k:"frigo_c2",n:"Frigo cuisine 2",e:"🧊",max:4},
+  {k:"frigo_p",n:"Frigo plonge",e:"🧊",max:4},
+  {k:"vitrine",n:"Vitrine salle",e:"🍰",max:4},
+  {k:"cong_c",n:"Congélateur cuisine",e:"❄️",max:-18},
+  {k:"cong_p1",n:"Congélateur plonge 1",e:"❄️",max:-18},
+  {k:"cong_p2",n:"Congélateur plonge 2",e:"❄️",max:-18}];
+const MINE=FULL?APP:APP.filter(a=>a.k==="vitrine");
+const FRITEUSES=[1,2];
+const CAUSES=["Porte mal fermée","Livraison en cours","Dégivrage","Revérifié plus tard : OK"];
+
+/* ---------- Dates ---------- */
+const pad=n=>String(n).padStart(2,"0");
+const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const NOW=new Date();const TODAY=iso(NOW);
+const hm=s=>new Date(s).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}).replace(":"," h ");
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+const fr1=v=>String(Math.round(v*10)/10).replace(".",",")+" °C";
+const parseT=(s,neg)=>{s=String(s).replace(",",".").replace(/[^\d.\-]/g,"");if(s===""||s==="-")return null;let n=parseFloat(s);if(isNaN(n))return null;if(neg&&n>0)n=-n;return Math.round(n*10)/10};
+
+const S={tab:"temp",moment:new Date().getHours()<15?"matin":"soir",d:{releves:[],huile:[],refroid:[]},draft:{},loaded:false};
+$("#sub").textContent=cap(NOW.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"}));
+if(FULL){$("#seg").hidden=false;$("#pdf").hidden=false}
+
+/* ---------- File d'attente hors connexion : rien n'est perdu ---------- */
+const FK="hyg2b-file";
+const fileGet=()=>{try{return JSON.parse(localStorage.getItem(FK)||"[]")}catch{return []}};
+const fileSet=a=>{try{a.length?localStorage.setItem(FK,JSON.stringify(a)):localStorage.removeItem(FK)}catch{}};
+/* Renvoie {sent:true,v} si c'est parti, {queued:true} si c'est gardé sur le téléphone en attendant le réseau */
+async function send(fn,args){
+  try{const v=await rpc(fn,args);return {sent:true,v}}
+  catch(e){if(lost(e))throw e;const f=fileGet();f.push({fn,args});fileSet(f);setSync("Pas de réseau : gardé sur le téléphone");return {queued:true}}
+}
+async function flush(){const f=fileGet();if(!f.length)return;const rest=[];
+  for(const x of f){try{await rpc(x.fn,x.args)}catch(e){if(lost(e))return;rest.push(x)}}
+  fileSet(rest);if(!rest.length){setSync("");load()}}
+addEventListener("online",flush);setInterval(flush,20000);
+const pendingReleves=()=>fileGet().filter(x=>x.fn==="hyg_releve").flatMap(x=>x.args.p_lignes.map(l=>({...l,jour:x.args.p_jour,moment:x.args.p_moment,par:x.args.p_par,le:new Date().toISOString(),pending:true,ok:l.temp<=l.tmax})));
+
+/* ---------- Chargement ---------- */
+const CK="hyg2b-cache";
+function monthStart(){return iso(new Date(NOW.getFullYear(),NOW.getMonth(),1))}
+async function load(){
+  try{const d=await rpc("hyg_etat",{p_debut:iso(new Date(NOW.getFullYear(),NOW.getMonth(),NOW.getDate()-30)),p_fin:TODAY});
+    S.d=d||S.d;S.loaded=true;try{localStorage.setItem(CK,JSON.stringify(S.d))}catch{}setSync(fileGet().length?"Envoi en attente…":"");render()}
+  catch(e){if(lost(e))return;setSync("Hors ligne : dernières données connues");S.loaded=true;render()}
+}
+try{const c=JSON.parse(localStorage.getItem(CK)||"null");if(c){S.d=c;S.loaded=true}}catch{}
+
+/* Dernier relevé de chaque appareil pour un jour et un moment (une correction remplace l'ancien) */
+function latest(jour,moment){
+  const m={};[...S.d.releves,...pendingReleves()].filter(r=>r.jour===jour&&r.moment===moment).sort((a,b)=>String(a.le).localeCompare(String(b.le))).forEach(r=>{m[r.appareil]={...r,corr:!!m[r.appareil]}});return m}
+
+/* ---------- Affichage ---------- */
+function render(){
+  document.querySelectorAll("#seg [data-t]").forEach(b=>b.setAttribute("aria-selected",b.dataset.t===S.tab));
+  ["temp","huile","cell"].forEach(t=>$("#v-"+t).hidden=t!==S.tab);
+  const nc=S.d.refroid.filter(c=>!c.fin).length;$("#nCell").hidden=!nc;$("#nCell").textContent=nc;
+  if(S.tab==="temp")renderTemp();else if(S.tab==="huile")renderHuile();else renderCell();
+}
+function renderTemp(){
+  const cnt=mo=>{const l=latest(TODAY,mo);return MINE.filter(a=>l[a.k]).length};
+  const L=latest(TODAY,S.moment);const done=MINE.filter(a=>L[a.k]).length;
+  const momBtn=(mo,lab)=>{const c=cnt(mo);return `<button type="button" data-mo="${mo}" aria-pressed="${S.moment===mo}">${lab}<small class="${c===MINE.length?"full":""}">${c===MINE.length?"✓":c+"/"+MINE.length}</small></button>`};
+  let h=`<div class="mom">${momBtn("matin","☀️ Matin")}${momBtn("soir","🌙 Soir")}</div><div class="prog"><i style="width:${done/MINE.length*100}%"></i></div>`;
+  if(done===MINE.length)h+=`<div class="allok"><svg viewBox="0 0 46 46" aria-hidden="true"><circle cx="23" cy="23" r="23"/><path d="M13 23.5l6.5 6.5L33 16.5"/></svg><div><b>Tout est relevé pour ${S.moment==="matin"?"ce matin":"ce soir"}</b><small>Merci ! Le prochain relevé : ${S.moment==="matin"?"ce soir":"demain matin"}.</small></div></div>`;
+  h+=`<div class="list">${MINE.map(a=>apHTML(a,L[a.k])).join("")}</div>`;
+  const nDraft=MINE.filter(a=>!L[a.k]||S.draft[a.k]?.fix).filter(a=>S.draft[a.k]&&S.draft[a.k].t!=null).length;
+  if(done<MINE.length||Object.values(S.draft).some(x=>x.fix))h+=`<div class="savebar"><button class="big" id="saveT" type="button"${nDraft?"":" disabled"}>✓ Enregistrer${nDraft?` ${nDraft} relevé${nDraft>1?"s":""}`:""}</button></div>`;
+  const keep=document.activeElement&&document.activeElement.dataset.k;
+  $("#v-temp").innerHTML=h;
+  if(keep){const el=document.querySelector(`input[data-k="${keep}"]`);if(el){el.focus({preventScroll:true});const v=el.value;el.setSelectionRange(v.length,v.length)}}
+}
+function apHTML(a,r){
+  const dr=S.draft[a.k];const cong=a.max<0;
+  const lim=`${cong?"−18":"4"} °C maximum`;
+  if(r&&!(dr&&dr.fix)){
+    return `<div class="ap ${r.ok?"d-ok":"d-bad"}" data-ap="${a.k}"><div class="ap-row"><span class="ic" aria-hidden="true">${a.e}</span><span class="nm"><b>${esc(a.n)}</b><small>${lim}</small></span>
+      <span class="done-v"><b>${fr1(+r.temp)}</b><small>${r.pending?`<span class="pend">en attente</span>`:`${hm(r.le)}`} · ${esc(NOMS[r.par]||r.par||"")}</small></span></div>
+      <div class="note">${r.action?`<b>${r.ok?"":"⚠️ "}</b>${esc(r.action)}`:""}${r.corr?` <i>(corrigé)</i>`:""}<button class="fix" type="button" data-fix="${a.k}">Corriger</button></div></div>`}
+  const t=dr&&dr.t!=null?dr.t:null;const st=t==null?"":t<=a.max?"ok":"bad";
+  return `<div class="ap ${st}" data-ap="${a.k}"><div class="ap-row"><span class="ic" aria-hidden="true">${a.e}</span><span class="nm"><b>${esc(a.n)}</b><small>${lim}${dr&&dr.fix?" · correction":""}</small></span>
+    <span class="verdict" aria-hidden="true">${st==="ok"?"✓":"!"}</span>
+    <span class="tin${cong?" cong":""}">${cong?`<span class="neg">−</span>`:""}<input data-k="${a.k}" inputmode="decimal" enterkeyhint="next" autocomplete="off" placeholder="${cong?"18":"3"}" aria-label="Température ${esc(a.n)} en degrés${cong?", nombre négatif":""}" value="${dr&&dr.raw!=null?esc(dr.raw):""}"><span class="u">°C</span></span></div>
+    <div class="act"><p>⚠️ Trop chaud : qu'avez-vous fait ?</p><div class="chips">${CAUSES.map(c=>`<button type="button" data-cause="${a.k}" aria-pressed="${dr&&dr.cause===c}">${c}</button>`).join("")}</div>
+      <input data-act="${a.k}" placeholder="Ou écris ici : produit déplacé, technicien appelé…" value="${esc(dr&&dr.txt||"")}"></div></div>`;
+}
+/* Saisie : la carte devient verte ou rouge tout de suite, sans redessiner la page */
+document.addEventListener("input",e=>{
+  const k=e.target.dataset.k,ak=e.target.dataset.act;
+  if(k){const a=APP.find(x=>x.k===k);const d=S.draft[k]=S.draft[k]||{};d.raw=e.target.value;d.t=parseT(e.target.value,a.max<0);
+    const card=e.target.closest(".ap");card.classList.toggle("ok",d.t!=null&&d.t<=a.max);card.classList.toggle("bad",d.t!=null&&d.t>a.max);
+    card.querySelector(".verdict").textContent=d.t!=null&&d.t>a.max?"!":"✓";updSave()}
+  if(ak){(S.draft[ak]=S.draft[ak]||{}).txt=e.target.value}
+});
+function updSave(){const b=$("#saveT");if(!b)return;const n=Object.entries(S.draft).filter(([k,d])=>d.t!=null&&MINE.some(a=>a.k===k)).length;
+  b.disabled=!n;b.textContent=`✓ Enregistrer${n?` ${n} relevé${n>1?"s":""}`:""}`}
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.dataset.k){e.preventDefault();const all=[...document.querySelectorAll("input[data-k]")];const i=all.indexOf(e.target);if(all[i+1])all[i+1].focus();else e.target.blur()}});
+document.addEventListener("click",async e=>{
+  const mo=e.target.closest("[data-mo]");if(mo){S.moment=mo.dataset.mo;S.draft={};render();return}
+  const c=e.target.closest("[data-cause]");if(c){const d=S.draft[c.dataset.cause]=S.draft[c.dataset.cause]||{};d.cause=d.cause===c.textContent?null:c.textContent;
+    c.parentNode.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.textContent===d.cause));buzz();return}
+  const fx=e.target.closest("[data-fix]");if(fx){S.draft[fx.dataset.fix]={fix:true};render();setTimeout(()=>document.querySelector(`input[data-k="${fx.dataset.fix}"]`)?.focus(),60);return}
+  if(e.target.closest("#saveT")){saveTemps();return}
+  const t=e.target.closest("#seg [data-t]");if(t){S.tab=t.dataset.t;try{sessionStorage.setItem("hyg2b-tab",S.tab)}catch{}render();return}
+});
+async function saveTemps(){
+  const L=latest(TODAY,S.moment);const lignes=[];
+  for(const a of MINE){const d=S.draft[a.k];if(!d||d.t==null)continue;
+    const act=[d.cause,d.txt&&d.txt.trim()].filter(Boolean).join(" · ");
+    if(d.t>a.max&&!act){const el=document.querySelector(`[data-ap="${a.k}"] .act`);el.classList.remove("need");void el.offsetWidth;el.classList.add("need");
+      el.scrollIntoView({behavior:"smooth",block:"center"});toast("Dis ce qui a été fait pour « "+a.n+" »");return}
+    if(d.t<-40||d.t>30){toast(`Température étonnante pour « ${a.n} » : vérifie`);return}
+    lignes.push({appareil:a.k,nom:a.n,temp:d.t,tmax:a.max,action:act||null,remplace:d.fix&&L[a.k]&&!L[a.k].pending?L[a.k].id:null})}
+  if(!lignes.length)return;
+  const b=$("#saveT");b.disabled=true;b.textContent="Enregistrement…";
+  const args={p_jour:TODAY,p_moment:S.moment,p_lignes:lignes,p_par:ME};
+  try{const r=await send("hyg_releve",args);
+    if(document.activeElement)document.activeElement.blur();
+    S.draft={};
+    const now=new Date().toISOString();
+    if(r.sent)lignes.forEach(l=>S.d.releves.push({...l,jour:TODAY,moment:S.moment,par:ME,le:now,ok:l.temp<=l.tmax,id:"tmp"+Math.random()}));
+    render();buzz();
+    lignes.forEach((l,i)=>setTimeout(()=>document.querySelector(`[data-ap="${l.appareil}"]`)?.classList.add("pop"),i*70));
+    toast(r.queued?"Pas de réseau : gardé sur le téléphone, envoyé dès que possible":lignes.length>1?`${lignes.length} relevés enregistrés ✓`:"Relevé enregistré ✓");
+    if(r.sent)setTimeout(load,800);
+  }catch(e){render()}
+}
+
+/* ---------- Friteuses ---------- */
+const dayDiff=s=>{const a=new Date(s);a.setHours(0,0,0,0);const b=new Date();b.setHours(0,0,0,0);return Math.round((b-a)/864e5)};
+function renderHuile(){
+  $("#v-huile").innerHTML=`<div style="margin-top:14px"></div>`+FRITEUSES.map(f=>{
+    const hs=S.d.huile.filter(h=>h.friteuse===f).sort((a,b)=>String(b.le).localeCompare(String(a.le)));const last=hs[0];
+    const n=last?dayDiff(last.le):null;
+    return `<div class="fr" data-fr="${f}"><div class="wave"></div><div class="fr-h"><span class="ic" aria-hidden="true">🍟</span><h2>Friteuse ${f}</h2></div>
+      ${last?`<div class="fr-days"><b class="num">${n===0?"Neuve":n}</b><span>${n===0?"huile changée aujourd'hui":n===1?"jour d'utilisation":"jours d'utilisation"}</span></div>
+        <small class="when">Changée ${n===0?"à "+hm(last.le):"le "+new Date(last.le).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})} par ${esc(NOMS[last.par]||last.par||"?")}</small>
+        <div class="gauge" aria-hidden="true">${Array.from({length:7},(_,i)=>`<i class="${i<Math.min(n,7)?"on":""}"></i>`).join("")}</div>`
+      :`<div class="fr-days"><span>Pas encore de changement noté</span></div><div style="height:12px"></div>`}
+      <button class="big" type="button" data-oil="${f}">🔄 Huile changée</button>
+      ${hs.length>1?`<div class="hist">Avant : ${hs.slice(1,5).map(h=>new Date(h.le).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})).join(" · ")}</div>`:""}</div>`}).join("");
+}
+document.addEventListener("click",e=>{const o=e.target.closest("[data-oil]");if(!o)return;const f=+o.dataset.oil;
+  ask(`Huile de la friteuse ${f} changée ?`,"C'est noté maintenant, avec ton prénom.","Oui, c'est fait",async()=>{
+    const r=await send("hyg_huile_changee",{p_friteuse:f,p_par:ME}).catch(()=>({}));
+    S.d.huile.unshift({friteuse:f,le:new Date().toISOString(),par:ME});renderHuile();buzz();
+    const c=document.querySelector(`[data-fr="${f}"]`);c&&c.classList.add("fill");toast(`Friteuse ${f} : huile neuve ✓`);if(r.sent)setTimeout(load,1200)})});
+
+/* ---------- Cellule de refroidissement : 63 °C ou plus → 10 °C ou moins en 2 h maximum ---------- */
+const mins=s=>Math.floor((Date.now()-new Date(s))/60000);
+const dur=m=>m<60?`${m} min`:`${Math.floor(m/60)} h ${pad(m%60)}`;
+function renderCell(){
+  const run=S.d.refroid.filter(c=>!c.fin).sort((a,b)=>String(a.debut).localeCompare(String(b.debut)));
+  const past=S.d.refroid.filter(c=>c.fin).sort((a,b)=>String(b.fin).localeCompare(String(a.fin))).slice(0,12);
+  $("#v-cell").innerHTML=`<div style="margin-top:14px"></div><button class="big" type="button" id="cellNew">＋ Mettre un produit en cellule</button>
+    ${run.length?run.map(c=>{const m=mins(c.debut);const cls=m>120?"over":m>=90?"late":"";
+      return `<div class="run ${cls}" data-run="${esc(c.id)}"><div class="run-h"><span class="ic" aria-hidden="true">❄️</span><span class="t"><b>${esc(c.produit)}</b><small>${c.quantite?esc(c.quantite)+" · ":""}entré à ${hm(c.debut)} à ${fr1(+c.t_debut)} · ${esc(NOMS[c.par_debut]||c.par_debut||"")}</small></span>
+        <span class="chrono" data-chr="${esc(c.debut)}">${dur(m)}<small>${m>120?"plus de 2 h !":"reste "+dur(Math.max(0,120-m))}</small></span></div>
+        <div class="bar"><i style="width:${Math.min(100,m/120*100)}%"></i></div>
+        <button class="big soft" type="button" data-out="${esc(c.id)}">Sortie de cellule</button></div>`}).join("")
+    :`<div class="empty"><b>❄️</b>Rien en cellule en ce moment.</div>`}
+    ${past.length?`<div class="past"><h3>Derniers refroidissements</h3>${past.map(c=>{const m=Math.round((new Date(c.fin)-new Date(c.debut))/60000);
+      return `<div class="pr"><span class="t"><b>${esc(c.produit)}</b><small>${new Date(c.debut).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})} · ${fr1(+c.t_debut)} → ${fr1(+c.t_fin)} en ${dur(m)}${c.action?" · "+esc(c.action):""}</small></span><span class="r ${c.ok?"ok":"bad"}">${c.ok?"✓ OK":"⚠️"}</span></div>`}).join("")}</div>`:""}`;
+}
+setInterval(()=>{if(S.tab==="cell"&&!document.querySelector(".sheet"))renderCell()},30000);
+function lastProduits(){return [...new Set(S.d.refroid.map(c=>c.produit))].slice(0,8)}
+document.addEventListener("click",e=>{
+  if(e.target.closest("#cellNew")){openSheet(`<h3>Mettre en cellule</h3><div class="sub">Le chrono démarre maintenant : 2 h maximum pour descendre à 10 °C.</div>
+    <label class="lf">Produit<input id="cP" autocomplete="off" placeholder="Ex. : sauce bolognaise"></label>
+    ${lastProduits().length?`<div class="sugg">${lastProduits().map(p=>`<button type="button" data-sg="${esc(p)}">${esc(p)}</button>`).join("")}</div>`:""}
+    <label class="lf">Quantité (facultatif)<input id="cQ" autocomplete="off" placeholder="Ex. : 2 bacs, 5 kg"></label>
+    <label class="lf">Température en entrant (63 °C ou plus)<input id="cT" inputmode="decimal" autocomplete="off" placeholder="°C"></label>
+    <button class="big" type="button" id="cGo">❄️ C'est en cellule</button><button class="big soft" type="button" data-close>Annuler</button>`,()=>$("#cP").focus());return}
+  const sg=e.target.closest("[data-sg]");if(sg){$("#cP").value=sg.dataset.sg;$("#cQ").focus();return}
+  if(e.target.closest("#cGo")){const p=$("#cP").value.trim(),t=parseT($("#cT").value);
+    if(!p){toast("Quel produit ?");$("#cP").focus();return}if(t==null){toast("Quelle température en entrant ?");$("#cT").focus();return}
+    if(t<63&&!e.target.dataset.sure){e.target.dataset.sure="1";e.target.textContent="Moins de 63 °C : enregistrer quand même";toast("Normalement 63 °C ou plus en entrant");return}
+    const q=$("#cQ").value.trim()||null;closeSheet();const tmp={id:"tmp"+Date.now(),debut:new Date().toISOString(),produit:p,quantite:q,t_debut:t,par_debut:ME,fin:null};
+    S.d.refroid.unshift(tmp);render();buzz();toast("Chrono lancé ⏱️");
+    send("hyg_refroid_debut",{p_produit:p,p_quantite:tmp.quantite,p_temp:t,p_par:ME}).then(r=>{if(r.sent&&r.v){tmp.id=r.v;load()}}).catch(()=>{});return}
+  const out=e.target.closest("[data-out]");if(out){const c=S.d.refroid.find(x=>x.id===out.dataset.out);if(!c)return;const m=mins(c.debut);
+    openSheet(`<h3>Sortie : ${esc(c.produit)}</h3><div class="sub">En cellule depuis ${dur(m)} (entré à ${fr1(+c.t_debut)})</div>
+      <label class="lf">Température à la sortie (10 °C ou moins)<input id="oT" inputmode="decimal" autocomplete="off" placeholder="°C"></label>
+      <div class="res" id="oR" hidden></div>
+      <label class="lf" id="oAl" hidden>Qu'avez-vous fait ?<input id="oA" autocomplete="off" placeholder="Ex. : remis en cellule, produit jeté…"></label>
+      <button class="big" type="button" id="oGo" data-id="${esc(c.id)}">✓ Valider la sortie</button><button class="big soft" type="button" data-close>Annuler</button>`,()=>$("#oT").focus());return}
+  if(e.target.closest("#oGo")){const id=e.target.closest("#oGo").dataset.id;const c=S.d.refroid.find(x=>x.id===id);const t=parseT($("#oT").value);
+    if(t==null){toast("Quelle température à la sortie ?");$("#oT").focus();return}
+    const ok=t<=10&&mins(c.debut)<=120;const a=$("#oA").value.trim();
+    if(!ok&&!a){$("#oAl").hidden=false;$("#oA").focus();toast("Dis ce qui a été fait");return}
+    if(String(id).startsWith("tmp")){toast("Encore en cours d'envoi, réessaie dans un instant");return}
+    closeSheet();Object.assign(c,{fin:new Date().toISOString(),t_fin:t,par_fin:ME,ok,action:a||null});render();buzz();
+    toast(ok?"Refroidissement conforme ✓":"Noté, avec ce qui a été fait");
+    send("hyg_refroid_fin",{p_id:id,p_temp:t,p_action:a||null,p_par:ME}).then(()=>load()).catch(()=>{});return}
+});
+document.addEventListener("input",e=>{if(e.target.id!=="oT")return;const id=$("#oGo").dataset.id;const c=S.d.refroid.find(x=>x.id===id);const t=parseT(e.target.value);const r=$("#oR");
+  if(t==null){r.hidden=true;$("#oAl").hidden=true;return}const late=mins(c.debut)>120;const ok=t<=10&&!late;
+  r.hidden=false;r.className="res "+(ok?"ok":"bad");r.textContent=ok?"✓ Conforme : 10 °C ou moins en moins de 2 h":late?"⚠️ Plus de 2 heures en cellule":"⚠️ Plus de 10 °C à la sortie";$("#oAl").hidden=ok});
+
+/* ---------- Petites fenêtres ---------- */
+function openSheet(html,after){closeSheet();const m=document.createElement("div");m.className="sheet";m.innerHTML=`<div class="box" role="dialog">${html}</div>`;
+  m.addEventListener("click",e=>{if(e.target===m||e.target.closest("[data-close]"))closeSheet()});document.body.appendChild(m);if(after)setTimeout(after,80)}
+function closeSheet(){document.querySelectorAll(".sheet").forEach(x=>x.remove())}
+function ask(title,text,yes,fn){openSheet(`<h3>${esc(title)}</h3><div class="sub">${esc(text)}</div><button class="big" type="button" id="askY">${esc(yes)}</button><button class="big soft" type="button" data-close>Annuler</button>`);
+  $("#askY").onclick=()=>{closeSheet();fn()}}
+
+/* ---------- PDF du mois (pour le contrôle) ---------- */
+function loadLibs(){if(window.html2canvas&&window.jspdf)return Promise.resolve();if(loadLibs.p)return loadLibs.p;
+  const add=src=>new Promise((ok,ko)=>{const s=document.createElement("script");s.src=src;s.onload=ok;s.onerror=ko;document.head.appendChild(s)});
+  loadLibs.p=Promise.all([add("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"),add("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js")]).catch(e=>{loadLibs.p=null;throw e});return loadLibs.p}
+function saveLink(blob,name){const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000)}
+async function offer(blob,name){const file=new File([blob],name,{type:blob.type});
+  if((/iPhone|iPad|Android/i.test(navigator.userAgent)||navigator.maxTouchPoints>1)&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:name});return}catch(e){if(e.name==="AbortError")return}}
+  saveLink(blob,name);toast("PDF téléchargé")}
+$("#pdf").onclick=()=>{const m0=new Date(NOW.getFullYear(),NOW.getMonth(),1),m1=new Date(NOW.getFullYear(),NOW.getMonth()-1,1);const ml=d=>cap(d.toLocaleDateString("fr-FR",{month:"long",year:"numeric"}));
+  openSheet(`<h3>PDF pour le contrôle</h3><div class="sub">Températures, huile et cellule du mois, avec les corrections.</div>
+    <button class="big" type="button" data-pm="${iso(m0)}">📄 ${ml(m0)}</button><button class="big soft" type="button" data-pm="${iso(m1)}">${ml(m1)}</button><button class="big soft" type="button" data-close>Annuler</button>`)};
+document.addEventListener("click",e=>{const b=e.target.closest("[data-pm]");if(b)makePdf(b.dataset.pm,b)});
+async function makePdf(start,btn){
+  btn.disabled=true;btn.textContent="Préparation du PDF…";
+  try{
+    const s=new Date(start+"T12:00");const end=new Date(s.getFullYear(),s.getMonth()+1,0);
+    const [d]=await Promise.all([rpc("hyg_etat",{p_debut:start,p_fin:iso(end)}),loadLibs()]);
+    if(document.fonts&&document.fonts.ready)await document.fonts.ready;
+    const mois=cap(s.toLocaleDateString("fr-FR",{month:"long",year:"numeric"}));
+    const head=t=>`<div class="ph"><img src="logo-hd.png" alt=""><h1>${t} — ${esc(mois)}<small>Double B · 59 avenue Foch, 57730 Folschviller · Plan de maîtrise sanitaire</small></h1></div>`;
+    // Page 1 : tableau des températures (dernier relevé ; * = corrigé)
+    const by={};const cnt={};d.releves.forEach(r=>{const k=r.jour+"|"+r.moment+"|"+r.appareil;cnt[k]=(cnt[k]||0)+1;by[k]=r});
+    let rows="";for(let i=1;i<=end.getDate();i++){const j=iso(new Date(s.getFullYear(),s.getMonth(),i));const w=new Date(s.getFullYear(),s.getMonth(),i).getDay();
+      rows+=`<tr><td class="d${w===0||w===6?" we":""}">${pad(i)} ${new Date(s.getFullYear(),s.getMonth(),i).toLocaleDateString("fr-FR",{weekday:"short"})}</td>${APP.map(a=>["matin","soir"].map(mo=>{const k=j+"|"+mo+"|"+a.k;const r=by[k];
+        return r?`<td class="${r.ok?"":"bad"}">${String(+r.temp).replace(".",",")}${cnt[k]>1?"*":""}</td>`:"<td></td>"}).join("")).join("")}</tr>`}
+    const p1=`<div class="pp">${head("Relevés de températures")}<table><thead><tr><th rowspan="2">Jour</th>${APP.map(a=>`<th colspan="2">${esc(a.n)}<br>(max ${a.max} °C)</th>`).join("")}</tr><tr>${APP.map(()=>"<th>Matin</th><th>Soir</th>").join("")}</tr></thead><tbody>${rows}</tbody></table>
+      <div class="foot"><span>En rouge : au-dessus de la limite (voir page suivante). * : relevé corrigé, l'original est conservé.</span><span>Page 1</span></div></div>`;
+    // Pages suivantes : anomalies et corrections, huile, refroidissements
+    const lines=[];
+    const bad=d.releves.filter(r=>!r.ok||r.remplace);
+    lines.push(["h","Températures hors limite et corrections"]);
+    if(!bad.length)lines.push(["r","Aucune anomalie ce mois-ci.","","",""]);
+    bad.forEach(r=>lines.push(["r",new Date(r.jour+"T12:00").toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})+" "+r.moment,r.nom,fr1(+r.temp)+(r.remplace?" (correction)":""),(r.action||"")+" — "+(NOMS[r.par]||r.par||"")]));
+    lines.push(["h","Changements d'huile des friteuses"]);
+    const hu=d.huile.filter(h=>h.le.slice(0,7)===start.slice(0,7)).sort((a,b)=>a.le.localeCompare(b.le));
+    if(!hu.length)lines.push(["r","Aucun changement noté ce mois-ci.","","",""]);
+    hu.forEach(h=>lines.push(["r",new Date(h.le).toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})+" "+hm(h.le),"Friteuse "+h.friteuse,"Huile changée",NOMS[h.par]||h.par||""]));
+    lines.push(["h","Refroidissements en cellule (63 °C → 10 °C en 2 h maximum)"]);
+    const rf=d.refroid.filter(c=>c.debut.slice(0,7)===start.slice(0,7)).sort((a,b)=>a.debut.localeCompare(b.debut));
+    if(!rf.length)lines.push(["r","Aucun refroidissement noté ce mois-ci.","","",""]);
+    rf.forEach(c=>{const m=c.fin?Math.round((new Date(c.fin)-new Date(c.debut))/60000):null;
+      lines.push(["r",new Date(c.debut).toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})+" "+hm(c.debut),c.produit+(c.quantite?" ("+c.quantite+")":""),fr1(+c.t_debut)+" → "+(c.fin?fr1(+c.t_fin)+" en "+dur(m):"en cours"),(c.fin?(c.ok?"Conforme":"Non conforme"):"")+(c.action?" — "+c.action:"")+" — "+(NOMS[c.par_debut]||c.par_debut||"")])});
+    const PER=26;const pages=[];for(let i=0;i<lines.length;i+=PER)pages.push(lines.slice(i,i+PER));
+    const html=p1+pages.map((pg,i)=>`<div class="pp">${head("Suivi d'hygiène")}<table class="l"><tbody>${pg.map(l=>l[0]==="h"?`<tr><td colspan="4" style="border:0;padding-top:8px"><h2>${esc(l[1])}</h2></td></tr>`:`<tr><td style="width:120px">${esc(l[1])}</td><td>${esc(l[2])}</td><td style="width:200px">${esc(l[3])}</td><td>${esc(l[4])}</td></tr>`).join("")}</tbody></table><div class="foot"><span>Relevés enregistrés dans l'appli Double B (date, heure et auteur automatiques ; aucun relevé ne peut être effacé).</span><span>Page ${i+2}</span></div></div>`).join("");
+    const p=$("#print");p.innerHTML=html;
+    await Promise.all([...p.querySelectorAll("img")].map(im=>im.complete?1:new Promise(r=>{im.onload=r;im.onerror=r})));
+    const {jsPDF}=window.jspdf;const pdf=new jsPDF({orientation:"landscape",unit:"mm",format:"a4"});
+    const els=[...p.querySelectorAll(".pp")];
+    for(let i=0;i<els.length;i++){const cv=await html2canvas(els[i],{scale:2,backgroundColor:"#ffffff",logging:false,windowWidth:1123});if(i)pdf.addPage();pdf.addImage(cv.toDataURL("image/jpeg",.92),"JPEG",0,0,297,210)}
+    closeSheet();await offer(pdf.output("blob"),`Hygiène Double B - ${mois}.pdf`);
+  }catch(err){toast("Le PDF a besoin d'internet : réessaie");btn.disabled=false;btn.textContent="Réessayer"}
+  finally{$("#print").innerHTML=""}
+}
+
+/* ---------- Démarrage ---------- */
+{const h=new URLSearchParams(location.hash.slice(1)).get("t")||(()=>{try{return sessionStorage.getItem("hyg2b-tab")}catch{return null}})();if(FULL&&["temp","huile","cell"].includes(h))S.tab=h;
+  if(location.hash)history.replaceState(null,"",location.pathname)}
+render();load();flush();
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&!document.querySelector(".sheet")&&!Object.keys(S.draft).length)load()});
+if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>
