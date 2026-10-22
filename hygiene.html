@@ -117,6 +117,23 @@ html.typing .savebar{bottom:12px}
 .big:disabled{background:var(--sunken);background-image:none;color:var(--muted);border:1.5px solid var(--line);box-shadow:0 6px 18px -10px rgba(0,0,0,.25)}
 .big.soft{background:var(--surface);color:var(--fg);border:1.5px solid var(--line);box-shadow:none;background-image:none}
 
+/* Nettoyage des frigos (une fois par semaine) */
+.clean{margin-top:22px;background:var(--surface);border:1.5px solid var(--line);border-radius:22px;padding:14px}
+.clean h3{font-size:20px;font-weight:800;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.clean h3 small{font-family:var(--body);font-size:13.5px;font-weight:700;color:var(--muted)}
+.cl{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line);position:relative}
+.clean h3+.cl{border-top:0;margin-top:6px}
+.cl .t{flex:1;min-width:0}
+.cl .t b{display:block;font-size:16.5px;font-weight:800}
+.cl .t small{display:block;font-size:13.5px;font-weight:600;color:var(--muted);margin-top:2px}
+.cl.due .t small{color:var(--warn);font-weight:800}
+.cl button{flex:none;height:48px;padding:0 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--sunken);font-weight:800;font-size:15px}
+.cl.due button{border:0;background:var(--accent);color:var(--accent-ink);background-image:linear-gradient(180deg,rgba(255,255,255,.24),rgba(255,255,255,0));box-shadow:0 6px 14px -8px color-mix(in srgb,var(--accent) 90%,#000)}
+.cl.ok .t small{color:var(--ok);font-weight:800}
+.cl .sp{position:absolute;right:60px;top:50%;font-size:22px;pointer-events:none;animation:spark .9s ease-out forwards}
+.cl .sp+.sp{right:20px;animation-delay:.12s}
+@keyframes spark{0%{opacity:0;transform:translateY(-50%) scale(.3) rotate(0)}40%{opacity:1;transform:translateY(-90%) scale(1.15) rotate(20deg)}100%{opacity:0;transform:translateY(-140%) scale(.8) rotate(40deg)}}
+
 /* Friteuses */
 .fr{background:var(--surface);border:1.5px solid var(--line);border-radius:22px;padding:16px;position:relative;overflow:hidden}
 .fr+.fr{margin-top:12px}
@@ -247,6 +264,7 @@ const APP=[
   {k:"cong_p2",n:"Congélateur plonge 2",e:"❄️",max:-18}];
 const MINE=FULL?APP:APP.filter(a=>a.k==="vitrine");
 const FRITEUSES=[1,2];
+const LAVAGE=APP.filter(a=>["frigo_c1","frigo_c2","frigo_p"].includes(a.k));   // nettoyés une fois par semaine
 const CAUSES=["Porte mal fermée","Livraison en cours","Dégivrage","Revérifié plus tard : OK"];
 
 /* ---------- Dates ---------- */
@@ -307,10 +325,23 @@ function renderTemp(){
   h+=`<div class="list">${MINE.map(a=>apHTML(a,L[a.k])).join("")}</div>`;
   const nDraft=MINE.filter(a=>!L[a.k]||S.draft[a.k]?.fix).filter(a=>S.draft[a.k]&&S.draft[a.k].t!=null).length;
   if(done<MINE.length||Object.values(S.draft).some(x=>x.fix))h+=`<div class="savebar"><button class="big" id="saveT" type="button"${nDraft?"":" disabled"}>✓ Enregistrer${nDraft?` ${nDraft} relevé${nDraft>1?"s":""}`:""}</button></div>`;
+  if(FULL)h+=cleanHTML();
   const keep=document.activeElement&&document.activeElement.dataset.k;
   $("#v-temp").innerHTML=h;
   if(keep){const el=document.querySelector(`input[data-k="${keep}"]`);if(el){el.focus({preventScroll:true});const v=el.value;el.setSelectionRange(v.length,v.length)}}
 }
+/* Nettoyage : dernière fois pour chaque frigo ; à faire au-delà de 7 jours */
+function lastClean(k){return (S.d.nettoyage||[]).filter(n=>n.appareil===k).sort((a,b)=>String(b.le).localeCompare(String(a.le)))[0]}
+function cleanHTML(){
+  return `<div class="clean" id="clean"><h3>🧽 Nettoyage des frigos <small>une fois par semaine</small></h3>${LAVAGE.map(a=>{const l=lastClean(a.k);const n=l?dayDiff(l.le):null;const due=n==null||n>=7;
+    return `<div class="cl ${due?"due":"ok"}" data-cl="${a.k}"><span class="t"><b>${esc(a.n)}</b><small>${l?(n===0?"✓ Nettoyé aujourd'hui":n===1?"Nettoyé hier":`${due?"À faire · ":""}nettoyé il y a ${n} jours`)+" · "+esc(NOMS[l.par]||l.par||""):"À faire · jamais noté"}</small></span>
+      <button type="button" data-clean="${a.k}">${due?"✓ Nettoyé":"Refait"}</button></div>`}).join("")}</div>`}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-clean]");if(!b)return;const a=APP.find(x=>x.k===b.dataset.clean);
+  ask(`${a.n} nettoyé ?`,"C'est noté maintenant, avec ton prénom.","Oui, c'est propre",async()=>{
+    const r=await send("hyg_nettoye",{p_appareil:a.k,p_nom:a.n,p_par:ME}).catch(()=>({}));
+    (S.d.nettoyage=S.d.nettoyage||[]).unshift({appareil:a.k,nom:a.n,le:new Date().toISOString(),par:ME});render();buzz();
+    const row=document.querySelector(`[data-cl="${a.k}"]`);if(row)row.insertAdjacentHTML("beforeend",'<span class="sp" aria-hidden="true">✨</span><span class="sp" aria-hidden="true">✨</span>');
+    toast(`${a.n} : nettoyé ✓`);if(r.sent)setTimeout(load,1200)})});
 function apHTML(a,r){
   const dr=S.draft[a.k];const cong=a.max<0;
   const lim=`${cong?"−18":"4"} °C maximum`;
@@ -478,6 +509,10 @@ async function makePdf(start,btn){
     lines.push(["h","Températures hors limite et corrections"]);
     if(!bad.length)lines.push(["r","Aucune anomalie ce mois-ci.","","",""]);
     bad.forEach(r=>lines.push(["r",new Date(r.jour+"T12:00").toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})+" "+r.moment,r.nom,fr1(+r.temp)+(r.remplace?" (correction)":""),(r.action||"")+" — "+(NOMS[r.par]||r.par||"")]));
+    lines.push(["h","Nettoyage des frigos (une fois par semaine)"]);
+    const nt=(d.nettoyage||[]).filter(n=>n.le.slice(0,7)===start.slice(0,7)).sort((a,b)=>a.le.localeCompare(b.le));
+    if(!nt.length)lines.push(["r","Aucun nettoyage noté ce mois-ci.","","",""]);
+    nt.forEach(n=>lines.push(["r",new Date(n.le).toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})+" "+hm(n.le),n.nom,"Nettoyé",NOMS[n.par]||n.par||""]));
     lines.push(["h","Changements d'huile des friteuses"]);
     const hu=d.huile.filter(h=>h.le.slice(0,7)===start.slice(0,7)).sort((a,b)=>a.le.localeCompare(b.le));
     if(!hu.length)lines.push(["r","Aucun changement noté ce mois-ci.","","",""]);
@@ -501,8 +536,12 @@ async function makePdf(start,btn){
 
 /* ---------- Démarrage ---------- */
 {const h=new URLSearchParams(location.hash.slice(1)).get("t")||(()=>{try{return sessionStorage.getItem("hyg2b-tab")}catch{return null}})();if(FULL&&["temp","huile","cell"].includes(h))S.tab=h;
-  if(location.hash)history.replaceState(null,"",location.pathname)}
-render();load();flush();
+}
+function fromHash(){const H=new URLSearchParams(location.hash.slice(1));if(!location.hash)return;
+  if(["temp","huile","cell"].includes(H.get("t"))&&(FULL||H.get("t")==="temp"))S.tab=H.get("t");history.replaceState(null,"",location.pathname);render();
+  if(H.get("n"))setTimeout(()=>document.getElementById("clean")?.scrollIntoView({behavior:"smooth",block:"center"}),300)}
+addEventListener("hashchange",fromHash);
+render();load();flush();fromHash();
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&!document.querySelector(".sheet")&&!Object.keys(S.draft).length)load()});
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>

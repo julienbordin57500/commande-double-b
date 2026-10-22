@@ -219,6 +219,8 @@ function drawHyg(d){
   if(FULL){
     const days=f=>{const h=(d.huile||[]).filter(x=>x.friteuse===f).sort((a,b)=>String(b.le).localeCompare(String(a.le)))[0];if(!h)return "–";const a=new Date(h.le);a.setHours(0,0,0,0);const b=new Date();b.setHours(0,0,0,0);const n=Math.round((b-a)/864e5);return n===0?"neuve":n+" j"};
     h+=`<div class="hl"><em aria-hidden="true">🍟</em><span>Huile friteuses</span><b>F1 ${days(1)} · F2 ${days(2)}</b></div>`;
+    const lav=[["frigo_c1","Frigo cuisine 1"],["frigo_c2","Frigo cuisine 2"],["frigo_p","Frigo plonge"]].filter(([k])=>!(d.nettoyage||[]).some(n=>n.appareil===k&&Date.now()-new Date(n.le)<7*864e5));
+    h+=`<div class="hl"><em aria-hidden="true">🧽</em><span>Nettoyage des frigos</span><b class="${lav.length?"no":"ok"}">${lav.length?lav.length+" à faire":"✓"}</b></div>`;
     const run=(d.refroid||[]).filter(x=>!x.fin);
     if(run.length){const m=Math.max(...run.map(x=>Math.floor((Date.now()-new Date(x.debut))/60000)));h+=`<div class="hl"><em aria-hidden="true">❄️</em><span>En cellule : ${run.length} produit${run.length>1?"s":""}</span><b class="${m>120?"no":""}">${m<60?m+" min":Math.floor(m/60)+" h "+pad(m%60)}</b></div>`}
   }

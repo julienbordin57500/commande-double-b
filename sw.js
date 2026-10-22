@@ -3,7 +3,7 @@
 // Chaque nouvelle version publiée change le nom du cache ci-dessous : le téléphone la télécharge alors EN ENTIER
 // en arrière-plan (sans le cache de 10 min du navigateur), puis l'utilise d'un coup. Jamais d'ancien et de nouveau mélangés.
 // Polices et bibliothèques externes : version gardée, mise à jour en arrière-plan. L'API Supabase passe toujours par le réseau.
-const CACHE = "commande-2b-v19";
+const CACHE = "commande-2b-v20";
 const SHELL = ["./", "index.html", "accueil.html", "hygiene.html", "menus.html", "chiffres.html", "evenements.html", "manifest.webmanifest", "logo-hd.png", "icone-appli.svg", "profil.js", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 const STATIC_HOSTS = ["fonts.googleapis.com", "fonts.gstatic.com", "cdnjs.cloudflare.com"];
 
