@@ -100,9 +100,8 @@
   .pbar .bell .nb{position:absolute;top:-6px;right:-6px;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:#d63a2a;color:#fff;font-size:13px;font-weight:800;line-height:22px;text-align:center;box-shadow:0 0 0 2px var(--surface,#fff)}
   @keyframes ring{0%,40%,100%{transform:rotate(0)}5%{transform:rotate(-14deg)}10%{transform:rotate(12deg)}15%{transform:rotate(-9deg)}20%{transform:rotate(6deg)}25%{transform:rotate(-3deg)}}
   @media (max-width:400px){.pbar .chg .lg{display:none}}
-  .npan{position:fixed;inset:0;z-index:45;background:rgba(10,8,4,.28);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);display:flex;align-items:flex-end;justify-content:center;animation:fIn .18s ease-out;font-family:"Figtree",system-ui,sans-serif}
-  .npan .nbx{background:color-mix(in srgb,var(--bg,#f4f2ec) 58%,transparent);-webkit-backdrop-filter:saturate(1.8) blur(26px);backdrop-filter:saturate(1.8) blur(26px);
-    border:1px solid color-mix(in srgb,#fff 40%,transparent);box-shadow:0 -10px 40px -12px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.5);color:var(--fg,#1d1b17);width:100%;max-width:560px;max-height:88vh;border-radius:24px 24px 0 0;display:flex;flex-direction:column;animation:upIn .28s cubic-bezier(.2,.85,.25,1);padding-bottom:env(safe-area-inset-bottom,0px)}
+  .npan{position:fixed;inset:0;z-index:45;background:rgba(10,8,4,.5);display:flex;align-items:flex-end;justify-content:center;animation:fIn .18s ease-out;font-family:"Figtree",system-ui,sans-serif}
+  .npan .nbx{background:var(--bg,#f4f2ec);color:var(--fg,#1d1b17);width:100%;max-width:560px;max-height:88vh;border-radius:24px 24px 0 0;display:flex;flex-direction:column;animation:upIn .28s cubic-bezier(.2,.85,.25,1);padding-bottom:env(safe-area-inset-bottom,0px)}
   @media (min-width:700px){.npan{align-items:flex-start;justify-content:flex-end;padding:70px 24px}.npan .nbx{border-radius:24px;max-width:440px;max-height:80vh}}
   .npan .nh{display:flex;align-items:center;gap:10px;padding:16px 16px 10px}
   .npan .nh h3{flex:1;margin:0;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:24px;font-weight:800}
@@ -112,12 +111,12 @@
   .npan .niw{position:relative}
   .npan .nd{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:12px;border:0;background:transparent;color:var(--muted,#6f695d);font-size:18px;font-weight:800;display:grid;place-items:center;z-index:1}
   .npan .nd:active{background:color-mix(in srgb,var(--fg,#1d1b17) 8%,transparent)}
-  .npan .ni{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 52px 12px 12px;min-height:68px;border-radius:16px;border:1px solid color-mix(in srgb,#fff 35%,var(--line,#e6e1d5));background:color-mix(in srgb,var(--surface,#fff) 72%,transparent);color:var(--fg,#1d1b17);font:inherit;position:relative}
+  .npan .ni{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 52px 12px 12px;min-height:68px;border-radius:16px;border:1px solid var(--line,#e6e1d5);background:var(--surface,#fff);color:var(--fg,#1d1b17);font:inherit;position:relative}
   .npan .ni .ic{flex:none;width:44px;height:44px;border-radius:13px;display:grid;place-items:center;font-size:22px;background:var(--sunken,#f9f7f2)}
   .npan .ni .tx{flex:1;min-width:0}
   .npan .ni b{display:block;font-size:16px;font-weight:600;line-height:1.25;overflow-wrap:anywhere}
   .npan .ni small{display:block;font-size:13.5px;color:var(--muted,#6f695d);margin-top:3px;line-height:1.3}
-  .npan .ni.new{border-color:color-mix(in srgb,var(--accent,#f2a516) 55%,transparent);background:color-mix(in srgb,color-mix(in srgb,var(--accent,#f2a516) 12%,var(--surface,#fff)) 80%,transparent)}
+  .npan .ni.new{border-color:color-mix(in srgb,var(--accent,#f2a516) 55%,transparent);background:color-mix(in srgb,var(--accent,#f2a516) 10%,var(--surface,#fff))}
   .npan .ni .ic{position:relative}
   .npan .ni.new b{font-weight:800}
   .npan .ni.new .ic::after{content:"";position:absolute;top:-3px;right:-3px;width:12px;height:12px;border-radius:50%;background:#d63a2a;box-shadow:0 0 0 2px var(--surface,#fff)}
@@ -131,7 +130,7 @@
   /* Barre d'onglets en bas, comme une vraie appli : une icône dessinée par partie */
   body{padding-bottom:calc(88px + env(safe-area-inset-bottom,0px))!important}
   .bnav{position:fixed;left:0;right:0;bottom:0;z-index:15;display:flex;justify-content:center;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));
-    background:color-mix(in srgb,var(--surface,#fff) 84%,transparent);-webkit-backdrop-filter:saturate(1.6) blur(16px);backdrop-filter:saturate(1.6) blur(16px);
+    background:var(--surface,#fff);
     border-top:1px solid var(--line,#e6e1d5);box-shadow:0 -8px 24px -16px rgba(40,25,5,.35);view-transition-name:bnav;font-family:"Figtree",system-ui,sans-serif}
   .bnav .in{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:100%;max-width:560px;gap:2px}
   .bnav a{display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0 2px;min-height:60px;border-radius:14px;text-decoration:none;color:var(--muted,#6f695d);font-size:11px;font-weight:700;letter-spacing:-.1px;white-space:nowrap}
@@ -144,17 +143,7 @@
   .bnav a{position:relative}.bnav .bdot{position:absolute;top:0;left:calc(50% + 9px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--accent,#f2a516);color:var(--accent-ink,#2a1d00);font-size:11px;font-weight:800;line-height:18px;text-align:center;box-shadow:0 0 0 2px var(--surface,#fff)}
   .bnav a[aria-current="page"] .bdot{display:none}
   html.typing .bnav{display:none}
-  /* Dès qu'on fait défiler, la barre devient une capsule flottante en verre (on voit la page à travers) */
-  .bnav{transition:left .45s cubic-bezier(.2,.8,.2,1),right .45s cubic-bezier(.2,.8,.2,1),bottom .45s cubic-bezier(.2,.8,.2,1),border-radius .45s ease,background-color .45s ease,padding .45s ease,box-shadow .45s ease}
-  html.scrolled .bnav{left:10px;right:10px;bottom:calc(8px + env(safe-area-inset-bottom,0px));padding:4px;border-radius:28px;
-    background:color-mix(in srgb,var(--surface,#fff) 66%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
-    border:1px solid color-mix(in srgb,#fff 45%,transparent);box-shadow:0 12px 32px -12px rgba(30,20,5,.45),inset 0 1px 0 rgba(255,255,255,.45)}
-  /* Changement d'onglet en douceur : la nouvelle page apparaît en fondu en glissant légèrement */
   @view-transition{navigation:none}
-  @media (prefers-reduced-motion:no-preference){
-    .wrap>:not(.pbar):not(script){animation:pgIn .26s ease-out both}
-  }
-  @keyframes pgIn{from{opacity:0}to{opacity:1}}
   html.typing body{padding-bottom:env(safe-area-inset-bottom,0px)!important}
   .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))!important}
   html.typing .toast{bottom:calc(20px + env(safe-area-inset-bottom,0px))!important}
@@ -244,7 +233,9 @@
     badge(){if(!this.list.length)this.load();const k=this.unread();
       document.querySelectorAll(".pbar .bell").forEach(b=>{const nb=b.querySelector(".nb");nb.hidden=!k;nb.textContent=k>9?"9+":k;b.classList.toggle("has",k>0);
         b.setAttribute("aria-label",k?`Notifications : ${k} non lue${k>1?"s":""}`:"Notifications")});document.dispatchEvent(new CustomEvent("2b-notifs",{detail:k}))},
-    async refresh(){if(!get()||!code())return;try{const l=await call("notifs_liste",{p_profil:get()});if(Array.isArray(l)){this.list=l;this.save();this.badge();if(document.querySelector(".npan"))this.draw()}}catch{}},
+    async refresh(force){if(!get()||!code())return;
+      try{const t=+localStorage.getItem("2b-notifs-t")||0;if(!force&&Date.now()-t<60000)return;localStorage.setItem("2b-notifs-t",String(Date.now()))}catch{}
+      try{const l=await call("notifs_liste",{p_profil:get()});if(Array.isArray(l)){this.list=l;this.save();this.badge();if(document.querySelector(".npan"))this.draw()}}catch{}},
     start(){if(this.t)return;this.refresh();this.t=setInterval(()=>{if(document.visibilityState==="visible")this.refresh()},60000);
       document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")this.refresh()})},
     read(ids){const p=get();this.list.forEach(n=>{if(!ids||ids.includes(n.id))n.lu=true});this.save();this.badge();if(document.querySelector(".npan"))this.draw();
@@ -276,7 +267,7 @@
         :`<div class="ne"><b>🛎️</b>Rien de nouveau pour l'instant.<br>Quand quelqu'un ajoute un événement, tu le verras ici.</div>`},
     open(){if(document.querySelector(".npan"))return;const m=document.createElement("div");m.className="npan";m.setAttribute("role","dialog");m.setAttribute("aria-label","Notifications");
       m.innerHTML=`<div class="nbx"><div class="nh"><h3>Notifications</h3><button type="button" class="nx" aria-label="Fermer">✕</button></div><button type="button" class="nall">✓ Tout marquer comme lu</button><div class="nl"></div></div>`;
-      document.body.appendChild(m);document.documentElement.style.overflow="hidden";this.draw();this.refresh();
+      document.body.appendChild(m);document.documentElement.style.overflow="hidden";this.draw();this.refresh(true);
       const close=()=>{m.remove();document.documentElement.style.overflow=""};
       m.addEventListener("click",e=>{if(e.target===m||e.target.closest(".nx")){close();return}
         if(e.target.closest(".nall")){this.read(null);return}
@@ -305,9 +296,6 @@
     b.innerHTML=`<div class="in">${TABS.map(([h,i,l])=>`<a href="${h}"${cur(h)?' aria-current="page"':""}><span class="ic">${IC[i]}</span>${i==="cmd"&&n?`<span class="bdot">${n>99?"99+":n}</span>`:""}<span>${l}</span></a>`).join("")}</div>`;
     document.body.appendChild(b);
   }
-  // Barre du bas : capsule en verre dès qu'on a un peu défilé
-  const glass=()=>document.documentElement.classList.toggle("scrolled",window.scrollY>12);
-  addEventListener("scroll",glass,{passive:true});glass();
   // Onglet touché : il s'allume tout de suite, sans attendre que la page suivante arrive
   document.addEventListener("click",e=>{const a=e.target.closest(".bnav a");if(!a||a.getAttribute("aria-current"))return;
     document.querySelectorAll(".bnav a[aria-current]").forEach(x=>x.removeAttribute("aria-current"));a.setAttribute("aria-current","page")});
