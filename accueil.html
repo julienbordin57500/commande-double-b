@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Aujourd'hui · Double B</title>
+<meta name="description" content="Le résumé du jour au Double B : événements, commandes et chiffres d'hier.">
+<meta name="theme-color" content="#f2a516">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Commande 2B">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700;800&display=swap">
+<script>try{if(!localStorage.getItem("commande2b-code"))location.replace("./");sessionStorage.setItem("2b-s","1")}catch(e){}</script>
+<style>
+/* Écran d'ouverture : bonjour, puis 3 cartes (programme, à commander, chiffres d'hier). Chaque carte mène à sa partie. */
+:root{
+  --bg:#f4f2ec; --surface:#ffffff; --sunken:#f9f7f2; --line:#e6e1d5; --fg:#1d1b17; --muted:#6f695d;
+  --accent:#f2a516; --accent-ink:#2a1d00; --accent-soft:#fdf1d6; --go:#2f7d4f; --go-soft:#e3f2e8; --danger:#c23a2b;
+  --priv:#c2410c; --priv-soft:#fdeadf; --trait:#2f5d9e; --trait-soft:#e4ecf8; --note:#2f7d4f; --note-soft:#e3f2e8;
+  --display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
+  --body:"Figtree","Segoe UI",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#141310; --surface:#1f1d18; --sunken:#191814; --line:#34312a; --fg:#f3efe5; --muted:#a69f90;
+  --accent:#f5b232; --accent-ink:#231800; --accent-soft:#3a2e12; --go:#5fbf86; --go-soft:#16301f; --danger:#e8705f;
+  --priv:#fb923c; --priv-soft:#3b2414; --trait:#8db7ee; --trait-soft:#1b2a40; --note:#5fbf86; --note-soft:#16301f; color-scheme:dark}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.35;
+  padding:env(safe-area-inset-top,0px) max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px))}
+[hidden]{display:none!important}
+.wrap{max-width:680px;margin:0 auto;padding-block:16px 24px}
+h1,h2,h3{font-family:var(--display);margin:0}
+a{color:inherit}
+.num{font-variant-numeric:tabular-nums}
+
+.hello{margin:18px 4px 4px}
+.hello h1{font-size:34px;font-weight:800;letter-spacing:-.6px;line-height:1.05}
+.hello p{margin:8px 0 0;color:var(--muted);font-size:17px;font-weight:600}
+.hello p b{color:var(--fg)}
+
+.bell-cta{display:flex;align-items:center;gap:12px;width:100%;margin-top:16px;padding:14px 16px;border-radius:18px;border:1.5px solid color-mix(in srgb,var(--accent) 60%,transparent);
+  background:var(--accent-soft);color:var(--fg);font:inherit;font-weight:800;font-size:17px;text-align:left;cursor:pointer}
+.bell-cta span{flex:1}
+.bell-cta em{font-style:normal;font-size:22px}
+
+.card{display:block;margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:16px;text-decoration:none;color:var(--fg)}
+.card-h{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.card-h .ico{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-size:22px;background:var(--sunken)}
+.card-h h2{flex:1;font-size:21px;font-weight:800;min-width:0}
+.card-h .go{flex:none;color:var(--muted);font-size:24px;font-weight:700;line-height:1}
+.empty{color:var(--muted);font-size:16px;padding:2px 2px 4px}
+.empty b{color:var(--go)}
+
+/* Programme */
+.dayl{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:12px 2px 6px}
+.dayl:first-of-type{margin-top:0}
+.ev{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:16px;background:var(--soft,var(--sunken));margin-bottom:8px;text-decoration:none;color:var(--fg);border:1px solid color-mix(in srgb,var(--c,var(--line)) 25%,transparent)}
+.ev .e{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:20px;background:var(--surface)}
+.ev .t{flex:1;min-width:0}
+.ev .t b{display:block;font-size:16.5px;font-weight:800;line-height:1.2;overflow-wrap:anywhere}
+.ev .t small{display:block;font-size:14px;color:var(--muted);font-weight:600;margin-top:2px}
+.ev.privatisation{--c:var(--priv);--soft:var(--priv-soft)} .ev.traiteur{--c:var(--trait);--soft:var(--trait-soft)} .ev.note{--c:var(--note);--soft:var(--note-soft)}
+.st{flex:none;font-size:12px;font-weight:800;padding:4px 9px;border-radius:999px;background:var(--surface);color:var(--muted);white-space:nowrap}
+.st.confirme{color:var(--go)}
+
+/* À commander */
+.big{display:flex;align-items:baseline;gap:10px}
+.big b{font-family:var(--display);font-size:44px;font-weight:800;line-height:1;letter-spacing:-1px}
+.big span{font-size:17px;font-weight:700;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.chips span{font-size:14px;font-weight:700;padding:6px 11px;border-radius:999px;background:var(--sunken);border:1px solid var(--line)}
+.chips span i{font-style:normal;color:var(--accent-ink);background:var(--accent);border-radius:999px;padding:0 7px;margin-left:6px;font-weight:800}
+
+/* Hier */
+.kp{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kp div{background:var(--sunken);border-radius:14px;padding:10px 12px;min-width:0}
+.kp small{display:block;font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.kp b{display:block;font-family:var(--display);font-size:26px;font-weight:800;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fill{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;height:52px;border-radius:14px;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:17px;
+  background-image:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,0));box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 6px 14px -8px color-mix(in srgb,var(--accent) 90%,#000)}
+
+.card{transition:scale .12s ease}.card:active{scale:.985}
+.card,.bell-cta{box-shadow:0 1px 2px rgba(60,40,10,.04),0 6px 18px -10px rgba(60,40,10,.14)}
+@media (prefers-reduced-motion:no-preference){.card,.bell-cta,.hello{animation:rise .45s cubic-bezier(.2,.8,.2,1) both}.c2{animation-delay:.05s!important}.c3{animation-delay:.1s!important}.c4{animation-delay:.15s!important}}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@view-transition{navigation:auto}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.16s;animation-timing-function:ease-out}
+.pbar{view-transition-name:pbar}
+@media (prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="pbar" id="pbar"></div><script src="profil.js"></script>
+
+  <header class="hello"><h1 id="hi">Bonjour 👋</h1><p id="date">&nbsp;</p></header>
+
+  <button class="bell-cta" id="news" type="button" hidden><em aria-hidden="true">🛎️</em><span id="newsT"></span><b aria-hidden="true">›</b></button>
+
+  <a class="card c2" href="evenements.html" id="cEv">
+    <div class="card-h"><span class="ico" aria-hidden="true">📅</span><h2>Au programme</h2><span class="go" aria-hidden="true">›</span></div>
+    <div id="evs"><div class="empty">Chargement…</div></div>
+  </a>
+
+  <a class="card c3" href="./#acommander" id="cCmd">
+    <div class="card-h"><span class="ico" aria-hidden="true">🛒</span><h2>À commander</h2><span class="go" aria-hidden="true">›</span></div>
+    <div id="cmd"><div class="empty">Chargement…</div></div>
+  </a>
+
+  <a class="card c4" href="chiffres.html" id="cHier">
+    <div class="card-h"><span class="ico" aria-hidden="true">📊</span><h2 id="hierT">Hier</h2><span class="go" aria-hidden="true">›</span></div>
+    <div id="hier"><div class="empty">Chargement…</div></div>
+  </a>
+</div>
+
+<script>
+const API="https://kokjumjhpasxxxrpspng.supabase.co/rest/v1/rpc/";
+const KEY="sb_publishable_HIJXH1eJ_CP-A4G3AecDKg_NbBUD0m2";
+let CODE=null;try{CODE=localStorage.getItem("commande2b-code")}catch{}
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+async function rpc(fn,args={}){
+  const r=await fetch(API+fn,{method:"POST",headers:{"apikey":KEY,"Content-Type":"application/json"},body:JSON.stringify({p_code:CODE,...args})});
+  if(!r.ok){let e={};try{e=await r.json()}catch{}const err=new Error(e.message||"net");err.code=e.code;throw err}
+  const t=await r.text();return t?JSON.parse(t):null;
+}
+const lost=e=>{if(e&&e.code==="28000"){try{localStorage.removeItem("commande2b-code")}catch{}location.replace("./");return true}return false};
+const cache=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k)||"null");localStorage.setItem(k,JSON.stringify(v))}catch{return null}};
+
+/* Dates (heure locale) */
+const pad=n=>String(n).padStart(2,"0");
+const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const now=new Date();const plus=n=>{const d=new Date(now);d.setDate(d.getDate()+n);return d};
+const TODAY=iso(now),TOMORROW=iso(plus(1)),Y=plus(-1),YESTERDAY=iso(Y);
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+const nf0=new Intl.NumberFormat("fr-FR",{maximumFractionDigits:0});
+
+/* Bonjour */
+const prenom=(window.Profil&&Profil.noms[Profil.get()])||"";
+const h=now.getHours();
+$("#hi").textContent=`${h>=18||h<5?"Bonsoir":"Bonjour"}${prenom?" "+prenom:""} 👋`;
+const jour=cap(now.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"}));
+$("#date").innerHTML=`<b>${esc(jour)}</b> · ${h<15?"bon service !":h<18?"bonne fin de journée !":"bon service ce soir !"}`;
+
+/* Nouveautés de l'équipe (sonnette) */
+function news(k){const b=$("#news");b.hidden=!k;$("#newsT").textContent=k===1?"1 nouveauté de l'équipe":`${k} nouveautés de l'équipe`}
+document.addEventListener("2b-notifs",e=>news(e.detail));
+if(window.Profil&&Profil.notifs){Profil.notifs.load();news(Profil.notifs.unread())}
+$("#news").onclick=()=>window.Profil&&Profil.notifs.open();
+
+/* Au programme : aujourd'hui et demain */
+const TYPES={privatisation:"🏠",traiteur:"🚚",note:"📌"};
+const STAT={option:"En option",confirme:"Confirmé"};
+function drawEv(list){
+  list=(list||[]).filter(e=>e.statut!=="annule");
+  const part=(d,l)=>{const xs=list.filter(e=>e.jour===d).sort((a,b)=>(a.heure||"99").localeCompare(b.heure||"99"));if(!xs.length)return "";
+    return `<div class="dayl">${l}</div>`+xs.map(e=>`<div class="ev ${esc(e.type)}" data-ev="${esc(e.id)}" data-j="${esc(e.jour)}"><span class="e" aria-hidden="true">${TYPES[e.type]||"📅"}</span><span class="t"><b>${esc(e.client)}</b><small>${[e.heure,e.personnes?e.personnes+" pers.":"",e.type==="traiteur"&&e.lieu?e.lieu:""].filter(Boolean).map(esc).join(" · ")||(e.type==="note"?"Pense-bête":"&nbsp;")}</small></span>${e.type!=="note"&&STAT[e.statut]?`<span class="st ${esc(e.statut)}">${STAT[e.statut]}</span>`:""}</div>`).join("")};
+  const html=part(TODAY,"Aujourd'hui")+part(TOMORROW,"Demain");
+  $("#evs").innerHTML=html||`<div class="empty">Rien de prévu aujourd'hui ni demain.</div>`;
+}
+$("#cEv").addEventListener("click",e=>{const x=e.target.closest("[data-ev]");if(!x)return;e.preventDefault();location.href=`evenements.html#ev=${encodeURIComponent(x.dataset.ev)}&j=${x.dataset.j}`});
+
+/* À commander : total et par fournisseur (Cuisine et Bar & Salle) */
+function drawCmd(d){
+  const ps=((d&&d.produits)||[]).filter(p=>p.acommander);
+  if(!ps.length){$("#cmd").innerHTML=`<div class="empty"><b>✓</b> Rien à commander pour l'instant.</div>`;return}
+  const by={};ps.forEach(p=>by[p.fournisseur]=(by[p.fournisseur]||0)+1);
+  $("#cmd").innerHTML=`<div class="big"><b class="num">${ps.length}</b><span>article${ps.length>1?"s":""} à commander</span></div>
+    <div class="chips">${Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([f,n])=>`<span>${esc(f)}<i>${n}</i></span>`).join("")}</div>`;
+}
+
+/* Hier : CA et clients ; si rien n'est noté, un gros bouton pour le faire */
+const v=(r,k)=>r&&typeof r[k]==="number"?r[k]:null;
+const add=(...a)=>{const x=a.filter(n=>n!=null);return x.length?x.reduce((s,n)=>s+n,0):null};
+function drawHier(month){
+  $("#hierT").textContent="Hier, "+Y.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric"});
+  const r=(month||{})[YESTERDAY];
+  const ca=add(v(r,"ca_midi"),v(r,"ca_soir"));
+  const cl=add(v(r,"clients_midi_sp"),v(r,"clients_midi_emp"),v(r,"clients_midi"),v(r,"clients_soir_sp"),v(r,"clients_soir_emp"),v(r,"clients_soir"));
+  $("#cHier").href="chiffres.html#j="+YESTERDAY;
+  if(ca==null&&cl==null){$("#hier").innerHTML=`<div class="empty">Les chiffres d'hier ne sont pas encore notés.</div><div class="fill">✍️ Les noter maintenant</div>`;return}
+  $("#hier").innerHTML=`<div class="kp"><div><small>Chiffre d'affaires</small><b class="num">${ca==null?"–":nf0.format(ca)+" €"}</b></div><div><small>Clients</small><b class="num">${cl==null?"–":nf0.format(cl)}</b></div></div>`;
+}
+
+/* Affichage immédiat avec les dernières valeurs connues, puis mise à jour */
+const MK=`${Y.getFullYear()}-${pad(Y.getMonth()+1)}-01`;
+drawEv(cache("accueil2b-ev-"+TODAY));
+drawCmd(cache("commande2b-cache"));
+drawHier(cache("chiffres2b-cache-"+MK)&&cache("chiffres2b-cache-"+MK).d);
+async function load(){
+  const [ev,et,mo]=await Promise.allSettled([rpc("evenements_liste",{p_debut:TODAY,p_fin:TOMORROW}),rpc("etat"),rpc("suivi_mois",{p_mois:MK})]);
+  for(const x of [ev,et,mo])if(x.status==="rejected"&&lost(x.reason))return;
+  if(ev.status==="fulfilled"){cache("accueil2b-ev-"+TODAY,ev.value);drawEv(ev.value)}
+  if(et.status==="fulfilled"&&et.value){cache("commande2b-cache",et.value);drawCmd(et.value)}
+  if(mo.status==="fulfilled"){drawHier(mo.value)}
+  if(ev.status==="rejected"&&!cache("accueil2b-ev-"+TODAY))$("#evs").innerHTML=`<div class="empty">Pas de connexion pour l'instant.</div>`;
+}
+load();
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")load()});
+if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>

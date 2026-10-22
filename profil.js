@@ -118,6 +118,27 @@
   .npan .ni.new::after{content:"";position:absolute;top:12px;right:12px;width:10px;height:10px;border-radius:50%;background:#d63a2a}
   .npan .ne{text-align:center;color:var(--muted,#6f695d);padding:30px 16px 40px;font-size:16px;line-height:1.45}
   .npan .ne b{display:block;font-size:44px;margin-bottom:8px}
+  /* Barre d'onglets en bas, comme une vraie appli : une icône dessinée par partie */
+  body{padding-bottom:calc(88px + env(safe-area-inset-bottom,0px))!important}
+  .bnav{position:fixed;left:0;right:0;bottom:0;z-index:15;display:flex;justify-content:center;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));
+    background:color-mix(in srgb,var(--surface,#fff) 84%,transparent);-webkit-backdrop-filter:saturate(1.6) blur(16px);backdrop-filter:saturate(1.6) blur(16px);
+    border-top:1px solid var(--line,#e6e1d5);box-shadow:0 -8px 24px -16px rgba(40,25,5,.35);view-transition-name:bnav;font-family:"Figtree",system-ui,sans-serif}
+  .bnav .in{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:100%;max-width:560px;gap:2px}
+  .bnav a{display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0 2px;min-height:60px;border-radius:14px;text-decoration:none;color:var(--muted,#6f695d);font-size:11px;font-weight:700;letter-spacing:-.1px;white-space:nowrap}
+  .bnav .ic{width:54px;height:34px;border-radius:17px;display:grid;place-items:center;transition:background-color .2s ease,color .2s ease}
+  .bnav svg{width:25px;height:25px}
+  .bnav a[aria-current="page"]{color:var(--fg,#1d1b17);font-weight:800}
+  .bnav a[aria-current="page"] .ic{background:var(--accent,#f2a516);color:var(--accent-ink,#2a1d00);background-image:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,0));box-shadow:0 5px 14px -6px color-mix(in srgb,var(--accent,#f2a516) 90%,#000);animation:icPop .38s cubic-bezier(.3,1.5,.5,1)}
+  .bnav a:active .ic{scale:.9}
+  @media (max-width:360px){.bnav{padding-inline:2px}.bnav a{font-size:10px;letter-spacing:-.2px}.bnav .ic{width:46px}}
+  .bnav a{position:relative}.bnav .dot{position:absolute;top:0;left:calc(50% + 9px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--accent,#f2a516);color:var(--accent-ink,#2a1d00);font-size:11px;font-weight:800;line-height:18px;text-align:center;box-shadow:0 0 0 2px var(--surface,#fff)}
+  .bnav a[aria-current="page"] .dot{display:none}
+  html.typing .bnav{display:none}
+  html.typing body{padding-bottom:env(safe-area-inset-bottom,0px)!important}
+  .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))!important}
+  html.typing .toast{bottom:calc(20px + env(safe-area-inset-bottom,0px))!important}
+  @keyframes icPop{0%{transform:scale(.8)}100%{transform:none}}
+  @media (prefers-reduced-motion:reduce){.bnav a[aria-current="page"] .ic{animation:none}}
   @keyframes fIn{from{opacity:0}to{opacity:1}}
   @keyframes upIn{from{opacity:.4;transform:translateY(28px)}to{opacity:1;transform:none}}
   @keyframes tIn{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
@@ -181,7 +202,7 @@
     unread(){return this.list.filter(n=>!n.lu).length},
     badge(){if(!this.list.length)this.load();const k=this.unread();
       document.querySelectorAll(".pbar .bell").forEach(b=>{const nb=b.querySelector(".nb");nb.hidden=!k;nb.textContent=k>9?"9+":k;b.classList.toggle("has",k>0);
-        b.setAttribute("aria-label",k?`Notifications : ${k} non lue${k>1?"s":""}`:"Notifications")})},
+        b.setAttribute("aria-label",k?`Notifications : ${k} non lue${k>1?"s":""}`:"Notifications")});document.dispatchEvent(new CustomEvent("2b-notifs",{detail:k}))},
     async refresh(){if(!get()||!code())return;try{const l=await call("notifs_liste",{p_profil:get()});if(Array.isArray(l)){this.list=l;this.save();this.badge();if(document.querySelector(".npan"))this.draw()}}catch{}},
     start(){if(this.t)return;this.refresh();this.t=setInterval(()=>{if(document.visibilityState==="visible")this.refresh()},60000);
       document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")this.refresh()})},
@@ -216,9 +237,30 @@
         if(/evenements\.html$/.test(location.pathname))location.hash=h;else location.href="evenements.html#"+h});
       document.addEventListener("keydown",function k(e){if(e.key==="Escape"){close();document.removeEventListener("keydown",k)}})}
   };
-  function ensure(){if(!get())picker(false);else{bar();tour()}}
+  /* ---------- Barre d'onglets du bas ---------- */
+  const IC={
+    jour:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="4"/><path d="M12 4.5v1.5M4.5 13H6M18 13h1.5M6.7 7.7l1 1M17.3 7.7l-1 1"/><path d="M3 20h18"/></svg>`,
+    cmd:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 10h17l-1.8 8.6a2 2 0 0 1-2 1.6H7.3a2 2 0 0 1-2-1.6z"/><path d="M8 10l3.2-6M16 10l-3.2-6"/><path d="M9.5 14v2.5M14.5 14v2.5"/></svg>`,
+    menu:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="3" width="15" height="18" rx="2.5"/><path d="M8 14.5a4 4 0 0 1 8 0zM7.5 14.5h9M12 9.5v1"/><path d="M9 17.8h6"/></svg>`,
+    chif:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><rect x="5.5" y="12" width="3" height="5" rx="1"/><rect x="10.5" y="9" width="3" height="8" rx="1"/><rect x="15.5" y="6" width="3" height="11" rx="1"/><path d="M5 8.5l4.5-3.5 3 1.5 5-3.5"/></svg>`,
+    ev:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M12 12.6l1.1 2.1 2.3.4-1.7 1.6.4 2.3-2.1-1.1-2.1 1.1.4-2.3-1.7-1.6 2.3-.4z" fill="currentColor" stroke-width="1"/></svg>`};
+  const TABS=[["accueil.html","jour","Aujourd'hui"],["./","cmd","Commande"],["menus.html","menu","Menus"],["chiffres.html","chif","Chiffres"],["evenements.html","ev","Événements"]];
+  function nav(){
+    if(document.querySelector(".bnav"))return;
+    const here=(location.pathname.split("/").pop()||"index.html");
+    const cur=h=>h==="./"?(here==="index.html"||here===""):here===h;
+    let n=0;try{const c=JSON.parse(localStorage.getItem("commande2b-cache")||"null");if(c&&c.produits)n=c.produits.filter(p=>p.acommander).length}catch{}
+    const b=document.createElement("nav");b.className="bnav";b.setAttribute("aria-label","Parties de l'appli");
+    b.innerHTML=`<div class="in">${TABS.map(([h,i,l])=>`<a href="${h}"${cur(h)?' aria-current="page"':""}><span class="ic">${IC[i]}</span>${i==="cmd"&&n?`<span class="dot">${n>99?"99+":n}</span>`:""}<span>${l}</span></a>`).join("")}</div>`;
+    document.body.appendChild(b);
+  }
+  // Pendant la saisie, la barre se cache : le clavier et les résultats ont toute la place
+  document.addEventListener("focusin",e=>{if(e.target.matches("input:not([type=checkbox]):not([type=radio]),textarea,select"))document.documentElement.classList.add("typing")});
+  document.addEventListener("focusout",()=>setTimeout(()=>{const a=document.activeElement;if(!(a&&a.matches&&a.matches("input,textarea,select")))document.documentElement.classList.remove("typing")},60));
+  function ensure(){nav();if(!get())picker(false);else{bar();tour()}}
   window.Profil={get,ensure,avatar,notifs:Notifs,noms:Object.fromEntries(Object.entries(AV).map(([k,v])=>[k,v.nom]))};
   let hasCode=false;try{hasCode=!!localStorage.getItem("commande2b-code")}catch{}
+  if(hasCode)nav();
   if(hasCode&&!document.getElementById("gate"))ensure();   // l'écran Commande l'appelle lui-même après le code
   else if(get())bar();                                      // barre remplie tout de suite : rien ne bouge à l'affichage
 })();

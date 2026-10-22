@@ -10,7 +10,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Commande 2B">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script>try{if(localStorage.getItem("commande2b-code"))document.documentElement.classList.add("has-code")}catch(e){}</script>
+<script>try{if(localStorage.getItem("commande2b-code")){document.documentElement.classList.add("has-code");
+  /* À l'ouverture de l'appli, on commence par l'écran « Aujourd'hui » */
+  if(!sessionStorage.getItem("2b-s")&&!location.hash){sessionStorage.setItem("2b-s","1");location.replace("accueil.html")}}}catch(e){}</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png" type="image/png">
@@ -288,7 +290,6 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
 
 <div class="wrap" id="app" hidden>
   <div class="pbar" id="pbar"></div><script src="profil.js"></script>
-  <nav class="apps" aria-label="Parties de l'appli"><a href="./" aria-current="page">Commande</a><a href="menus.html">Menus &amp; devis</a><a href="chiffres.html">Chiffres</a><a href="evenements.html">Événements</a></nav>
   <div class="sync" id="sync">Connexion…</div>
   <header class="top">
     <div class="logo"><img src="logo-hd.png" alt="Double B" width="1000" height="403"></div>
@@ -370,7 +371,7 @@ async function boot(){
   try{const ok=await rpc("verifier");if(!ok){store.del(CK);showGate("Ce code n'est plus valable.")}}
   catch(e){/* hors ligne : la synchro reprendra */}
 }
-function showGate(msg){document.documentElement.classList.remove("has-code");$("#app").hidden=true;$("#gate").hidden=false;const er=$("#gateErr");er.hidden=!msg;er.textContent=msg||"";setTimeout(()=>$("#gateCode").focus(),100)}
+function showGate(msg){document.documentElement.classList.remove("has-code");document.querySelector(".bnav")?.remove();$("#app").hidden=true;$("#gate").hidden=false;const er=$("#gateErr");er.hidden=!msg;er.textContent=msg||"";setTimeout(()=>$("#gateCode").focus(),100)}
 $("#gateForm").addEventListener("submit",async e=>{
   e.preventDefault();const c=$("#gateCode").value.trim();if(!c)return;S.code=c;
   try{const ok=await rpc("verifier");if(ok){store.set(CK,c);showApp()}else showGate("Code incorrect. Vérifie avec le gérant.")}
@@ -820,6 +821,8 @@ document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{
   const tab=b.dataset.tab;["liste","commande"].forEach(t=>$("#view-"+t).hidden=t!==tab);
   document.querySelectorAll("[data-tab]").forEach(x=>x.setAttribute("aria-selected",x===b));window.scrollTo({top:0});
 });
+/* Depuis l'écran « Aujourd'hui » : ouvrir directement « À commander » */
+if(location.hash==="#acommander"){history.replaceState(null,"",location.pathname);document.querySelector('[data-tab="commande"]').click()}
 window.addEventListener("hashchange",()=>{if(location.hash.includes("code="))boot()});
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
 boot();
