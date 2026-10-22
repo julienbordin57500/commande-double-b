@@ -134,6 +134,18 @@
   .bnav a{position:relative}.bnav .dot{position:absolute;top:0;left:calc(50% + 9px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--accent,#f2a516);color:var(--accent-ink,#2a1d00);font-size:11px;font-weight:800;line-height:18px;text-align:center;box-shadow:0 0 0 2px var(--surface,#fff)}
   .bnav a[aria-current="page"] .dot{display:none}
   html.typing .bnav{display:none}
+  /* En faisant défiler vers le bas, la barre se rétracte ; elle revient dès qu'on remonte */
+  .bnav{transition:transform .32s cubic-bezier(.2,.8,.2,1)}
+  html.navaway .bnav{transform:translateY(calc(100% + 6px))}
+  .savebar{transition:bottom .32s cubic-bezier(.2,.8,.2,1)}
+  html.navaway .savebar{bottom:calc(14px + env(safe-area-inset-bottom,0px))!important}
+  /* Changement d'onglet en douceur : la page s'efface puis la suivante apparaît en glissant légèrement */
+  @view-transition{navigation:none}
+  @media (prefers-reduced-motion:no-preference){
+    .wrap>:not(.pbar):not(script){animation:pgIn .38s cubic-bezier(.2,.7,.2,1) both}
+    html.leaving .wrap>:not(.pbar){opacity:0;transform:translateY(-6px);transition:opacity .15s ease-in,transform .15s ease-in}
+  }
+  @keyframes pgIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
   html.typing body{padding-bottom:env(safe-area-inset-bottom,0px)!important}
   .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))!important}
   html.typing .toast{bottom:calc(20px + env(safe-area-inset-bottom,0px))!important}
@@ -254,6 +266,20 @@
     b.innerHTML=`<div class="in">${TABS.map(([h,i,l])=>`<a href="${h}"${cur(h)?' aria-current="page"':""}><span class="ic">${IC[i]}</span>${i==="cmd"&&n?`<span class="dot">${n>99?"99+":n}</span>`:""}<span>${l}</span></a>`).join("")}</div>`;
     document.body.appendChild(b);
   }
+  // Barre du bas : se rétracte en descendant, revient en remontant (et toujours en haut ou en bas de page)
+  let lastY=window.scrollY,tick=false;
+  addEventListener("scroll",()=>{if(tick)return;tick=true;requestAnimationFrame(()=>{tick=false;
+    const y=window.scrollY,dy=y-lastY,root=document.documentElement;
+    const bottom=window.innerHeight+y>=document.documentElement.scrollHeight-24;
+    if(y<60||bottom||dy<-6)root.classList.remove("navaway");else if(dy>8)root.classList.add("navaway");
+    if(Math.abs(dy)>6)lastY=y})},{passive:true});
+  // Changement d'onglet : petit fondu avant de partir (et la page revient normale si on fait « retour »)
+  document.addEventListener("click",e=>{
+    const a=e.target.closest("a[href]");if(!a||e.defaultPrevented||e.metaKey||e.ctrlKey||e.shiftKey||a.target||a.hasAttribute("download"))return;
+    const u=new URL(a.href,location.href);if(u.origin!==location.origin||(u.pathname===location.pathname&&u.hash))return;
+    if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+    e.preventDefault();document.documentElement.classList.add("leaving");setTimeout(()=>{location.href=u.href},140)});
+  addEventListener("pageshow",()=>document.documentElement.classList.remove("leaving","navaway"));
   // Pendant la saisie, la barre se cache : le clavier et les résultats ont toute la place
   document.addEventListener("focusin",e=>{if(e.target.matches("input:not([type=checkbox]):not([type=radio]),textarea,select"))document.documentElement.classList.add("typing")});
   document.addEventListener("focusout",()=>setTimeout(()=>{const a=document.activeElement;if(!(a&&a.matches&&a.matches("input,textarea,select")))document.documentElement.classList.remove("typing")},60));
