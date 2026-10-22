@@ -71,7 +71,29 @@
   .tour button{height:56px;border-radius:16px;border:0;font:inherit;font-weight:800;font-size:17px;cursor:pointer}
   .tour .nx{background:#f2a516;color:#2a1d00} .tour .sk{background:var(--sunken,#f9f7f2);color:var(--fg,#1d1b17);border:1px solid var(--line,#e6e1d5)}
   @keyframes pIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-  @media (prefers-reduced-motion:reduce){.pick{animation:none}}`;
+  @media (prefers-reduced-motion:reduce){.pick{animation:none}}
+
+  /* Finitions communes aux 4 onglets : boutons qui réagissent au doigt, ombres douces, fenêtres qui glissent */
+  html{-webkit-tap-highlight-color:transparent}
+  body{background-image:radial-gradient(900px 340px at 50% -180px,color-mix(in srgb,var(--accent,#f2a516) 13%,transparent),transparent 70%);background-repeat:no-repeat}
+  button,a,input,select,textarea,label,[role=button]{touch-action:manipulation}
+  button,.btn,.apps a,[role=button]{transition:scale .12s ease,background-color .2s ease,color .2s ease,box-shadow .2s ease,border-color .2s ease,opacity .2s ease}
+  button:not(:disabled):active,.apps a:active,[role=button]:active{scale:.97}
+  .btn:not(:disabled):active,.pnew:active,.pcard:active,.ev:active{scale:.985}
+  input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
+  .btn:not(.soft):not(.del):not(.danger):not(.confirm){background-image:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,0));box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 6px 14px -8px color-mix(in srgb,var(--accent,#f2a516) 90%,#000)}
+  .btn.danger{box-shadow:0 6px 14px -8px var(--danger,#c23a2b)}
+  .apps a[aria-current="page"]{background-image:linear-gradient(180deg,rgba(255,255,255,.25),rgba(255,255,255,0));box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 4px 12px -6px color-mix(in srgb,var(--accent,#f2a516) 90%,#000)}
+  .tabs button[aria-selected="true"],.vue button[aria-selected="true"]{box-shadow:0 4px 12px -6px rgba(0,0,0,.45)}
+  .pbar,.apps,.tabs,.vue,.month,.sup,.panel,.pcard,.tblcard,.kpi,.chartbox,section.day,.ln,.pempty{box-shadow:0 1px 2px rgba(60,40,10,.04),0 6px 18px -10px rgba(60,40,10,.14)}
+  .pbar svg{border-radius:50%;box-shadow:0 0 0 2px var(--surface,#fff),0 0 0 4px color-mix(in srgb,var(--accent,#f2a516) 55%,transparent)}
+  .sheet:not([hidden]),.modal{animation:fIn .18s ease-out}
+  .sheet:not([hidden])>.box,.sheet:not([hidden])>.sh,.modal>.box{animation:upIn .28s cubic-bezier(.2,.85,.25,1)}
+  .toast:not([hidden]){animation:tIn .26s cubic-bezier(.2,.85,.25,1);box-shadow:0 10px 26px -8px rgba(0,0,0,.45)}
+  @keyframes fIn{from{opacity:0}to{opacity:1}}
+  @keyframes upIn{from{opacity:.4;transform:translateY(28px)}to{opacity:1;transform:none}}
+  @keyframes tIn{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+  @media (prefers-reduced-motion:reduce){.sheet,.modal,.sheet>.box,.sheet>.sh,.modal>.box,.toast{animation:none!important}button:active,.apps a:active{scale:none}}`;
   const st=document.createElement("style");st.textContent=css;document.head.appendChild(st);
 
   function picker(canCancel){
