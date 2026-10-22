@@ -1,9 +1,9 @@
 // Garde l'appli rapide et disponible hors connexion.
-// Fichiers de l'appli (pages, scripts, images) : on demande toujours la dernière version (sans le cache de 10 min du navigateur),
-// mais jamais plus de 1,2 s d'attente : sinon la version gardée s'affiche tout de suite.
-// Polices et bibliothèques externes : version gardée tout de suite, mise à jour en arrière-plan.
-// L'API Supabase passe toujours par le réseau.
-const CACHE = "commande-2b-v18";
+// Fichiers de l'appli : ouverts tout de suite depuis la copie du téléphone (changement d'onglet instantané).
+// Chaque nouvelle version publiée change le nom du cache ci-dessous : le téléphone la télécharge alors EN ENTIER
+// en arrière-plan (sans le cache de 10 min du navigateur), puis l'utilise d'un coup. Jamais d'ancien et de nouveau mélangés.
+// Polices et bibliothèques externes : version gardée, mise à jour en arrière-plan. L'API Supabase passe toujours par le réseau.
+const CACHE = "commande-2b-v19";
 const SHELL = ["./", "index.html", "accueil.html", "hygiene.html", "menus.html", "chiffres.html", "evenements.html", "manifest.webmanifest", "logo-hd.png", "icone-appli.svg", "profil.js", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 const STATIC_HOSTS = ["fonts.googleapis.com", "fonts.gstatic.com", "cdnjs.cloudflare.com"];
 
@@ -25,11 +25,11 @@ self.addEventListener("fetch", e => {
 
   if (same) {
     e.respondWith((async () => {
-      const cached = await caches.match(req, { ignoreSearch: true });
-      const net = fetch(req.url, { cache: "no-cache", credentials: "same-origin" }).then(r => put(req, r));
-      if (!cached) return net.catch(() => caches.match("index.html"));
-      const timeout = new Promise(res => setTimeout(() => res(cached), 1200));
-      return Promise.race([net.catch(() => cached), timeout]);
+      const c = await caches.open(CACHE);
+      const cached = await c.match(req, { ignoreSearch: true });
+      if (cached) return cached;
+      try { return put(req, await fetch(req.url, { cache: "no-cache", credentials: "same-origin" })); }
+      catch { return (await c.match("index.html")) || Response.error(); }
     })());
     return;
   }
