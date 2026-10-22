@@ -264,7 +264,7 @@ const APP=[
   {k:"cong_p2",n:"Congélateur plonge 2",e:"❄️",max:-18}];
 const MINE=FULL?APP:APP.filter(a=>a.k==="vitrine");
 const FRITEUSES=[1,2];
-const LAVAGE=APP.filter(a=>["frigo_c1","frigo_c2","frigo_p"].includes(a.k));   // nettoyés une fois par semaine
+const LAVAGE=APP.filter(a=>["frigo_c1","frigo_p"].includes(a.k));   // nettoyés une fois par semaine
 const CAUSES=["Porte mal fermée","Livraison en cours","Dégivrage","Revérifié plus tard : OK"];
 
 /* ---------- Dates ---------- */

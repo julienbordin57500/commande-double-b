@@ -147,14 +147,14 @@
   /* Dès qu'on fait défiler, la barre devient une capsule flottante en verre (on voit la page à travers) */
   .bnav{transition:left .45s cubic-bezier(.2,.8,.2,1),right .45s cubic-bezier(.2,.8,.2,1),bottom .45s cubic-bezier(.2,.8,.2,1),border-radius .45s ease,background-color .45s ease,padding .45s ease,box-shadow .45s ease}
   html.scrolled .bnav{left:10px;right:10px;bottom:calc(8px + env(safe-area-inset-bottom,0px));padding:4px;border-radius:28px;
-    background:color-mix(in srgb,var(--surface,#fff) 52%,transparent);-webkit-backdrop-filter:saturate(1.9) blur(22px);backdrop-filter:saturate(1.9) blur(22px);
+    background:color-mix(in srgb,var(--surface,#fff) 66%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
     border:1px solid color-mix(in srgb,#fff 45%,transparent);box-shadow:0 12px 32px -12px rgba(30,20,5,.45),inset 0 1px 0 rgba(255,255,255,.45)}
   /* Changement d'onglet en douceur : la nouvelle page apparaît en fondu en glissant légèrement */
   @view-transition{navigation:none}
   @media (prefers-reduced-motion:no-preference){
-    .wrap>:not(.pbar):not(script){animation:pgIn .42s cubic-bezier(.2,.7,.2,1) both}
+    .wrap>:not(.pbar):not(script){animation:pgIn .26s ease-out both}
   }
-  @keyframes pgIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes pgIn{from{opacity:0}to{opacity:1}}
   html.typing body{padding-bottom:env(safe-area-inset-bottom,0px)!important}
   .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))!important}
   html.typing .toast{bottom:calc(20px + env(safe-area-inset-bottom,0px))!important}
