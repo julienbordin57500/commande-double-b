@@ -93,7 +93,10 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
 .qr-t b{display:block;font-weight:700;font-size:16px;line-height:1.2;overflow-wrap:anywhere}
 .qr-t small{display:block;font-size:13px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .qr-t small i{font-style:normal;font-weight:700;color:var(--fg)}
-.qr .qty{width:60px;height:46px;flex:none}
+.qr .qty{width:64px;height:46px;flex:none}
+.qr.on{flex-wrap:wrap}
+.qr-c{display:flex;align-items:center;gap:8px;width:100%;padding-bottom:2px}
+.qr-c .unit{flex:1;min-width:0;max-width:none;height:46px;font-size:16px}
 .qr .toggle{height:48px;padding:0 14px 0 10px}
 .qr .toggle[aria-pressed="true"]{width:48px;padding:0;justify-content:center}
 .qr-more{padding:12px 14px;font-size:14px;color:var(--muted);text-align:center;border-top:1px solid var(--line)}
@@ -343,7 +346,8 @@ const API="https://kokjumjhpasxxxrpspng.supabase.co/rest/v1/rpc/";
 const KEY="sb_publishable_HIJXH1eJ_CP-A4G3AecDKg_NbBUD0m2";
 const CK="commande2b-code";
 const DEFAULT_SUPS=["Maraîcher","Sysco","Coup de Pâtes"];
-const UNITS=["pièce","kg","g","L","carton","colis","botte","sac","seau","barquette","bouteille","fût","pack"];
+const UNITS=["pièce","kg","g","L","douzaine","carton","colis","botte","sac","seau","barquette","bouteille","fût","pack"];
+const plU=(u,q)=>q>1&&/^(pièce|botte|barquette|bouteille|carton|colis|sac|seau|pack|douzaine)$/.test(u)?u+"s":u;   // « 12 pièces »
 const S={items:new Map(),sups:[...DEFAULT_SUPS],supSec:{},fiches:{},ready:false,open:{},copen:{},q:"",code:null,pending:0,sec:"cuisine",busy:false};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
@@ -511,12 +515,17 @@ function quickHits(ts){
   const out=r.sort((a,b)=>b[1]-a[1]||a[0].nom.localeCompare(b[0].nom,"fr")).map(x=>x[0]);out.fuzzy=fuzzy;return out}
 function qrHTML(p){
   const other=!inSec(p)?` · <i>${(p.section||"cuisine")==="boissons"?"🍸 Bar & Salle":"🍳 Cuisine"}</i>`:"";
-  return `<div class="qr${p.acommander?" on":""}"><div class="qr-t"><b>${label(p.nom)}</b><small>${esc(p.fournisseur)}${other}${p.acommander&&p.unite?` · qté en ${esc(p.unite)}`:""}</small></div>
-    ${p.acommander?`<input class="qty" type="number" inputmode="decimal" min="0" max="10000" step="any" placeholder="Qté" value="${p.qte??""}" data-q="${p.id}" aria-label="Quantité de ${esc(p.nom)} (facultatif)">`:""}
-    <button class="toggle" type="button" data-t="${p.id}" aria-pressed="${p.acommander}" aria-label="${p.acommander?`Retirer ${esc(p.nom)} de la commande`:`Commander ${esc(p.nom)}`}"><span class="box">${CHECK}</span>${p.acommander?"":"Commander"}</button></div>`}
+  // Une fois commandé : quantité ET unité modifiables directement dans le résultat (avant, l'unité manquait ici)
+  const tog=`<button class="toggle" type="button" data-t="${p.id}" aria-pressed="${p.acommander}" aria-label="${p.acommander?`Retirer ${esc(p.nom)} de la commande`:`Commander ${esc(p.nom)}`}"><span class="box">${CHECK}</span>${p.acommander?"":"Commander"}</button>`;
+  const units=UNITS.includes(p.unite)||!p.unite?UNITS:[p.unite,...UNITS];
+  return `<div class="qr${p.acommander?" on":""}"><div class="qr-t"><b>${label(p.nom)}</b><small>${esc(p.fournisseur)}${other}</small></div>
+    ${p.acommander?`<div class="qr-c"><input class="qty" type="number" inputmode="decimal" min="0" max="10000" step="any" placeholder="Qté" value="${p.qte??""}" data-q="${p.id}" aria-label="Quantité de ${esc(p.nom)} (facultatif)">
+      <select class="unit" data-u="${p.id}" aria-label="Unité de ${esc(p.nom)}">${units.map(u=>`<option${u===(p.unite||"pièce")?" selected":""}>${esc(u)}</option>`).join("")}</select>${tog}</div>`:tog}</div>`}
 /* La liste des résultats s'arrête juste au-dessus du clavier */
 function fitQres(){const el=$(".qres");if(!el)return;const vv=window.visualViewport;const h=vv?vv.height:innerHeight;
-  const top=el.getBoundingClientRect().top-(vv?vv.offsetTop:0);el.style.maxHeight=Math.max(180,Math.round(h-top-10))+"px"}
+  const top=el.getBoundingClientRect().top-(vv?vv.offsetTop:0);
+  const nb=document.querySelector(".bnav");const r=nb&&nb.getBoundingClientRect();const nbH=r&&r.top<(vv?vv.offsetTop+vv.height:innerHeight)?r.height:0;   // la barre du bas reste visible : on s'arrête au-dessus
+  el.style.maxHeight=Math.max(180,Math.round(h-top-10-nbH))+"px"}
 if(window.visualViewport){visualViewport.addEventListener("resize",fitQres);visualViewport.addEventListener("scroll",fitQres)}
 addEventListener("scroll",fitQres,{passive:true});
 
@@ -578,7 +587,7 @@ function renderCmd(sups){
   if(!groups.length){el.innerHTML=`<div class="empty"><strong>Rien à commander en ${SECN[S.sec].toLowerCase()}</strong>Dans l'onglet Produits, appuie sur « Commander » à côté de ce qui manque. La quantité est facultative.</div>`;return}
   el.innerHTML=groups.map(([f,ps])=>{const open=isCOpen(f);return `<section class="cmd-sup" data-open="${open}" data-cmdsup="${esc(f)}" style="${supStyle(f)}">
     <header role="button" tabindex="0" data-ctog="${esc(f)}" aria-expanded="${open}"><span class="ico" aria-hidden="true">${supIcon(f)}</span><h2>${esc(f)}</h2><span>${ps.length} article${ps.length>1?"s":""}</span>${supKind(f)==="mar"?`<button class="sendb" type="button" data-send="${esc(f)}" aria-label="Envoyer la commande à ${esc(f)}">${PLANE}</button>`:""}<span class="chev" aria-hidden="true">${CHEV}</span></header>
-    <div class="cmd-body">${ps.map(p=>`<div class="cmd-item"><div class="name"><span>${esc(p.nom)}</span>${chip(p)}</div>${p.qte?`<span class="qpill">${fmt(p.qte)} ${esc(p.unite)}</span>`:`<span class="qpill none">quantité libre</span>`}<button class="okc" data-ok="${p.id}" aria-label="${esc(p.nom)} est commandé"><span class="ring">${CHECK}</span>Commandé</button><button class="del" data-t="${p.id}" aria-label="Retirer ${esc(p.nom)} de la commande">Retirer</button></div>`).join("")}
+    <div class="cmd-body">${ps.map(p=>`<div class="cmd-item"><div class="name"><span>${esc(p.nom)}</span>${chip(p)}</div>${p.qte?`<span class="qpill">${fmt(p.qte)} ${esc(plU(p.unite,p.qte))}</span>`:`<span class="qpill none">quantité libre</span>`}<button class="okc" data-ok="${p.id}" aria-label="${esc(p.nom)} est commandé"><span class="ring">${CHECK}</span>Commandé</button><button class="del" data-t="${p.id}" aria-label="Retirer ${esc(p.nom)} de la commande">Retirer</button></div>`).join("")}
     <div class="cmd-done"><button class="btn" type="button" data-done="${esc(f)}">Commande effectuée chez ${esc(f)}</button></div></div></section>`}).join("");
 }
 

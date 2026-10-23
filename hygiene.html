@@ -111,11 +111,31 @@ button{cursor:pointer}
 .allok small{color:var(--muted);font-weight:600;font-size:14px}
 
 .savebar{position:sticky;bottom:calc(84px + env(safe-area-inset-bottom,0px));margin-top:14px;z-index:5}
-html.typing .savebar{bottom:12px}
 .big{width:100%;height:58px;border-radius:18px;border:0;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center;gap:10px;
   background-image:linear-gradient(180deg,rgba(255,255,255,.24),rgba(255,255,255,0));box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 10px 24px -10px color-mix(in srgb,var(--accent) 90%,#000)}
 .big:disabled{background:var(--sunken);background-image:none;color:var(--muted);border:1.5px solid var(--line);box-shadow:0 6px 18px -10px rgba(0,0,0,.25)}
 .big.soft{background:var(--surface);color:var(--fg);border:1.5px solid var(--line);box-shadow:none;background-image:none}
+
+/* Historique d'un relevé (modifications et corrections) et motif de correction */
+.hist2{margin:8px 0 0 58px;padding:8px 10px;border-radius:12px;background:var(--sunken);font-size:13px;color:var(--muted);font-weight:600;line-height:1.55}
+.hist2 b{color:var(--fg)} .hist2 s{opacity:.75}
+.mot{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.mot p{margin:0 0 8px;font-weight:800;font-size:15px}
+.mot input{width:100%;height:46px;margin-top:8px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);padding:0 12px;font-size:16px}
+.mot.need{animation:shake .35s}
+.lk{font-size:12px;margin-left:2px}
+/* Historique par période */
+.per{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.per button{min-height:46px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);font-weight:800;font-size:14px;padding:0 4px}
+.per button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.hday{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:12px 2px 6px}
+.hrow{display:flex;gap:10px;align-items:flex-start;padding:9px 12px;border-radius:12px;background:var(--surface);border:1px solid var(--line);margin-bottom:6px}
+.hrow .h{flex:none;font-weight:800;font-variant-numeric:tabular-nums;width:54px}
+.hrow .t{flex:1;min-width:0}
+.hrow .t b{display:block;font-weight:700}
+.hrow .t small{display:block;color:var(--muted);font-size:13px;font-weight:600}
+.hrow .v{flex:none;font-weight:800;font-variant-numeric:tabular-nums}
+.hrow .v.ok{color:var(--ok)} .hrow .v.bad{color:var(--bad)}
 
 /* Nettoyage des frigos (une fois par semaine) */
 .clean{margin-top:22px;background:var(--surface);border:1.5px solid var(--line);border-radius:22px;padding:14px}
@@ -202,6 +222,7 @@ html.typing .savebar{bottom:12px}
 .pp td.d{text-align:left;font-weight:700;white-space:nowrap}
 .pp td.bad{background:#fbe5e1;color:#c23a2b;font-weight:800}
 .pp td.we{background:#faf8f3}
+.pp td i{font-style:normal;font-size:7.5px;color:#8a8478;margin-left:2px}
 .pp h2{font-family:var(--display);font-size:16px;margin:4px 0 6px}
 .pp .l td{text-align:left;height:22px}
 .pp .foot{margin-top:auto;font-size:10px;color:#6f695d;display:flex;justify-content:space-between;padding-top:8px}
@@ -221,7 +242,7 @@ html.typing .savebar{bottom:12px}
 <div class="wrap">
   <div class="pbar" id="pbar"></div><script src="profil.js"></script>
   <div class="sync" id="sync">&nbsp;</div>
-  <header class="top"><div class="ti"><h1>Hygiène</h1><p id="sub">&nbsp;</p></div><button class="pdfb" id="pdf" type="button" hidden>📄 PDF du mois</button></header>
+  <header class="top"><div class="ti"><h1>Hygiène</h1><p id="sub">&nbsp;</p></div><button class="pdfb" id="pdf" type="button">📋 Historique</button></header>
   <div class="seg" role="tablist" id="seg" hidden>
     <button role="tab" data-t="temp" aria-selected="true">🌡️ Frigos</button>
     <button role="tab" data-t="huile" aria-selected="false">🍟 Huile</button>
@@ -278,7 +299,7 @@ const parseT=(s,neg)=>{s=String(s).replace(",",".").replace(/[^\d.\-]/g,"");if(s
 
 const S={tab:"temp",moment:new Date().getHours()<15?"matin":"soir",d:{releves:[],huile:[],refroid:[]},draft:{},loaded:false};
 $("#sub").textContent=cap(NOW.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"}));
-if(FULL){$("#seg").hidden=false;$("#pdf").hidden=false}
+if(FULL)$("#seg").hidden=false;
 
 /* ---------- File d'attente hors connexion : rien n'est perdu ---------- */
 const FK="hyg2b-file";
@@ -287,7 +308,8 @@ const fileSet=a=>{try{a.length?localStorage.setItem(FK,JSON.stringify(a)):localS
 /* Renvoie {sent:true,v} si c'est parti, {queued:true} si c'est gardé sur le téléphone en attendant le réseau */
 async function send(fn,args){
   try{const v=await rpc(fn,args);return {sent:true,v}}
-  catch(e){if(lost(e))throw e;const f=fileGet();f.push({fn,args});fileSet(f);setSync("Pas de réseau : gardé sur le téléphone");return {queued:true}}
+  catch(e){if(lost(e))throw e;if(!(e instanceof TypeError)){toast(e.message||"Erreur");throw e}
+    const f=fileGet();f.push({fn,args});fileSet(f);setSync("Pas de réseau : gardé sur le téléphone");return {queued:true}}
 }
 async function flush(){const f=fileGet();if(!f.length)return;const rest=[];
   for(const x of f){try{await rpc(x.fn,x.args)}catch(e){if(lost(e))return;rest.push(x)}}
@@ -307,7 +329,12 @@ try{const c=JSON.parse(localStorage.getItem(CK)||"null");if(c){S.d=c;S.loaded=tr
 
 /* Dernier relevé de chaque appareil pour un jour et un moment (une correction remplace l'ancien) */
 function latest(jour,moment){
-  const m={};[...S.d.releves,...pendingReleves()].filter(r=>r.jour===jour&&r.moment===moment).sort((a,b)=>String(a.le).localeCompare(String(b.le))).forEach(r=>{m[r.appareil]={...r,corr:!!m[r.appareil]}});return m}
+  const m={};[...S.d.releves,...pendingReleves()].filter(r=>r.jour===jour&&r.moment===moment).sort((a,b)=>String(a.le).localeCompare(String(b.le)))
+    .forEach(r=>{const p=m[r.appareil];m[r.appareil]={...r,corr:!!p,chain:[...(p?p.chain:[]),r],root:p?p.root:r}});return m}
+/* Verrouillage : un relevé se modifie librement pendant 1 h ; ensuite, correction avec motif (le serveur l'impose aussi) */
+const locked=r=>!!r&&!r.pending&&!String(r.root.id||"").startsWith("tmp")&&Date.now()-new Date(r.root.le)>36e5;
+const TYPEL={releve:"relevé",modif:"modifié",correction:"correction"};
+const MOTIFS=["Erreur de saisie","Thermomètre mal placé","Relevé refait"];
 
 /* ---------- Affichage ---------- */
 function render(){
@@ -347,14 +374,17 @@ function apHTML(a,r){
   const lim=`${cong?"−18":"4"} °C maximum`;
   if(r&&!(dr&&dr.fix)){
     return `<div class="ap ${r.ok?"d-ok":"d-bad"}" data-ap="${a.k}"><div class="ap-row"><span class="ic" aria-hidden="true">${a.e}</span><span class="nm"><b>${esc(a.n)}</b><small>${lim}</small></span>
-      <span class="done-v"><b>${fr1(+r.temp)}</b><small>${r.pending?`<span class="pend">en attente</span>`:`${hm(r.le)}`} · ${esc(NOMS[r.par]||r.par||"")}</small></span></div>
-      <div class="note">${r.action?`<b>${r.ok?"":"⚠️ "}</b>${esc(r.action)}`:""}${r.corr?` <i>(corrigé)</i>`:""}<button class="fix" type="button" data-fix="${a.k}">Corriger</button></div></div>`}
+      <span class="done-v"><b>${fr1(+r.temp)}</b><small>${r.pending?`<span class="pend">en attente</span>`:`${hm(r.le)}`} · ${esc(NOMS[r.par]||r.par||"")}${locked(r)?`<span class="lk" title="Verrouillé">🔒</span>`:""}</small></span></div>
+      ${r.chain.length>1?`<div class="hist2">${r.chain.map(x=>`${hm(x.le)} · ${x===r?"<b>":"<s>"}${fr1(+x.temp)}${x===r?"</b>":"</s>"} · ${esc(NOMS[x.par]||x.par||"")} · ${TYPEL[x.type||"releve"]||"relevé"}${x.motif?" : "+esc(x.motif):""}`).join("<br>")}</div>`:""}
+      <div class="note">${r.action?`<b>${r.ok?"":"⚠️ "}</b>Action : ${esc(r.action)}`:""}<button class="fix" type="button" data-fix="${a.k}">${locked(r)?"Corriger":"Modifier"}</button></div></div>`}
   const t=dr&&dr.t!=null?dr.t:null;const st=t==null?"":t<=a.max?"ok":"bad";
   return `<div class="ap ${st}" data-ap="${a.k}"><div class="ap-row"><span class="ic" aria-hidden="true">${a.e}</span><span class="nm"><b>${esc(a.n)}</b><small>${lim}${dr&&dr.fix?" · correction":""}</small></span>
     <span class="verdict" aria-hidden="true">${st==="ok"?"✓":"!"}</span>
     <span class="tin${cong?" cong":""}">${cong?`<span class="neg">−</span>`:""}<input data-k="${a.k}" inputmode="decimal" enterkeyhint="next" autocomplete="off" placeholder="${cong?"18":"3"}" aria-label="Température ${esc(a.n)} en degrés${cong?", nombre négatif":""}" value="${dr&&dr.raw!=null?esc(dr.raw):""}"><span class="u">°C</span></span></div>
     <div class="act"><p>⚠️ Trop chaud : qu'avez-vous fait ?</p><div class="chips">${CAUSES.map(c=>`<button type="button" data-cause="${a.k}" aria-pressed="${dr&&dr.cause===c}">${c}</button>`).join("")}</div>
-      <input data-act="${a.k}" placeholder="Ou écris ici : produit déplacé, technicien appelé…" value="${esc(dr&&dr.txt||"")}"></div></div>`;
+      <input data-act="${a.k}" placeholder="Ou écris ici : produit déplacé, technicien appelé…" value="${esc(dr&&dr.txt||"")}"></div>
+    ${dr&&dr.fix&&locked(r)?`<div class="mot"><p>🔒 Relevé verrouillé : motif de la correction</p><div class="chips">${MOTIFS.map(c=>`<button type="button" data-mot="${a.k}" aria-pressed="${dr.motif===c}">${c}</button>`).join("")}</div>
+      <input data-mtxt="${a.k}" placeholder="Ou écris le motif ici" value="${esc(dr.mtxt||"")}"></div>`:""}</div>`;
 }
 /* Saisie : la carte devient verte ou rouge tout de suite, sans redessiner la page */
 document.addEventListener("input",e=>{
@@ -363,6 +393,7 @@ document.addEventListener("input",e=>{
     const card=e.target.closest(".ap");card.classList.toggle("ok",d.t!=null&&d.t<=a.max);card.classList.toggle("bad",d.t!=null&&d.t>a.max);
     card.querySelector(".verdict").textContent=d.t!=null&&d.t>a.max?"!":"✓";updSave()}
   if(ak){(S.draft[ak]=S.draft[ak]||{}).txt=e.target.value}
+  const mk=e.target.dataset.mtxt;if(mk){(S.draft[mk]=S.draft[mk]||{}).mtxt=e.target.value}
 });
 function updSave(){const b=$("#saveT");if(!b)return;const n=Object.entries(S.draft).filter(([k,d])=>d.t!=null&&MINE.some(a=>a.k===k)).length;
   b.disabled=!n;b.textContent=`✓ Enregistrer${n?` ${n} relevé${n>1?"s":""}`:""}`}
@@ -371,6 +402,8 @@ document.addEventListener("click",async e=>{
   const mo=e.target.closest("[data-mo]");if(mo){S.moment=mo.dataset.mo;S.draft={};render();return}
   const c=e.target.closest("[data-cause]");if(c){const d=S.draft[c.dataset.cause]=S.draft[c.dataset.cause]||{};d.cause=d.cause===c.textContent?null:c.textContent;
     c.parentNode.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.textContent===d.cause));buzz();return}
+  const mo2=e.target.closest("[data-mot]");if(mo2){const d=S.draft[mo2.dataset.mot]=S.draft[mo2.dataset.mot]||{};d.motif=d.motif===mo2.textContent?null:mo2.textContent;
+    mo2.parentNode.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.textContent===d.motif));buzz();return}
   const fx=e.target.closest("[data-fix]");if(fx){S.draft[fx.dataset.fix]={fix:true};render();setTimeout(()=>document.querySelector(`input[data-k="${fx.dataset.fix}"]`)?.focus(),60);return}
   if(e.target.closest("#saveT")){saveTemps();return}
   const t=e.target.closest("#seg [data-t]");if(t){S.tab=t.dataset.t;try{sessionStorage.setItem("hyg2b-tab",S.tab)}catch{}render();return}
@@ -382,7 +415,10 @@ async function saveTemps(){
     if(d.t>a.max&&!act){const el=document.querySelector(`[data-ap="${a.k}"] .act`);el.classList.remove("need");void el.offsetWidth;el.classList.add("need");
       el.scrollIntoView({behavior:"smooth",block:"center"});toast("Dis ce qui a été fait pour « "+a.n+" »");return}
     if(d.t<-40||d.t>30){toast(`Température étonnante pour « ${a.n} » : vérifie`);return}
-    lignes.push({appareil:a.k,nom:a.n,temp:d.t,tmax:a.max,action:act||null,remplace:d.fix&&L[a.k]&&!L[a.k].pending?L[a.k].id:null})}
+    const mot=[d.motif,d.mtxt&&d.mtxt.trim()].filter(Boolean).join(" · ");
+    if(d.fix&&locked(L[a.k])&&!mot){const el=document.querySelector(`[data-ap="${a.k}"] .mot`);if(el){el.classList.remove("need");void el.offsetWidth;el.classList.add("need");el.scrollIntoView({behavior:"smooth",block:"center"})}
+      toast("Indique le motif de la correction");return}
+    lignes.push({appareil:a.k,nom:a.n,temp:d.t,tmax:a.max,action:act||null,motif:mot||null,remplace:d.fix&&L[a.k]&&!L[a.k].pending?L[a.k].id:null})}
   if(!lignes.length)return;
   const b=$("#saveT");b.disabled=true;b.textContent="Enregistrement…";
   const args={p_jour:TODAY,p_moment:S.moment,p_lignes:lignes,p_par:ME};
@@ -390,7 +426,7 @@ async function saveTemps(){
     if(document.activeElement)document.activeElement.blur();
     S.draft={};
     const now=new Date().toISOString();
-    if(r.sent)lignes.forEach(l=>S.d.releves.push({...l,jour:TODAY,moment:S.moment,par:ME,le:now,ok:l.temp<=l.tmax,id:"tmp"+Math.random()}));
+    if(r.sent)lignes.forEach(l=>S.d.releves.push({...l,jour:TODAY,moment:S.moment,par:ME,le:now,ok:l.temp<=l.tmax,type:l.remplace?(locked(L[l.appareil])?"correction":"modif"):"releve",id:"tmp"+Math.random()}));
     render();buzz();
     lignes.forEach((l,i)=>setTimeout(()=>document.querySelector(`[data-ap="${l.appareil}"]`)?.classList.add("pop"),i*70));
     toast(r.queued?"Pas de réseau : gardé sur le téléphone, envoyé dès que possible":lignes.length>1?`${lignes.length} relevés enregistrés ✓`:"Relevé enregistré ✓");
@@ -484,52 +520,86 @@ function saveLink(blob,name){const url=URL.createObjectURL(blob);const a=documen
 async function offer(blob,name){const file=new File([blob],name,{type:blob.type});
   if((/iPhone|iPad|Android/i.test(navigator.userAgent)||navigator.maxTouchPoints>1)&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:name});return}catch(e){if(e.name==="AbortError")return}}
   saveLink(blob,name);toast("PDF téléchargé")}
-$("#pdf").onclick=()=>{const m0=new Date(NOW.getFullYear(),NOW.getMonth(),1),m1=new Date(NOW.getFullYear(),NOW.getMonth()-1,1);const ml=d=>cap(d.toLocaleDateString("fr-FR",{month:"long",year:"numeric"}));
-  openSheet(`<h3>PDF pour le contrôle</h3><div class="sub">Températures, huile et cellule du mois, avec les corrections.</div>
-    <button class="big" type="button" data-pm="${iso(m0)}">📄 ${ml(m0)}</button><button class="big soft" type="button" data-pm="${iso(m1)}">${ml(m1)}</button><button class="big soft" type="button" data-close>Annuler</button>`)};
-document.addEventListener("click",e=>{const b=e.target.closest("[data-pm]");if(b)makePdf(b.dataset.pm,b)});
-async function makePdf(start,btn){
+/* Historique : jour, 7 jours, mois ; affichage puis PDF */
+const PERIODES=[["jour","Jour"],["sem","7 jours"],["mois","Ce mois"],["prec","Mois dernier"]];
+function bornes(k){const y=NOW.getFullYear(),m=NOW.getMonth();
+  if(k==="jour")return [TODAY,TODAY,cap(NOW.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"}))];
+  if(k==="sem"){const a=new Date(y,m,NOW.getDate()-6);return [iso(a),TODAY,`du ${a.toLocaleDateString("fr-FR",{day:"numeric",month:"long"})} au ${NOW.toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}`]}
+  const d=k==="mois"?new Date(y,m,1):new Date(y,m-1,1);const e=new Date(d.getFullYear(),d.getMonth()+1,0);
+  return [iso(d),iso(e),cap(d.toLocaleDateString("fr-FR",{month:"long",year:"numeric"}))]}
+const H={k:"jour",d:null};
+$("#pdf").onclick=()=>openHist("jour");
+async function openHist(k){H.k=k;H.d=null;drawHist();
+  try{const [a,b]=bornes(k);H.d=await rpc("hyg_etat",{p_debut:a,p_fin:b});if(H.k===k)drawHist()}
+  catch(e){if(lost(e))return;const l=document.querySelector("#hList");if(l)l.innerHTML=`<div class="empty">Pas de connexion pour l'instant.</div>`}}
+function drawHist(){
+  const body=()=>{if(!H.d)return `<div class="empty">Chargement…</div>`;
+    const rel=H.d.releves.filter(r=>MINE.some(a=>a.k===r.appareil)).sort((a,b)=>String(b.le).localeCompare(String(a.le)));
+    let ev=rel.map(r=>({le:r.le,h:`<div class="hrow"><span class="h">${hm(r.le)}</span><span class="t"><b>${esc(r.nom)} · ${r.moment}</b><small>${esc(NOMS[r.par]||r.par||"")} · ${TYPEL[r.type||"releve"]}${r.motif?" : "+esc(r.motif):""}${r.action?" · Action : "+esc(r.action):""}</small></span><span class="v ${r.ok?"ok":"bad"}">${fr1(+r.temp)} ${r.ok?"✓":"✗"}</span></div>`}));
+    if(FULL){const [a,b]=bornes(H.k);const inP=s=>{const j=iso(new Date(s));return j>=a&&j<=b};
+      ev=ev.concat((H.d.nettoyage||[]).filter(n=>inP(n.le)).map(n=>({le:n.le,h:`<div class="hrow"><span class="h">${hm(n.le)}</span><span class="t"><b>🧽 ${esc(n.nom)} nettoyé</b><small>${esc(NOMS[n.par]||n.par||"")}</small></span></div>`})),
+        H.d.huile.filter(x=>inP(x.le)).map(x=>({le:x.le,h:`<div class="hrow"><span class="h">${hm(x.le)}</span><span class="t"><b>🍟 Friteuse ${x.friteuse} : huile changée</b><small>${esc(NOMS[x.par]||x.par||"")}</small></span></div>`})),
+        H.d.refroid.filter(c=>inP(c.debut)).map(c=>({le:c.debut,h:`<div class="hrow"><span class="h">${hm(c.debut)}</span><span class="t"><b>❄️ ${esc(c.produit)} en cellule</b><small>${fr1(+c.t_debut)} → ${c.fin?fr1(+c.t_fin)+" à "+hm(c.fin):"en cours"} · ${esc(NOMS[c.par_debut]||c.par_debut||"")}${c.action?" · Action : "+esc(c.action):""}</small></span>${c.fin?`<span class="v ${c.ok?"ok":"bad"}">${c.ok?"✓":"✗"}</span>`:""}</div>`})))}
+    ev.sort((a,b)=>String(b.le).localeCompare(String(a.le)));
+    if(!ev.length)return `<div class="empty">Rien d'enregistré sur cette période.</div>`;
+    let out="",cur="";ev.forEach(x=>{const j=new Date(x.le).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});if(j!==cur){cur=j;out+=`<div class="hday">${esc(j)}</div>`}out+=x.h});return out};
+  const html=`<h3>Historique</h3><div class="sub">Chaque ligne est signée et horodatée par le serveur. 🔒 Rien ne peut être effacé.</div>
+    <div class="per">${PERIODES.map(([k,l])=>`<button type="button" data-per="${k}" aria-pressed="${H.k===k}">${l}</button>`).join("")}</div>
+    <div id="hList">${body()}</div>
+    <button class="big" type="button" id="hPdf"${H.d?"":" disabled"}>📄 PDF pour le contrôle</button><button class="big soft" type="button" data-close>Fermer</button>`;
+  const box=document.querySelector(".sheet.hist .box");
+  if(box){box.innerHTML=html}else{openSheet(html);document.querySelector(".sheet").classList.add("hist")}
+}
+document.addEventListener("click",e=>{const p=e.target.closest("[data-per]");if(p){openHist(p.dataset.per);return}
+  const b=e.target.closest("#hPdf");if(b&&H.d){const [a,z,l]=bornes(H.k);makePdf(a,z,l,H.k==="mois"||H.k==="prec",b)}});
+async function makePdf(debut,fin,label,mensuel,btn){
   btn.disabled=true;btn.textContent="Préparation du PDF…";
   try{
-    const s=new Date(start+"T12:00");const end=new Date(s.getFullYear(),s.getMonth()+1,0);
-    const [d]=await Promise.all([rpc("hyg_etat",{p_debut:start,p_fin:iso(end)}),loadLibs()]);
+    const d=H.d;await loadLibs();
     if(document.fonts&&document.fonts.ready)await document.fonts.ready;
-    const mois=cap(s.toLocaleDateString("fr-FR",{month:"long",year:"numeric"}));
-    const head=t=>`<div class="ph"><img src="logo-hd.png" alt=""><h1>${t} — ${esc(mois)}<small>Double B · 59 avenue Foch, 57730 Folschviller · Plan de maîtrise sanitaire</small></h1></div>`;
-    // Page 1 : tableau des températures (dernier relevé ; * = corrigé)
-    const by={};const cnt={};d.releves.forEach(r=>{const k=r.jour+"|"+r.moment+"|"+r.appareil;cnt[k]=(cnt[k]||0)+1;by[k]=r});
-    let rows="";for(let i=1;i<=end.getDate();i++){const j=iso(new Date(s.getFullYear(),s.getMonth(),i));const w=new Date(s.getFullYear(),s.getMonth(),i).getDay();
-      rows+=`<tr><td class="d${w===0||w===6?" we":""}">${pad(i)} ${new Date(s.getFullYear(),s.getMonth(),i).toLocaleDateString("fr-FR",{weekday:"short"})}</td>${APP.map(a=>["matin","soir"].map(mo=>{const k=j+"|"+mo+"|"+a.k;const r=by[k];
-        return r?`<td class="${r.ok?"":"bad"}">${String(+r.temp).replace(".",",")}${cnt[k]>1?"*":""}</td>`:"<td></td>"}).join("")).join("")}</tr>`}
-    const p1=`<div class="pp">${head("Relevés de températures")}<table><thead><tr><th rowspan="2">Jour</th>${APP.map(a=>`<th colspan="2">${esc(a.n)}<br>(max ${a.max} °C)</th>`).join("")}</tr><tr>${APP.map(()=>"<th>Matin</th><th>Soir</th>").join("")}</tr></thead><tbody>${rows}</tbody></table>
-      <div class="foot"><span>En rouge : au-dessus de la limite (voir page suivante). * : relevé corrigé, l'original est conservé.</span><span>Page 1</span></div></div>`;
-    // Pages suivantes : anomalies et corrections, huile, refroidissements
-    const lines=[];
-    const bad=d.releves.filter(r=>!r.ok||r.remplace);
-    lines.push(["h","Températures hors limite et corrections"]);
-    if(!bad.length)lines.push(["r","Aucune anomalie ce mois-ci.","","",""]);
-    bad.forEach(r=>lines.push(["r",new Date(r.jour+"T12:00").toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})+" "+r.moment,r.nom,fr1(+r.temp)+(r.remplace?" (correction)":""),(r.action||"")+" — "+(NOMS[r.par]||r.par||"")]));
-    lines.push(["h","Nettoyage des frigos (une fois par semaine)"]);
-    const nt=(d.nettoyage||[]).filter(n=>n.le.slice(0,7)===start.slice(0,7)).sort((a,b)=>a.le.localeCompare(b.le));
-    if(!nt.length)lines.push(["r","Aucun nettoyage noté ce mois-ci.","","",""]);
-    nt.forEach(n=>lines.push(["r",new Date(n.le).toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})+" "+hm(n.le),n.nom,"Nettoyé",NOMS[n.par]||n.par||""]));
-    lines.push(["h","Changements d'huile des friteuses"]);
-    const hu=d.huile.filter(h=>h.le.slice(0,7)===start.slice(0,7)).sort((a,b)=>a.le.localeCompare(b.le));
-    if(!hu.length)lines.push(["r","Aucun changement noté ce mois-ci.","","",""]);
-    hu.forEach(h=>lines.push(["r",new Date(h.le).toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})+" "+hm(h.le),"Friteuse "+h.friteuse,"Huile changée",NOMS[h.par]||h.par||""]));
-    lines.push(["h","Refroidissements en cellule (63 °C → 10 °C en 2 h maximum)"]);
-    const rf=d.refroid.filter(c=>c.debut.slice(0,7)===start.slice(0,7)).sort((a,b)=>a.debut.localeCompare(b.debut));
-    if(!rf.length)lines.push(["r","Aucun refroidissement noté ce mois-ci.","","",""]);
-    rf.forEach(c=>{const m=c.fin?Math.round((new Date(c.fin)-new Date(c.debut))/60000):null;
-      lines.push(["r",new Date(c.debut).toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})+" "+hm(c.debut),c.produit+(c.quantite?" ("+c.quantite+")":""),fr1(+c.t_debut)+" → "+(c.fin?fr1(+c.t_fin)+" en "+dur(m):"en cours"),(c.fin?(c.ok?"Conforme":"Non conforme"):"")+(c.action?" — "+c.action:"")+" — "+(NOMS[c.par_debut]||c.par_debut||"")])});
-    const PER=26;const pages=[];for(let i=0;i<lines.length;i+=PER)pages.push(lines.slice(i,i+PER));
-    const html=p1+pages.map((pg,i)=>`<div class="pp">${head("Suivi d'hygiène")}<table class="l"><tbody>${pg.map(l=>l[0]==="h"?`<tr><td colspan="4" style="border:0;padding-top:8px"><h2>${esc(l[1])}</h2></td></tr>`:`<tr><td style="width:120px">${esc(l[1])}</td><td>${esc(l[2])}</td><td style="width:200px">${esc(l[3])}</td><td>${esc(l[4])}</td></tr>`).join("")}</tbody></table><div class="foot"><span>Relevés enregistrés dans l'appli Double B (date, heure et auteur automatiques ; aucun relevé ne peut être effacé).</span><span>Page ${i+2}</span></div></div>`).join("");
+    const apps=MINE;const inP=s=>{const j=iso(new Date(s));return j>=debut&&j<=fin};
+    const head=t=>`<div class="ph"><img src="logo-hd.png" alt=""><h1>${t} — ${esc(label)}<small>Double B · 59 avenue Foch, 57730 Folschviller · Plan de maîtrise sanitaire · PDF du ${esc(new Date().toLocaleString("fr-FR"))}</small></h1></div>`;
+    const ini=p=>(NOMS[p]||p||"?").charAt(0).toUpperCase();
+    let html="";const lines=[];
+    const rel=d.releves.filter(r=>apps.some(a=>a.k===r.appareil)).sort((a,b)=>String(a.le).localeCompare(String(b.le)));
+    if(mensuel){
+      // Tableau du mois : dernière valeur de chaque relevé, initiale du signataire ; * = modifié ou corrigé (détail plus loin)
+      const s0=new Date(debut+"T12:00"),e0=new Date(fin+"T12:00");const by={},cnt={};rel.forEach(r=>{const k=r.jour+"|"+r.moment+"|"+r.appareil;cnt[k]=(cnt[k]||0)+1;by[k]=r});
+      let rows="";for(let i=1;i<=e0.getDate();i++){const dt=new Date(s0.getFullYear(),s0.getMonth(),i);const j=iso(dt);const w=dt.getDay();
+        rows+=`<tr><td class="d${w===0||w===6?" we":""}">${pad(i)} ${dt.toLocaleDateString("fr-FR",{weekday:"short"})}</td>${apps.map(a=>["matin","soir"].map(mo=>{const k=j+"|"+mo+"|"+a.k;const r=by[k];
+          return r?`<td class="${r.ok?"":"bad"}">${String(+r.temp).replace(".",",")}${cnt[k]>1?"*":""}<i>${ini(r.par)}</i></td>`:"<td></td>"}).join("")).join("")}</tr>`}
+      html+=`<div class="pp">${head("Relevés de températures")}<table><thead><tr><th rowspan="2">Jour</th>${apps.map(a=>`<th colspan="2">${esc(a.n)}<br>(max ${a.max} °C)</th>`).join("")}</tr><tr>${apps.map(()=>"<th>Matin</th><th>Soir</th>").join("")}</tr></thead><tbody>${rows}</tbody></table>
+        <div class="foot"><span>Petite lettre = signataire (${Object.entries(NOMS).map(([k,v])=>v.charAt(0)+" : "+v).join(", ")}). En rouge : hors limite. * : modifié ou corrigé, voir le détail.</span><span>Page 1</span></div></div>`;
+      const det=rel.filter(r=>!r.ok||r.type&&r.type!=="releve"||rel.some(x=>x.remplace===r.id));
+      lines.push(["h","Détail : hors limites, modifications et corrections (les originaux sont conservés)"]);
+      if(!det.length)lines.push(["r","Aucune anomalie ni correction.","","","",""]);
+      det.forEach(r=>lines.push(["r",new Date(r.le).toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})+" "+hm(r.le),r.nom+" ("+r.moment+")",fr1(+r.temp)+(r.ok?" · conforme":" · NON conforme"),NOMS[r.par]||r.par||"",[TYPEL[r.type||"releve"]+(r.motif?" : "+r.motif:""),r.action?"Action : "+r.action:""].filter(Boolean).join(" — ")]));
+    }else{
+      lines.push(["h","Relevés de températures (tous, y compris modifications et corrections)"]);
+      if(!rel.length)lines.push(["r","Aucun relevé sur cette période.","","","",""]);
+      rel.forEach(r=>lines.push(["r",new Date(r.le).toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})+" "+hm(r.le),r.nom+" ("+r.moment+")",fr1(+r.temp)+(r.ok?" · conforme":" · NON conforme"),NOMS[r.par]||r.par||"",[TYPEL[r.type||"releve"]+(r.motif?" : "+r.motif:""),r.action?"Action : "+r.action:""].filter(Boolean).join(" — ")]));
+    }
+    if(FULL){
+      const nt=(d.nettoyage||[]).filter(n=>inP(n.le)).sort((a,b)=>a.le.localeCompare(b.le));
+      lines.push(["h","Nettoyage des frigos (une fois par semaine)"]);if(!nt.length)lines.push(["r","Aucun nettoyage noté.","","","",""]);
+      nt.forEach(n=>lines.push(["r",new Date(n.le).toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})+" "+hm(n.le),n.nom,"Nettoyé",NOMS[n.par]||n.par||"",""]));
+      const hu=d.huile.filter(h=>inP(h.le)).sort((a,b)=>a.le.localeCompare(b.le));
+      lines.push(["h","Changements d'huile des friteuses"]);if(!hu.length)lines.push(["r","Aucun changement noté.","","","",""]);
+      hu.forEach(h=>lines.push(["r",new Date(h.le).toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})+" "+hm(h.le),"Friteuse "+h.friteuse,"Huile changée",NOMS[h.par]||h.par||"",""]));
+      const rf=d.refroid.filter(c=>inP(c.debut)).sort((a,b)=>a.debut.localeCompare(b.debut));
+      lines.push(["h","Refroidissements en cellule (63 °C → 10 °C en 2 h maximum)"]);if(!rf.length)lines.push(["r","Aucun refroidissement noté.","","","",""]);
+      rf.forEach(c=>{const m=c.fin?Math.round((new Date(c.fin)-new Date(c.debut))/60000):null;
+        lines.push(["r",new Date(c.debut).toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})+" "+hm(c.debut),c.produit+(c.quantite?" ("+c.quantite+")":""),fr1(+c.t_debut)+" → "+(c.fin?fr1(+c.t_fin)+" en "+dur(m)+(c.ok?" · conforme":" · NON conforme"):"en cours"),NOMS[c.par_debut]||c.par_debut||"",c.action?"Action : "+c.action:""])});
+    }
+    const PER=24;const pages=[];for(let i=0;i<lines.length;i+=PER)pages.push(lines.slice(i,i+PER));
+    const n0=mensuel?1:0;
+    html+=pages.map((pg,i)=>`<div class="pp">${head("Suivi d'hygiène")}<table class="l"><thead><tr><th style="width:110px">Date, heure</th><th>Équipement</th><th style="width:190px">Température · conformité</th><th style="width:80px">Signé par</th><th>Correction, motif, action</th></tr></thead><tbody>${pg.map(l=>l[0]==="h"?`<tr><td colspan="5" style="border:0;padding-top:8px"><h2>${esc(l[1])}</h2></td></tr>`:l.slice(2).every(x=>!x)?`<tr><td colspan="5" style="color:#6f695d">${esc(l[1])}</td></tr>`:`<tr>${l.slice(1).map(x=>`<td>${esc(x)}</td>`).join("")}</tr>`).join("")}</tbody></table><div class="foot"><span>Date, heure et signataire enregistrés automatiquement par le serveur. Relevés verrouillés 1 h après la saisie ; ensuite, correction avec motif ; rien ne peut être effacé.</span><span>Page ${i+1+n0}</span></div></div>`).join("");
     const p=$("#print");p.innerHTML=html;
     await Promise.all([...p.querySelectorAll("img")].map(im=>im.complete?1:new Promise(r=>{im.onload=r;im.onerror=r})));
     const {jsPDF}=window.jspdf;const pdf=new jsPDF({orientation:"landscape",unit:"mm",format:"a4"});
     const els=[...p.querySelectorAll(".pp")];
     for(let i=0;i<els.length;i++){const cv=await html2canvas(els[i],{scale:2,backgroundColor:"#ffffff",logging:false,windowWidth:1123});if(i)pdf.addPage();pdf.addImage(cv.toDataURL("image/jpeg",.92),"JPEG",0,0,297,210)}
-    closeSheet();await offer(pdf.output("blob"),`Hygiène Double B - ${mois}.pdf`);
+    await offer(pdf.output("blob"),`Hygiène Double B - ${label}.pdf`);btn.disabled=false;btn.textContent="📄 PDF pour le contrôle";
   }catch(err){toast("Le PDF a besoin d'internet : réessaie");btn.disabled=false;btn.textContent="Réessayer"}
   finally{$("#print").innerHTML=""}
 }

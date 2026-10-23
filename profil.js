@@ -142,13 +142,20 @@
   @media (max-width:360px){.bnav{padding-inline:2px}.bnav a{font-size:10px;letter-spacing:-.2px}.bnav .ic{width:46px}}
   .bnav a{position:relative}.bnav .bdot{position:absolute;top:0;left:calc(50% + 9px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--accent,#f2a516);color:var(--accent-ink,#2a1d00);font-size:11px;font-weight:800;line-height:18px;text-align:center;box-shadow:0 0 0 2px var(--surface,#fff)}
   .bnav a[aria-current="page"] .bdot{display:none}
-  html.typing .bnav{display:none}
   @view-transition{navigation:none}
-  html.typing body{padding-bottom:env(safe-area-inset-bottom,0px)!important}
   .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))!important}
-  html.typing .toast{bottom:calc(20px + env(safe-area-inset-bottom,0px))!important}
   @keyframes icPop{0%{transform:scale(.8)}100%{transform:none}}
   @media (prefers-reduced-motion:reduce){.bnav a[aria-current="page"] .ic{animation:none}}
+  /* Croix de fermeture : en haut à droite de chaque fenêtre, reste visible quand on fait défiler */
+  .xclose{position:sticky;top:0;float:right;align-self:flex-end;flex:none;z-index:6;width:46px;height:46px;margin:-6px -6px -40px 10px;border-radius:14px;border:1.5px solid var(--line,#e6e1d5);background:var(--surface,#fff);color:var(--fg,#1d1b17);font:inherit;font-size:20px;font-weight:800;display:grid;place-items:center;box-shadow:0 2px 10px rgba(0,0,0,.1);cursor:pointer}
+  .box>.xclose+h2,.box>.xclose+h3,.box>.xclose+b,.box>.xclose+div:first-of-type>h3{padding-right:52px}
+  .pick .xclose{position:fixed;top:max(14px,env(safe-area-inset-top,0px));right:16px;float:none;margin:0;z-index:51}
+  .xconf{position:fixed;inset:0;z-index:90;background:rgba(10,8,4,.5);display:flex;align-items:center;justify-content:center;padding:20px;font-family:"Figtree",system-ui,sans-serif}
+  .xconf .b{background:var(--surface,#fff);color:var(--fg,#1d1b17);border-radius:22px;padding:20px;max-width:380px;width:100%;display:flex;flex-direction:column;gap:10px}
+  .xconf b{font-size:20px;font-family:"Bricolage Grotesque",system-ui,sans-serif}
+  .xconf p{margin:0 0 4px;color:var(--muted,#6f695d);font-size:16px}
+  .xconf button{height:54px;border-radius:15px;border:0;font:inherit;font-weight:800;font-size:17px;cursor:pointer}
+  .xconf .y{background:#c23a2b;color:#fff} .xconf .n{background:var(--sunken,#f9f7f2);color:var(--fg,#1d1b17);border:1px solid var(--line,#e6e1d5)}
   @keyframes fIn{from{opacity:0}to{opacity:1}}
   @keyframes upIn{from{opacity:.4;transform:translateY(28px)}to{opacity:1;transform:none}}
   @keyframes tIn{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
@@ -160,13 +167,13 @@
     m.innerHTML=`<div class="biglogo"><img src="icone-appli.svg" alt="" width="84" height="84"><div><div class="bl-n">Double <b>B</b></div><div class="bl-t">COMMANDE <b>·</b> DEVIS <b>·</b> ANALYSE</div></div></div>
       <h2>Qui es-tu ?</h2><p>Touche ton prénom. C'est retenu sur ce téléphone.</p>
       <div class="cards">${Object.keys(AV).map(id=>`<button class="card${id===cur?" cur":""}" data-p="${id}">${avatar(id,96)}<span>${AV[id].nom}</span></button>`).join("")}</div>
-      ${canCancel?`<button class="cancel" type="button">Annuler</button>`:""}`;
+      ${canCancel?`<button class="cancel" type="button">Annuler</button><button class="xclose" type="button" aria-label="Fermer">✕</button>`:""}`;
     document.body.appendChild(m);document.documentElement.style.overflow="hidden";
     m.addEventListener("click",e=>{
       const b=e.target.closest("[data-p]");
       if(b){const changed=b.dataset.p!==cur;set(b.dataset.p);document.documentElement.style.overflow="";m.remove();
         if(changed&&cur)location.reload();else{bar();tour()}return}
-      if(e.target.closest(".cancel")){document.documentElement.style.overflow="";m.remove()}
+      if(e.target.closest(".cancel,.xclose")){document.documentElement.style.overflow="";m.remove()}
     });
   }
   function bar(){
@@ -302,9 +309,32 @@
   addEventListener("pageshow",e=>{if(e.persisted){document.querySelectorAll(".bnav").forEach(b=>b.remove());nav()}});
   // Mises à jour : on vérifie s'il y a une nouvelle version quand on revient dans l'appli
   document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&navigator.serviceWorker)navigator.serviceWorker.getRegistration().then(r=>r&&r.update()).catch(()=>{})});
-  // Pendant la saisie, la barre se cache : le clavier et les résultats ont toute la place
-  document.addEventListener("focusin",e=>{if(e.target.matches("input:not([type=checkbox]):not([type=radio]),textarea,select"))document.documentElement.classList.add("typing")});
-  document.addEventListener("focusout",()=>setTimeout(()=>{const a=document.activeElement;if(!(a&&a.matches&&a.matches("input,textarea,select")))document.documentElement.classList.remove("typing")},60));
+  // La barre du bas reste TOUJOURS là (elle se cachait pendant la saisie et, sur iPhone, pouvait rester cachée).
+  // Après la fermeture du clavier, on recale l'écran (bug connu de l'iPhone : les éléments fixes peuvent rester décalés),
+  // et on la recrée si jamais elle manquait (retour de veille, rotation, retour en arrière).
+  const ensureNav=()=>{let ok=false;try{ok=!!localStorage.getItem("commande2b-code")}catch{}if(ok&&!document.getElementById("gate")?.offsetParent&&!document.querySelector(".bnav"))nav()};
+  document.addEventListener("focusout",()=>setTimeout(()=>{window.scrollTo(window.scrollX,window.scrollY);ensureNav()},80));
+  ["resize","orientationchange","pageshow"].forEach(ev=>addEventListener(ev,ensureNav));
+  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")ensureNav()});
+  /* ---------- Croix ✕ sur toutes les fenêtres ----------
+     Ajoutée automatiquement à chaque fenêtre qui s'ouvre (événement, article, prix, relevé, devis, confirmations…).
+     Elle ferme sans rien enregistrer ; si quelque chose a été tapé, on demande d'abord confirmation. */
+  const BOXES=".sheet>.box,.modal>.box";
+  let xPending=false;
+  new MutationObserver(()=>{if(xPending)return;xPending=true;requestAnimationFrame(()=>{xPending=false;
+    document.querySelectorAll(BOXES).forEach(box=>{if(box.querySelector(":scope>.xclose"))return;const b=document.createElement("button");b.type="button";b.className="xclose";b.setAttribute("aria-label","Fermer");b.textContent="✕";box.prepend(b)})})})
+    .observe(document.documentElement,{childList:true,subtree:true});
+  document.addEventListener("input",e=>{const ov=e.target.closest&&e.target.closest(".sheet,.modal");if(ov)ov.dataset.dirty="1"},true);
+  function xConfirm(fn){const m=document.createElement("div");m.className="xconf";m.setAttribute("role","alertdialog");
+    m.innerHTML=`<div class="b"><b>Fermer sans enregistrer ?</b><p>Ce que tu as tapé sera perdu.</p><button type="button" class="y">Oui, fermer</button><button type="button" class="n">Non, continuer</button></div>`;
+    m.querySelector(".y").onclick=()=>{m.remove();fn()};m.querySelector(".n").onclick=()=>m.remove();document.body.appendChild(m)}
+  document.addEventListener("click",e=>{const x=e.target.closest(".xclose");if(!x||x.closest(".pick"))return;e.preventDefault();e.stopPropagation();
+    const box=x.parentElement,ov=box.closest(".sheet,.modal");if(!ov)return;
+    const close=()=>{const c=[...box.querySelectorAll("button,[role=button]")].find(b=>b!==x&&(b.matches("[data-close],[data-c],[data-n],.cancel")||/^\s*(annuler|fermer)\s*$/i.test(b.textContent)));
+      if(c)c.click();else ov.dispatchEvent(new MouseEvent("click",{bubbles:true}));   // comme un appui à côté de la fenêtre
+      setTimeout(()=>{if(ov.isConnected){ov.remove();if(!document.querySelector(".sheet,.modal"))document.documentElement.style.overflow=""}},60)};
+    if(ov.dataset.dirty)xConfirm(close);else close()},true);
+
   function ensure(){nav();if(!get())picker(false);else{bar();tour()}}
   window.Profil={get,ensure,avatar,notifs:Notifs,noms:Object.fromEntries(Object.entries(AV).map(([k,v])=>[k,v.nom]))};
   let hasCode=false;try{hasCode=!!localStorage.getItem("commande2b-code")}catch{}
