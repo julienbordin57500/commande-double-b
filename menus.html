@@ -90,6 +90,29 @@ header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .mode{display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:2px;border-radius:10px;background:var(--surface);border:1px solid var(--line);flex:none}
 .mode button{height:34px;padding:0 10px;border:0;border-radius:8px;background:transparent;font-size:13px;font-weight:700;color:var(--muted);white-space:nowrap}
 .mode button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+/* Retouches : chaque partie dans une carte, chaque plat dans une case qui grandit toute seule */
+.edtop{display:flex;align-items:center;gap:8px;min-height:36px}
+.edtop .lbl{flex:1}
+.lnk{border:0;background:transparent;color:var(--muted);font-weight:700;font-size:13px;padding:8px 6px;text-decoration:underline;text-underline-offset:3px}
+.undo{white-space:nowrap;height:36px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font-weight:700;font-size:14px;display:inline-flex;align-items:center;gap:6px}
+.undo:disabled{opacity:.4}
+.edsec{border:1px solid var(--line);border-radius:14px;background:var(--sunken);padding:10px;display:flex;flex-direction:column;gap:8px}
+.edrow{display:flex;gap:6px;align-items:center}
+.edsec input,.edp textarea{border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--fg);padding:9px 11px;width:100%;min-width:0;font-size:16px;font-family:inherit}
+.edsec .ednom{font-weight:700;height:44px}
+.edsec .edsub{height:40px;font-size:15px}
+.edsec .mode{align-self:flex-start}
+.edd{display:flex;flex-direction:column;gap:6px}
+.edp{display:flex;gap:6px;align-items:flex-start}
+.edp textarea{field-sizing:content;resize:none;line-height:1.35;min-height:44px;overflow:hidden;display:block}
+.ic{flex:none;width:40px;height:44px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--muted);display:grid;place-items:center;font-size:17px;font-weight:700;padding:0}
+.ic:disabled{opacity:.35}
+.ic svg{width:18px;height:18px}
+.ic.del:active{color:var(--danger)}
+.edadd{align-self:flex-start;border:1px dashed var(--line);background:transparent;color:var(--fg);border-radius:10px;height:40px;padding:0 14px;font-weight:700;font-size:14px}
+.toast button{margin-left:12px;border:0;background:var(--accent);color:var(--accent-ink);font-weight:800;border-radius:8px;padding:6px 10px;font-size:14px}
+.pvbar{display:flex;align-items:center;gap:10px;margin-top:8px}
+.pvbar .editnote{flex:1;margin:0}
 
 /* Aperçu */
 .preview{position:sticky;top:12px;min-width:0}
@@ -239,7 +262,7 @@ header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
         <button class="btn soft" id="pdf" type="button">Télécharger en PDF</button>
         <button class="btn soft" id="png" type="button">Télécharger en image</button>
       </div>
-      <p class="hint">Relis la page : les mots soulignés en rouge par ton téléphone sont des fautes possibles. Touche n'importe quel texte de la page pour le corriger.</p>
+      <p class="hint">Corrige ce que tu veux dans les cases ci-dessus ou directement sur la page : tes retouches sont gardées, même si tu changes le texte collé. Une erreur ? « ↶ Annuler ».</p>
     </section>
 
     <!-- Saisie : Forfaits -->
@@ -303,7 +326,7 @@ Monaco</textarea></div>
     <!-- Aperçu -->
     <section class="preview" id="preview">
       <div class="stage" id="stage"><div class="scaler" id="scaler"></div></div>
-      <p class="editnote" id="editnote">Aperçu au format A4.</p>
+      <div class="pvbar"><p class="editnote" id="editnote">Aperçu au format A4.</p><button type="button" class="undo" data-undo hidden>↶ Annuler</button></div>
     </section>
   </div>
 </div>
@@ -320,7 +343,9 @@ try{if(!localStorage.getItem("commande2b-code"))location.replace("./")}catch{}
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
 const fold=s=>s.normalize("NFD").replace(/\p{Diacritic}/gu,"").toLowerCase().replace(/œ/g,"oe").replace(/æ/g,"ae");
-function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2600)}
+function toast(t,undoable){const el=$("#toast");el.textContent=t;
+  if(undoable){const b=document.createElement("button");b.type="button";b.textContent="Annuler";b.onclick=()=>{el.hidden=true;undo()};el.append(b)}
+  el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,undoable?4500:2600)}
 /* Menu et devis : propres à chaque profil (Julien, Eric, Thierry, Claire) */
 const PROF=(()=>{try{return localStorage.getItem("2b-profil")||"commun"}catch{return "commun"}})();
 const store={get(k){try{const v=localStorage.getItem(k+"@"+PROF);return JSON.parse(v!=null?v:localStorage.getItem(k))}catch{return null}},set(k,v){try{localStorage.setItem(k+"@"+PROF,JSON.stringify(v))}catch{}}};
@@ -512,6 +537,7 @@ function parseMenu(raw){
     delete s.key;delete s.ou;delete s.lines;
   });
   out.note=notes.join(" · ");
+  stamp(out.sections);
   return out;
 }
 
@@ -520,21 +546,65 @@ const EXAMPLE_TXT="Entrée : tartine de pain de campagne, foie gras de canard et
 let RAW=store.get("menus2b-texte");if(typeof RAW!=="string")RAW="";
 let MENU=store.get("menus2b-dernier");
 const opts=()=>({titre:$("#fTitle").value.trim(),sousTitre:$("#fSub").value.trim(),prix:priceNum($("#fPrice").value),note:$("#fNote").value.trim()});
-function build(){
-  const p=parseMenu(RAW||EXAMPLE_TXT),o=opts();
-  MENU={titre:o.titre||"Menu",sousTitre:o.sousTitre||p.sousTitre,prix:o.prix||p.prix,note:o.note||p.note,sections:p.sections};
-  store.set("menus2b-dernier",MENU);
+/* Retouches : le menu reste modifiable à la main, et le texte collé ne les efface pas.
+   Chaque partie (o, on, os, om) et chaque plat (po) garde ce qui a été trouvé dans le texte collé.
+   Quand le texte collé change, on refait le menu mais on garde l'ordre, les ajouts et les corrections faits à la main
+   tant que la ligne d'origine existe encore ; ce qui a été supprimé à la main (del, delS) ne revient pas. */
+function stamp(secs){const seen={};secs.forEach(s=>{const k=fold(s.nom||"");seen[k]=(seen[k]||0)+1;
+  s.o=k+"|"+seen[k];s.on=s.nom;s.os=s.sousTitre;s.om=s.mode;s.po=s.plats.slice();s.del=[]});return secs}
+function ready(m){
+  (m.sections||[]).forEach(s=>{if(!s.po){s.o=fold(s.nom||"")+"|1";s.on=s.nom;s.os=s.sousTitre;s.om=s.mode;s.po=s.plats.slice();s.del=[]}});
+  m.delS=m.delS||[];m.auto=m.auto||{sousTitre:m.sousTitre||"",prix:m.prix||"",note:m.note||""};return m}
+function mergeList(old,nw,del){ // [{o,…}] : l'ordre et les ajouts de la main d'abord, les nouveautés du texte à leur place
+  const has=new Set(nw.map(x=>x.o));
+  const out=old.filter(x=>x.o===null||has.has(x.o)).map(x=>({...x}));
+  let at=-1;
+  nw.forEach(n=>{const i=out.findIndex(x=>x.o!==null&&x.o===n.o&&!x.nw);
+    if(i>=0){out[i].nw=n;at=i;return}
+    if(del.has(n.o))return;
+    out.splice(++at,0,n)});
+  return out;
 }
+function mergeSecs(old,nw){
+  return mergeList(old.sections.map(s=>({o:s.o,s})),nw.map(s=>({o:s.o,s})),new Set(old.delS)).map(x=>{
+    if(!x.nw)return x.s;
+    const a=x.s,b=x.nw.s;
+    const L=mergeList(a.plats.map((t,i)=>({o:a.po[i],t})),b.plats.map(t=>({o:t,t})),new Set(a.del));
+    return {...a,nom:a.nom===a.on?b.nom:a.nom,on:b.on,sousTitre:a.sousTitre===a.os?b.sousTitre:a.sousTitre,os:b.os,
+      mode:a.mode===a.om?b.mode:a.mode,om:b.om,plats:L.map(y=>y.t),po:L.map(y=>y.o),del:a.del.filter(o=>b.po.includes(o))};
+  });
+}
+const save=()=>store.set("menus2b-dernier",MENU);
+function build(){
+  const p=parseMenu(RAW||EXAMPLE_TXT);
+  const old=MENU&&Array.isArray(MENU.sections)?ready(MENU):null;
+  MENU={auto:{sousTitre:p.sousTitre,prix:p.prix,note:p.note},sections:old?mergeSecs(old,p.sections):p.sections,
+    delS:old?old.delS.filter(o=>p.sections.some(s=>s.o===o)):[]};
+  applyFields();
+}
+function applyFields(){const o=opts(),a=MENU.auto||{};
+  MENU.titre=o.titre||"Menu";MENU.sousTitre=o.sousTitre||a.sousTitre||"";MENU.prix=o.prix||a.prix||"";MENU.note=o.note||a.note||"";save()}
+const retouche=()=>(MENU.delS||[]).length>0||(MENU.sections||[]).some(s=>s.o===null||s.nom!==s.on||s.sousTitre!==s.os||s.mode!==s.om||s.del.length||s.plats.length!==s.po.length||s.plats.some((p,i)=>p!==s.po[i]));
+
+/* Annuler : on garde les 40 derniers états (menu, texte collé, champs) */
+const HIST=[];
+function snap(){const j=JSON.stringify({m:MENU,r:RAW,f:{t:$("#fTitle").value,s:$("#fSub").value,p:$("#fPrice").value,n:$("#fNote").value}});if(HIST[HIST.length-1]===j)return;HIST.push(j);if(HIST.length>40)HIST.shift();undoUI()}
+function undo(){const j=HIST.pop();if(!j)return;const v=JSON.parse(j);
+  MENU=v.m;RAW=v.r;$("#raw").value=RAW;$("#fTitle").value=v.f.t;$("#fSub").value=v.f.s;$("#fPrice").value=v.f.p;$("#fNote").value=v.f.n;
+  store.set("menus2b-texte",RAW);store.set("menus2b-champs",opts());save();show();undoUI();toast("Retour en arrière")}
+function undoUI(){document.querySelectorAll("[data-undo]").forEach(b=>{b.disabled=!HIST.length;if(b.closest(".pvbar"))b.hidden=TAB!=="menu"})}
+document.addEventListener("click",e=>{if(e.target.closest("[data-undo]"))undo()});
 
 function menuPage(m){
-  const secs=(m.sections||[]).map((s,si)=>{
+  const vis=(m.sections||[]).map((s,si)=>[s,si]).filter(([s])=>(s.nom||"").trim()||(s.plats||[]).some(p=>p.trim()));
+  const secs=vis.map(([s,si],vi)=>{
     // comme sur le modèle : retour à la ligne après la première virgule (le plat, puis ses accompagnements)
     const tail=t=>{const j=t.lastIndexOf(" et ");return t.length>42&&j>0?`<span class="d2"> ${esc(t.slice(0,j))}</span><span class="d2"> ${esc(t.slice(j+1))}</span>`:`<span class="d2"> ${esc(t)}</span>`};
     const dish=p=>{const i=p.indexOf(", ");return i>0?`<span class="d1">${esc(p.slice(0,i+1))}</span>${tail(p.slice(i+2))}`:esc(p)};
-    const items=(s.plats||[]).map((p,pi)=>`<p class="dish" contenteditable="true" spellcheck="true" data-s="${si}" data-p="${pi}">${dish(p)}</p>`);
+    const items=(s.plats||[]).map((p,pi)=>p.trim()?`<p class="dish" contenteditable="true" spellcheck="true" data-s="${si}" data-p="${pi}">${dish(p.trim())}</p>`:"").filter(Boolean);
     const sep=s.mode==="liste"?`<span class="dot"></span>`:`<div class="ou">Ou</div>`;
     const head=s.nom?`<div class="sec-name" contenteditable="true" spellcheck="true" data-sn="${si}">${esc(s.nom)}</div>`:"";
-    return `${si?rule("r-between"):""}<div class="sec">${head}
+    return `${vi?rule("r-between"):""}<div class="sec">${head}
       ${s.sousTitre?`<div class="sec-sub" contenteditable="true" data-ss="${si}">${esc(s.sousTitre)}</div>`:""}${s.nom||s.sousTitre?rule("r-sec"):""}${items.join(sep)}</div>`;
   }).join("");
   return `<div class="page" id="thePage" lang="fr">${frameSVG("menu")}<div class="content"${priceText(m.prix)?' style="bottom:140px"':""}>
@@ -544,14 +614,54 @@ function menuPage(m){
     ${m.note?`<div class="p-note" contenteditable="true" spellcheck="true" data-f="note">${esc(m.note)}</div>`:""}
   </div>${priceText(m.prix)?`<div class="p-price">${esc(priceText(m.prix))}</div>`:""}</div>`;
 }
+const TRASH='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>';
 function secsUI(){
   const el=$("#secs");const ss=MENU.sections||[];
-  el.innerHTML=ss.length?`<span class="lbl">Parties trouvées</span>`+ss.map((s,i)=>`<div class="secrow"><b>${esc(s.nom||"Sans titre")} <small>· ${s.plats.length} ${s.plats.length>1?"lignes":"ligne"}</small></b>
-    <div class="mode" role="group" aria-label="Présentation de ${esc(s.nom||"la partie")}"><button type="button" data-mode="choix" data-i="${i}" aria-pressed="${s.mode!=="liste"}">Au choix</button><button type="button" data-mode="liste" data-i="${i}" aria-pressed="${s.mode==="liste"}">Liste</button></div></div>`).join("")
-    :"";
+  el.innerHTML=`<div class="edtop"><span class="lbl">Retouche ton menu</span><button type="button" class="undo" data-undo>↶ Annuler</button></div>`+
+  ss.map((s,i)=>`<div class="edsec" data-si="${i}">
+    <div class="edrow"><input class="ednom" data-k="nom" value="${esc(s.nom)}" placeholder="Nom de la partie (ex. Entrée)" lang="fr" spellcheck="true" aria-label="Nom de la partie">
+      <button type="button" class="ic" data-act="up" aria-label="Monter cette partie"${i?"":" disabled"}>↑</button><button type="button" class="ic" data-act="down" aria-label="Descendre cette partie"${i<ss.length-1?"":" disabled"}>↓</button><button type="button" class="ic del" data-act="delsec" aria-label="Supprimer cette partie">${TRASH}</button></div>
+    <input class="edsub" data-k="sousTitre" value="${esc(s.sousTitre)}" placeholder="Petite ligne sous le nom (facultatif)" lang="fr" spellcheck="true" aria-label="Petite ligne sous le nom">
+    <div class="mode" role="group" aria-label="Présentation"><button type="button" data-act="mode" data-m="choix" aria-pressed="${s.mode!=="liste"}">Au choix</button><button type="button" data-act="mode" data-m="liste" aria-pressed="${s.mode==="liste"}">Liste</button></div>
+    <div class="edd">${s.plats.map((p,j)=>`<div class="edp"><textarea rows="1" data-j="${j}" lang="fr" spellcheck="true" placeholder="Écris le plat" aria-label="Plat ${j+1}">${esc(p)}</textarea><button type="button" class="ic del" data-act="delp" data-j="${j}" aria-label="Enlever ce plat">✕</button></div>`).join("")}</div>
+    <button type="button" class="edadd" data-act="addp">＋ Ajouter un plat</button></div>`).join("")+
+  `<button type="button" class="btn soft" data-act="addsec">＋ Ajouter une partie</button>`+
+  (retouche()?`<button type="button" class="lnk" data-act="reset" style="align-self:center">Effacer mes retouches et repartir du texte collé</button>`:"");
+  el.querySelectorAll("textarea").forEach(grow);undoUI();
 }
-$("#secs").addEventListener("click",e=>{const b=e.target.closest("[data-mode]");if(!b)return;
-  const s=MENU.sections[+b.dataset.i];s.mode=b.dataset.mode;store.set("menus2b-dernier",MENU);show()});
+addEventListener("resize",()=>{clearTimeout(grow.t);grow.t=setTimeout(()=>document.querySelectorAll("#secs textarea").forEach(grow),150)});
+function grow(t){if(CSS.supports&&CSS.supports("field-sizing","content"))return;t.style.height="auto";t.style.height=t.scrollHeight+2+"px"}
+function focusAt(si,j,pos){const t=$(`#secs .edsec[data-si="${si}"] ${j==null?".ednom":`textarea[data-j="${j}"]`}`);if(!t)return;
+  t.focus({preventScroll:false});const n=pos==null?t.value.length:pos;try{t.setSelectionRange(n,n)}catch{}}
+let pageT;const later=()=>{clearTimeout(pageT);pageT=setTimeout(page,250)};
+const edBox=$("#secs");
+edBox.addEventListener("focusin",e=>{if(e.target.matches("input,textarea"))snap()});
+edBox.addEventListener("input",e=>{const t=e.target,c=t.closest(".edsec");if(!c)return;const s=MENU.sections[+c.dataset.si];
+  if(t.dataset.k)s[t.dataset.k]=t.value;
+  else if(t.dataset.j!=null){s.plats[+t.dataset.j]=t.value.replace(/\s*\n\s*/g," ");grow(t)}
+  save();later()});
+edBox.addEventListener("keydown",e=>{const t=e.target,c=t.closest(".edsec");if(!c)return;const si=+c.dataset.si,s=MENU.sections[si];
+  if(e.key==="Enter"&&t.matches(".ednom,.edsub")){e.preventDefault();focusAt(si,0,0);return}
+  if(t.dataset.j==null)return;const j=+t.dataset.j;
+  if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();snap();              // Entrée : nouveau plat juste en dessous (coupe au curseur)
+    const a=t.value.slice(0,t.selectionStart).trim(),b=t.value.slice(t.selectionEnd).trim();
+    s.plats[j]=a;s.plats.splice(j+1,0,b);s.po.splice(j+1,0,null);save();show();focusAt(si,j+1,0)}
+  else if(e.key==="Backspace"&&!t.value&&s.plats.length>1){e.preventDefault();snap();  // effacer une case vide : retour au plat d'avant
+    if(s.po[j]!==null)s.del.push(s.po[j]);s.plats.splice(j,1);s.po.splice(j,1);save();show();focusAt(si,Math.max(0,j-1))}
+});
+edBox.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;const c=b.closest(".edsec");const si=c?+c.dataset.si:-1;
+  const ss=MENU.sections,s=ss[si],act=b.dataset.act;
+  if(act==="reset"){snap();MENU=null;build();show();toast("Menu refait depuis le texte collé",true);return}
+  snap();
+  if(act==="mode"){s.mode=b.dataset.m}
+  else if(act==="up"||act==="down"){const k=act==="up"?si-1:si+1;[ss[si],ss[k]]=[ss[k],ss[si]]}
+  else if(act==="delsec"){if(s.o!==null)MENU.delS.push(s.o);ss.splice(si,1);save();show();toast(`Partie « ${(s.nom||"sans nom").trim()} » supprimée`,true);return}
+  else if(act==="delp"){const j=+b.dataset.j;if(s.po[j]!==null)s.del.push(s.po[j]);s.plats.splice(j,1);s.po.splice(j,1);
+    if(!s.plats.length){s.plats.push("");s.po.push(null)}}
+  else if(act==="addp"){s.plats.push("");s.po.push(null);save();show();focusAt(si,s.plats.length-1);return}
+  else if(act==="addsec"){ss.push({nom:"",sousTitre:"",mode:"choix",plats:[""],o:null,on:"",os:"",om:"choix",po:[null],del:[]});save();show();focusAt(ss.length-1,null);return}
+  save();show();
+});
 
 /* ---------- Forfaits apéritifs ---------- */
 const F_DEFAULT={p1:"12 €",p2:"17 €",drinks:"Bière\nPicon bière\nKir vin blanc\nKir crémant\nVerre de vin\nSoft\nAperol Spritz\nPanaché\nMonaco"};
@@ -577,11 +687,11 @@ function forfaitPage(f){
 
 /* ---------- Affichage, mise à l'échelle et ajustement automatique ---------- */
 let TAB="menu";
-function show(){
+function page(){
   $("#scaler").innerHTML=TAB==="menu"?menuPage(MENU):TAB==="devis"?devisPage(DEVIS):forfaitPage(readF());
-  if(TAB==="menu")secsUI();
   fit();scale();
 }
+function show(){page();if(TAB==="menu")secsUI();undoUI()}
 function fit(){ // la plus grande taille de texte qui tienne sur la page
   const page=$("#thePage");if(!page)return;const content=page.querySelector(".content");
   if(page.classList.contains("forf"))return;
@@ -595,14 +705,19 @@ if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{fit();sca
 /* Retouches directes sur la page */
 $("#scaler").addEventListener("input",e=>{
   const el=e.target.closest("[contenteditable]");if(!el||TAB!=="menu")return;const t=el.textContent.trim();
-  if(el.dataset.f)MENU[el.dataset.f]=t;
+  if(el.dataset.f){MENU[el.dataset.f]=t;const fid={titre:"fTitle",sousTitre:"fSub",note:"fNote"}[el.dataset.f];if(fid){$("#"+fid).value=t;store.set("menus2b-champs",opts())}}
   if(el.dataset.sn)MENU.sections[+el.dataset.sn].nom=t;
   if(el.dataset.ss)MENU.sections[+el.dataset.ss].sousTitre=t;
   if(el.dataset.p)MENU.sections[+el.dataset.s].plats[+el.dataset.p]=t;
+  // la case correspondante, à gauche, suit sans être refaite (sinon on perd le doigt en passant de la page aux cases)
+  const box=el.dataset.sn?$(`#secs .edsec[data-si="${el.dataset.sn}"] .ednom`):el.dataset.ss?$(`#secs .edsec[data-si="${el.dataset.ss}"] .edsub`):el.dataset.p?$(`#secs .edsec[data-si="${el.dataset.s}"] textarea[data-j="${el.dataset.p}"]`):null;
+  if(box){box.value=t;if(box.tagName==="TEXTAREA")grow(box)}
   store.set("menus2b-dernier",MENU);clearTimeout(fit.t);fit.t=setTimeout(fit,300);
 });
 $("#scaler").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.closest("[contenteditable]")){e.preventDefault();e.target.blur()}});
-$("#scaler").addEventListener("focusout",()=>{if(TAB==="menu")secsUI()});
+$("#scaler").addEventListener("focusin",e=>{if(TAB==="menu"&&e.target.closest("[contenteditable]"))snap()});
+$("#scaler").addEventListener("focusout",()=>{if(TAB==="menu")setTimeout(()=>{if(!edBox.contains(document.activeElement))secsUI()},0)});
+$("#raw").addEventListener("focusin",snap);
 
 /* Saisie : la page se refait pendant qu'on écrit */
 $("#raw").addEventListener("input",()=>{RAW=$("#raw").value;store.set("menus2b-texte",RAW);clearTimeout(build.t);build.t=setTimeout(()=>{build();show()},450)});
@@ -612,9 +727,9 @@ $("#go").onclick=()=>{
   if(matchMedia("(max-width:900px)").matches)$("#preview").scrollIntoView({behavior:"smooth",block:"start"});
   toast("Mise en page faite, relis la page");
 };
+["fTitle","fSub","fPrice","fNote"].forEach(id=>$("#"+id).addEventListener("focusin",snap));
 ["fTitle","fSub","fPrice","fNote"].forEach(id=>$("#"+id).addEventListener("input",()=>{
-  const k={fTitle:"titre",fSub:"sousTitre",fPrice:"prix",fNote:"note"}[id];
-  store.set("menus2b-champs",opts());clearTimeout(build.t2);build.t2=setTimeout(()=>{build();if(TAB==="menu")show()},350);
+  store.set("menus2b-champs",opts());clearTimeout(build.t2);build.t2=setTimeout(()=>{applyFields();if(TAB==="menu")page()},300);
 }));
 
 /* ---------- Forfaits : saisie ---------- */
@@ -746,7 +861,7 @@ document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{
 const ch=store.get("menus2b-champs");
 if(ch){$("#fTitle").value=ch.titre||"Menu";$("#fSub").value=ch.sousTitre||"";$("#fPrice").value=priceNum(ch.prix);$("#fNote").value=ch.note||""}
 $("#raw").value=RAW;
-if(!MENU||!Array.isArray(MENU.sections))build();
+if(!MENU||!Array.isArray(MENU.sections))build();else ready(MENU);
 $("#editnote").textContent="Aperçu au format A4. Touche un texte de la page pour le retoucher.";
 show();
 if(location.hash==="#devis"){const pre=prefillFromEvent();history.replaceState(null,"",location.pathname);document.querySelector('[data-tab="devis"]').click();if(pre)toast("Devis préparé depuis la fiche événement")}
