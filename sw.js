@@ -5,7 +5,7 @@
 // Polices et bibliothèques externes : rangées à part (STATIC), gardées d'une version à l'autre, sinon chaque mise à jour
 // obligeait les pages à les re-télécharger avant de s'afficher (pages bloquées si le réseau est faible).
 // Jamais plus de 5 s d'attente : sinon on affiche ce qu'on a. L'API Supabase passe toujours par le réseau.
-const CACHE = "commande-2b-v25";
+const CACHE = "commande-2b-v26";
 const STATIC = "2b-statique-v1";
 const SHELL = ["./", "index.html", "accueil.html", "hygiene.html", "menus.html", "chiffres.html", "evenements.html", "manifest.webmanifest", "logo-hd.png", "icone-appli.svg", "profil.js", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 const STATIC_HOSTS = ["fonts.googleapis.com", "fonts.gstatic.com", "cdnjs.cloudflare.com"];
