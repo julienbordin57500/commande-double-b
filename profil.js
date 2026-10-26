@@ -340,10 +340,8 @@
     m.innerHTML=`<div class="b"><b>Enregistrer avant de fermer ?</b><p>Tu as tapé quelque chose qui n'est pas encore enregistré.</p>${sv?`<button type="button" class="s">Enregistrer</button>`:""}<button type="button" class="y">Ne pas enregistrer</button><button type="button" class="n">Continuer à modifier</button></div>`;
     m.addEventListener("click",e=>{if(e.target===m)m.remove()});
     m.querySelector(".y").onclick=()=>{m.remove();fn()};m.querySelector(".n").onclick=()=>m.remove();
-    if(sv)m.querySelector(".s").onclick=()=>{m.remove();sv.click();
-      // la fenêtre se ferme d'elle-même, ou se vide une fois enregistré : on la ferme ; sinon (prix manquant…) on la laisse ouverte
-      let n=0;const t=setInterval(()=>{n++;if(!ov.isConnected){clearInterval(t);return}
-        if(!enAttente(box)){clearInterval(t);fn();return}if(n>40)clearInterval(t)},100)};
+    // « Enregistrer » : on enregistre ; si la fenêtre reste ouverte (fiche article), on la laisse pour montrer le résultat
+    if(sv)m.querySelector(".s").onclick=()=>{m.remove();sv.click()};
     document.body.appendChild(m)}
   document.addEventListener("click",e=>{const x=e.target.closest(".xclose");if(!x||x.closest(".pick"))return;e.preventDefault();e.stopPropagation();
     const box=x.parentElement,ov=box.closest(".sheet,.modal");if(!ov)return;

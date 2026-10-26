@@ -107,10 +107,6 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
 .fcmd{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:var(--sunken)}
 .fcmd span{flex:1;font-weight:700}
 .fcmd .fct{height:50px;padding:0 20px;flex:none}
-.ailleurs{border:1px solid var(--line);border-radius:14px;overflow:hidden}
-.ailleurs h4{margin:0;padding:10px 12px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
-.ailleurs div{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line);align-items:center}
-.ailleurs div span{flex:1}
 .qr .qty{width:64px;height:46px;flex:none}
 .qr.on{flex-wrap:wrap}
 .qr-c{display:flex;align-items:center;gap:8px;width:100%;padding-bottom:2px}
@@ -128,13 +124,19 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
 /* Cartes fournisseur */
 .suppliers{display:flex;flex-direction:column;gap:14px;margin-top:16px}
 .sup{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--c);border-radius:20px;overflow:hidden;overflow:clip}
-/* Liste ouverte : la barre du fournisseur reste en haut pendant le défilement, avec « Replier » toujours à portée */
-.sup[data-open="true"]>.sup-head{position:sticky;top:var(--stick,66px);z-index:3;background:var(--surface);box-shadow:0 1px 0 var(--line),0 6px 12px -10px rgba(0,0,0,.35)}
-.fold{display:none;flex:none;align-items:center;gap:3px;height:34px;padding:0 10px;border-radius:999px;background:var(--soft);color:var(--c);font-weight:800;font-size:13px}
-.sup[data-open="true"]>.sup-head{gap:10px}
-.fold svg{width:16px;height:16px}
-.sup[data-open="true"] .fold{display:inline-flex}
-.sup[data-open="true"] .chev{display:none}
+/* Liste ouverte : en défilant, une barre fine du fournisseur reste en haut, avec « Replier » */
+.sup[data-open="true"]>.sup-head{background:color-mix(in srgb,var(--c) 7%,var(--surface))}
+.stk{position:sticky;top:var(--stick,66px);height:0;z-index:3}
+.stk-in{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;gap:10px;height:50px;padding:0 8px 0 14px;cursor:pointer;
+  background:color-mix(in srgb,var(--c) 13%,var(--surface));border-bottom:2px solid var(--c);box-shadow:0 8px 16px -10px rgba(0,0,0,.4);
+  opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .18s ease,transform .18s ease}
+.sup.stuck .stk-in{opacity:1;transform:none;pointer-events:auto}
+.stk-in b{flex:1;min-width:0;font-family:var(--display);font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stk-up{flex:none;display:inline-flex;align-items:center;gap:4px;height:36px;padding:0 12px;border-radius:999px;background:var(--c);color:var(--surface);font-weight:800;font-size:14px}
+.stk-up svg{width:16px;height:16px}
+.sup.anim .sup-body{animation:sbIn .2s ease-out}
+@keyframes sbIn{from{opacity:0;transform:translateY(-6px)}}
+@media (prefers-reduced-motion:reduce){.stk-in{transition:none}.sup.anim .sup-body{animation:none}}
 .sup-head{width:100%;display:flex;align-items:center;gap:14px;padding:14px;background:none;border:0;text-align:left}
 .ico{flex:none;width:52px;height:52px;border-radius:15px;display:grid;place-items:center;background:var(--soft);color:var(--c)}
 .ico svg{width:32px;height:32px}
@@ -142,12 +144,12 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
 .sup-name h2{font-size:21px;font-weight:800;line-height:1.1}
 .sup-name small{display:block;color:var(--muted);font-size:13px;margin-top:4px}
 .count{flex:none;font-size:13px;font-weight:700;padding:5px 10px;border-radius:999px;background:var(--accent);color:var(--accent-ink)}
-.chev{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:var(--muted);transition:transform .2s ease}
-.sup[data-open="true"] .chev{transform:rotate(90deg)}
+.chev{flex:none;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--soft);color:var(--c);transform:rotate(90deg);transition:transform .22s ease}
+.sup[data-open="true"] .chev{transform:rotate(-90deg)}
 .sup-body{border-top:1px solid var(--line)}
 .sup[data-open="false"] .sup-body{display:none}
 .item{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:10px 10px 10px 16px;border-top:1px solid var(--line);position:relative}
-.item:first-child{border-top:0}
+.item:first-child,.stk+.item{border-top:0}
 .item::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:transparent}
 .item.on{background:var(--accent-soft)}
 .item.on::before{background:var(--accent)}
@@ -217,34 +219,55 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
 .prow .in span{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-weight:800;color:var(--muted);font-size:18px}
 .prow select{height:56px;border-radius:14px;border:1.5px solid var(--line);background:var(--sunken);padding:0 10px;font-weight:700}
 .hist{border:1px solid var(--line);border-radius:14px;overflow:hidden}
-/* Contenu du conditionnement et calculs automatiques */
-.pcont{width:100%;height:50px;border-radius:14px;border:1.5px solid var(--line);background:var(--sunken);padding:0 12px;font-size:16px}
-.pcalc{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-radius:14px;background:var(--sunken);font-size:15px}
-.pcalc div{display:flex;justify-content:space-between;gap:10px}
-.pcalc b{font-variant-numeric:tabular-nums}
-.pcalc .manque{color:var(--muted);font-size:13px}
-.pcalc .t{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
-/* Comparatif entre fournisseurs */
-.cmp,.pcalc,.hist,.fcmd{flex:none}
-.cmp{border:1px solid var(--line);border-radius:14px;overflow:hidden}
-.cmp>h4{margin:0;padding:10px 12px 4px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
-.cbase{display:flex;flex-wrap:wrap;gap:6px;padding:6px 12px 10px}
-.cbase button{height:36px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-weight:700;font-size:14px;color:var(--fg)}
-.cbase button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
-.crow{display:flex;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid var(--line)}
-.crow.best{background:color-mix(in srgb,#2f8a4a 10%,transparent);box-shadow:inset 4px 0 0 #2f8a4a}
+/* Fiche article : prix du jour, comparaison, articles comparés */
+.fart .sub{display:flex;align-items:center;gap:8px}
+.cdot{flex:none;width:12px;height:12px;border-radius:50%;background:var(--c);box-shadow:0 0 0 3px var(--soft)}
+.pday,.cmp,.choix,.hist,.fcmd,.fart>.btn{flex:none}
+.pday{display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+.pday .lbl,.lbl2{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.lbl2 i{font-style:normal;font-weight:600;text-transform:none;letter-spacing:0}
+.prow1{display:flex;flex-direction:column;gap:8px}
+.prow1 .in{position:relative}
+.prow1 input{width:100%;height:58px;border-radius:14px;border:1.5px solid var(--line);background:var(--sunken);font-size:26px;font-weight:800;text-align:center;padding:0 40px 0 12px;font-variant-numeric:tabular-nums}
+.prow1 .in span{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-weight:800;color:var(--muted);font-size:18px}
+.seg3{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;border-radius:14px;background:var(--sunken);border:1px solid var(--line)}
+.seg3 button{height:46px;border:0;border-radius:11px;background:transparent;font-weight:800;font-size:15px;color:var(--muted)}
+.seg3 button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.cont{display:flex;flex-direction:column;gap:6px}
+.cont[hidden]{display:none}
+.c2{display:grid;grid-template-columns:1fr 128px;gap:6px}
+.c2 input,.c2 select,.pdet{height:48px;border-radius:12px;border:1.5px solid var(--line);background:var(--sunken);padding:0 12px;font-size:16px;min-width:0;width:100%}
+.c2 select{font-weight:700}
+.pres{padding:10px 12px;border-radius:12px;background:var(--accent-soft);display:flex;flex-direction:column;gap:2px}
+.pres b{font-size:16px;font-variant-numeric:tabular-nums}
+.pres small{color:var(--muted);font-size:13px}
+.cmp,.choix{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--surface)}
+.cmp-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:11px 12px 9px}
+.cmp-h b{font-family:var(--display);font-size:17px}
+.cmp-h span{font-size:13px;color:var(--muted);text-align:right}
+.crow{display:flex;align-items:center;gap:10px;padding:11px 12px;border-top:1px solid var(--line)}
+.crow.best{background:color-mix(in srgb,#2f8a4a 11%,var(--surface))}
 .crow .who{flex:1;min-width:0}
 .crow .who b{display:block;font-size:15px}
+.crow .who em{font-style:normal;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-left:4px}
 .crow .who small{display:block;color:var(--muted);font-size:13px;overflow-wrap:anywhere}
-.crow .val{text-align:right;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
-.crow .val small{display:block;font-weight:500;font-size:12px;color:var(--muted);white-space:normal;max-width:130px}
-.cheap{display:inline-block;font-size:11px;font-weight:800;color:#fff;background:#2f8a4a;border-radius:6px;padding:2px 6px;margin-top:3px}
-.crow .ux{flex:none;width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font-size:16px}
-.cadd{width:100%;height:46px;border:0;border-top:1px solid var(--line);background:none;font-weight:700;color:var(--fg)}
-.cpick{padding:10px 12px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
-.cpick input{height:46px;border-radius:12px;border:1.5px solid var(--line);background:var(--sunken);padding:0 12px;font-size:16px}
-.cpick button.it{display:flex;justify-content:space-between;gap:8px;text-align:left;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-size:15px;color:var(--fg)}
-.cpick button.it small{color:var(--muted)}
+.crow .val{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px;max-width:48%}
+.crow .val b{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.crow .val b i{font-style:normal;font-size:13px;font-weight:700;color:var(--muted);margin-left:1px}
+.crow .val small{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.cheap{display:inline-block;font-size:11px;font-weight:800;color:#fff;background:#2f8a4a;border-radius:6px;padding:2px 7px}
+.cvide{margin:0;padding:10px 12px 12px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+.copt{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--line);cursor:pointer}
+.copt[hidden]{display:none}
+.copt input{flex:none;width:24px;height:24px;accent-color:#2f8a4a}
+.copt .ct{flex:1;min-width:0}
+.copt .ct b{display:block;font-size:15px;font-weight:700}
+.copt .ct small{display:block;color:var(--muted);font-size:13px}
+.csrch{display:block;width:calc(100% - 24px);margin:10px 12px 12px;height:46px;border-radius:12px;border:1.5px solid var(--line);background:var(--sunken);padding:0 12px;font-size:16px}
+.hist>summary{list-style:none;cursor:pointer;padding:12px;font-weight:700;display:flex;justify-content:space-between}
+.hist>summary::after{content:"›";color:var(--muted);font-weight:800;transition:transform .2s}
+.hist[open]>summary::after{transform:rotate(90deg)}
+.hist>summary::-webkit-details-marker{display:none}
 .hist h4{margin:0;padding:10px 12px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);background:var(--sunken);display:flex;justify-content:space-between;gap:8px}
 .hrow{display:flex;align-items:center;gap:10px;padding:8px 8px 8px 12px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
 .hrow .dt{flex:1;color:var(--muted);font-size:14px}
@@ -442,6 +465,10 @@ function useData(d){
 function stick(){const tb=$(".tabs");return tb?Math.round((parseFloat(getComputedStyle(tb).top)||0)+tb.offsetHeight+6):66}
 function setStick(){document.documentElement.style.setProperty("--stick",stick()+"px")}
 addEventListener("resize",setStick);addEventListener("orientationchange",setStick);
+// la barre fine apparaît quand l'en-tête du fournisseur ouvert est sorti de l'écran par le haut
+function majStuck(){const top=stick();document.querySelectorAll('.sup[data-open="true"]').forEach(sec=>{
+  const h=sec.querySelector(".sup-head").getBoundingClientRect(),r=sec.getBoundingClientRect();sec.classList.toggle("stuck",h.bottom<top+4&&r.bottom>top+90)})}
+addEventListener("scroll",majStuck,{passive:true});   // quelques mesures seulement (fournisseurs ouverts) : direct, sans attendre l'image suivante
 function showApp(){$("#gate").hidden=true;$("#app").hidden=false;requestAnimationFrame(setStick);
   if(!S.ready){try{const c=JSON.parse(store.get("commande2b-cache")||"null");if(c&&c.produits){useData(c);render()}}catch{}}
   refresh();startPolling();
@@ -635,9 +662,9 @@ function supHTML(f){
     <div class="sup-head" role="button" tabindex="0" data-sup="${esc(f)}" aria-expanded="${open}">
       <span class="ico" aria-hidden="true">${supIcon(f)}</span>
       <span class="sup-name"><h2>${esc(f)}<button class="fiche${S.fiches[f]?" has":""}" type="button" data-fiche="${esc(f)}" aria-label="Fiche du fournisseur ${esc(f)}">${CARD}</button></h2><small>${ts.length?`${ps.length} sur ${all.length} produits`:`${all.length} produit${all.length>1?"s":""}`}${k?` <span class="count">${k} à commander</span>`:""}</small></span>
-      <span class="fold" aria-hidden="true">Replier ${CHEVUP}</span><span class="chev" aria-hidden="true">${CHEV}</span>
+      <span class="chev" aria-hidden="true">${CHEV}</span>
     </div>
-    <div class="sup-body">${body}</div></section>`;
+    <div class="sup-body"><div class="stk" aria-hidden="${!open}"><div class="stk-in" role="button" tabindex="-1" data-sup="${esc(f)}" aria-label="Replier ${esc(f)}"><span class="cdot"></span><b>${esc(f)}</b><span class="stk-up">Replier ${CHEVUP}</span></div></div>${body}</div></section>`;
 }
 function itemHTML(p){
   return `<div class="item${p.acommander?" on":""}"><div class="name"><span>${label(p.nom)}</span>${chip(p)}${tools(p)}</div>
@@ -684,8 +711,9 @@ document.addEventListener("click",async e=>{
   const sd=e.target.closest("[data-send]");if(sd){sendSupplier(sd.dataset.send);return}
   const h=e.target.closest("[data-sup]");
   if(h){if(terms().length)return;const f=h.dataset.sup;const sec=h.closest(".sup");const wasStuck=isOpen(f)&&sec.getBoundingClientRect().top<stick()-2;
-    setOpen(f,!isOpen(f));sec.dataset.open=isOpen(f);h.setAttribute("aria-expanded",isOpen(f));
-    if(wasStuck)window.scrollBy({top:sec.getBoundingClientRect().top-stick()});   // replié depuis le bas de la liste : on revient sur ce fournisseur
+    setOpen(f,!isOpen(f));sec.dataset.open=isOpen(f);sec.querySelector(".sup-head").setAttribute("aria-expanded",isOpen(f));sec.classList.remove("stuck");
+    if(isOpen(f)){sec.classList.add("anim");setTimeout(()=>sec.classList.remove("anim"),260)}
+    if(wasStuck)window.scrollTo({top:scrollY+sec.getBoundingClientRect().top-stick()});   // replié depuis le milieu de la liste : on revient sur ce fournisseur
     return}
   const ct=e.target.closest("[data-ctog]");
   if(ct){const f=ct.dataset.ctog;setCOpen(f,!isCOpen(f));const sec=ct.closest(".cmd-sup");sec.dataset.open=isCOpen(f);ct.setAttribute("aria-expanded",isCOpen(f));return}
@@ -809,7 +837,7 @@ function knife(block){return new Promise(res=>{
 $("#addSup").onclick=()=>{
   const n=$("#nSup").value.trim();if(!n)return;
   if(allSups().some(f=>norm(f)===norm(n))){toast(n+" existe déjà");return}
-  S.sups=[...S.sups,n];S.supSec[n]=S.sec;setOpen(n,true);$("#nSup").value="";render();$("#nFour").value=n;
+  S.sups=[...S.sups,n];S.supSec[n]=S.sec;setOpen(n,true);$("#nSup").value="";render();$("#nFour").value=n;$("#nNom").focus();
   send("ajout_fournisseur",{p_nom:n,p_section:S.sec}).then(()=>toast("Fournisseur "+n+" créé")).catch(()=>{});
 };
 $("#nSup").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("#addSup").click()}});
@@ -823,9 +851,12 @@ $("#addForm").addEventListener("submit",async e=>{
     if(c==="replace"){dup.nom=nom;dup.section=sec;render();$("#nNom").value="";
       send("maj_produit",{p_id:dup.id,p_champs:{nom,section:sec}}).then(()=>toast("Article remplacé")).catch(()=>{});return}
   }
-  const tmp="tmp-"+Date.now();S.items.set(tmp,{id:tmp,nom,fournisseur:f,section:sec,acommander:false,qte:null,unite:"pièce",ordre:Date.now()});
-  setOpen(f,true);render();$("#nNom").value="";$("#nNom").focus();
-  send("ajout_produit",{p_nom:nom,p_fournisseur:f,p_section:sec}).then(()=>toast(nom+" ajouté chez "+f)).catch(()=>{});
+  const tmp="tmp-"+Date.now(),obj={id:tmp,nom,fournisseur:f,section:sec,acommander:false,qte:null,unite:"pièce",ordre:Date.now(),groupe:null,prix:null};S.items.set(tmp,obj);
+  setOpen(f,true);render();$("#nNom").value="";$("#nNom").blur();
+  // l'article s'enregistre, puis sa fiche s'ouvre : on note le prix et on voit la comparaison tout de suite
+  send("ajout_produit",{p_nom:nom,p_fournisseur:f,p_section:sec}).then(newId=>{
+    if(!newId){toast(nom+" sera ajouté dès que le réseau revient");return}
+    S.items.delete(tmp);S.items.set(newId,{...obj,id:newId});render();toast(`${nom} ajouté chez ${f}`);openPrice(newId,{nouveau:true})}).catch(()=>{S.items.delete(tmp);render()});
 });
 
 /* Modifier un article : nom, fournisseur, Cuisine / Boissons */
@@ -849,10 +880,12 @@ function openEdit(id){
   };
 }
 
-/* ---------- Comparateur de prix ----------
-   Chaque prix garde son « contenu » tel qu'il a été tapé (ex. « 20 tranches 400 g », « 6 x 1 L »).
-   On en tire des quantités de base : g, ml, n (pièces), t (tranches). Le prix au kg, au L, à la pièce et à la tranche
-   se calcule à partir de là. Si une quantité manque, on ne calcule pas : jamais de chiffre inventé. */
+/* ---------- Fiche article : prix du jour, calcul automatique, comparaison entre fournisseurs ----------
+   Un seul écran, de haut en bas : le prix du jour (prix + vendu à la pièce / au kilo / au litre ; pour la pièce, son contenu,
+   facultatif et repris du dernier prix), puis la comparaison (une ligne par fournisseur, un seul chiffre bien visible,
+   le moins cher en vert), puis les articles à comparer (cases à cocher), puis l'historique.
+   Le contenu est gardé en texte (« 400 g · 20 tranches ») : on en tire g, ml, unités (n) et tranches (t).
+   Si une quantité manque, on ne calcule pas ce chiffre-là et on dit ce qui manque : jamais de résultat inventé. */
 const CU=[[/^(kg|kgs|kilos?|kilogrammes?)$/,"g",1000],[/^(g|gr|grs|grammes?)$/,"g",1],[/^(l|litres?)$/,"ml",1000],[/^cl$/,"ml",10],[/^dl$/,"ml",100],[/^ml$/,"ml",1],
   [/^(tranches?|tr)$/,"t",1],[/^douzaines?$/,"n",12],[/^(pieces?|pcs?|pces?|unites?|u|portions?|boites?|bouteilles?|btl|sachets?|paquets?|pots?|canettes?|oeufs?|barquettes?|briques?|rouleaux?)$/,"n",1]];
 const unitOf=u=>{for(const [re,k,f] of CU)if(re.test(u))return [k,f];return null};
@@ -863,125 +896,156 @@ function parseC(txt){
     r[k[0]]=(r[k[0]]||0)+a*b*k[1];if(k[0]!=="n")r.n=(r.n||0)+ +a;return " "});
   s.replace(/(\d+(?:\.\d+)?)\s*([a-z]+)/g,(m,a,u)=>{const k=unitOf(u);if(k)r[k[0]]=(r[k[0]]||0)+a*k[1];return m});
   return r}
-// Pour un prix {p,u,c} : ce que l'on peut calculer (null = impossible)
+// Pour un prix {p,u,c} : les chiffres calculables (null = impossible)
 function calc(pr){
   if(!pr||!(+pr.p>0))return null;const p=+pr.p,u=fold(pr.u||"");let q;
   if(u==="kg")q={g:1000};else if(u==="l")q={ml:1000};
   else{q=parseC(pr.c);if(u==="douzaine"&&!q.n)q.n=12;if((u==="piece"||u==="paquet")&&!q.n)q.n=1}
   return {kg:q.g?p/q.g*1000:null,L:q.ml?p/q.ml*1000:null,piece:q.n?p/q.n:null,tranche:q.t?p/q.t:null,gt:q.g&&q.t?q.g/q.t:null,q}}
-const BASES=[["kg","au kilo","€/kg","au kilo"],["L","au litre","€/L","au litre"],["tranche","la tranche","€/tranche","par tranche"],["piece","à l'unité","€/unité","à l'unité"]];
 const eur2=n=>new Intl.NumberFormat("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:n<1?3:2}).format(n)+" €";
-const gfmt=n=>(n>=10?Math.round(n):Math.round(n*10)/10).toString().replace(".",",")+" g";
-function calcHTML(pr,titre){
-  const c=calc(pr);if(!c)return "";const u=fold(pr.u||"");const L=[];
-  if(c.kg!=null)L.push(["Au kilo",eur2(c.kg)]);if(c.L!=null)L.push(["Au litre",eur2(c.L)]);
-  if(c.piece!=null&&!((u==="piece"||u==="paquet")&&c.q.n===1))L.push(["À l'unité",eur2(c.piece)]);
-  if(c.tranche!=null)L.push(["La tranche",eur2(c.tranche)]);if(c.gt!=null)L.push(["Poids d'une tranche",gfmt(c.gt)]);
-  const manque=u==="kg"||u==="l"?"":c.kg==null&&c.L==null?"Ajoute le poids ou le volume (ex. 400 g, 1 L) pour avoir le prix au kilo ou au litre.":"";
-  if(!L.length&&!manque)return "";
-  return `<div class="pcalc">${titre?`<span class="t">${titre}</span>`:""}${L.map(([a,b])=>`<div><span>${a}</span><b>${b}</b></div>`).join("")}${manque?`<span class="manque">${manque}</span>`:""}</div>`}
-// Articles comparables : liés à la main (groupe) ou, à défaut, portant exactement le même nom
-const gkey=x=>x.groupe||"nom:"+fold(x.nom).replace(/\s+/g," ").trim();
-const membres=p=>[...S.items.values()].filter(x=>gkey(x)===gkey(p));
-function majGroupe(x,g){x.groupe=g;send("maj_produit",{p_id:x.id,p_champs:{groupe:g}}).catch(()=>{})}
-function lier(p,x){const g=p.groupe||x.groupe||("g"+Date.now().toString(36));
-  [...membres(p),...membres(x)].forEach(y=>{if(y.groupe!==g)majGroupe(y,g)})}
-function delier(x){majGroupe(x,"seul-"+x.id)}
+const SUF={kg:"/kg",L:"/L",tranche:"/tranche",piece:"/unité"};
+const NOMB={kg:"au kilo",L:"au litre",tranche:"à la tranche",piece:"à l'unité"};
+const MANQUE={kg:"poids manquant",L:"volume manquant",tranche:"nombre de tranches manquant",piece:"nombre d'unités manquant"};
+// « 6,40 € la pièce · 400 g · 20 tranches »
+function prixLigne(pr){if(!pr)return "Pas encore de prix";
+  const u=pr.u==="kg"||pr.u==="L"?"/"+pr.u:pr.u==="pièce"?" la pièce":" par "+pr.u;
+  return `${eur(+pr.p)}${u}${pr.c?" · "+pr.c:""}`}
+const cur=(id,p)=>S.items.get(id)||p;   // l'article à jour (la liste est rechargée toutes les 5 s)
 
-/* Fenêtre prix : saisie + promo + historique */
+/* Articles comparés : liés (groupe) ou, à défaut, du même nom exactement */
+const gkey=x=>x.groupe||"nom:"+fold(x.nom).replace(/\s+/g," ").trim();
+const membres=p=>{const k=gkey(p);return [...S.items.values()].filter(x=>gkey(x)===k&&!String(x.id).startsWith("tmp-"))};
+function majGroupe(x,g){x.groupe=g;send("maj_produit",{p_id:x.id,p_champs:{groupe:g}}).catch(()=>{})}
+function lier(p,x){const g=p.groupe&&!p.groupe.startsWith("seul-")?p.groupe:x.groupe&&!x.groupe.startsWith("seul-")?x.groupe:"g"+Date.now().toString(36);
+  [...membres(p),p,...membres(x),x].forEach(y=>{if(y.groupe!==g)majGroupe(y,g)})}   // tout ce qui était déjà comparé reste ensemble
+function delier(x){majGroupe(x,"seul-"+x.id)}
+// mots en commun entre deux noms (pour proposer les bons articles en premier)
+const STOP=new Set(["de","du","des","la","le","les","en","aux","au","et","pour","avec","sur","sans"]);
+const mots=s=>fold(s).split(/[^a-z0-9]+/).filter(w=>w.length>=3&&!STOP.has(w)&&!/^\d/.test(w)).map(w=>w.replace(/(s|x)$/,""));
+function proche(a,b){const A=new Set(mots(a));return mots(b).filter(w=>A.has(w)).length}
+
+/* Comparaison : une ligne par fournisseur, un seul chiffre principal */
+function cmpHTML(p){
+  const rows=membres(p).map(x=>({x,pr:x.prix,c:calc(x.prix)}));
+  if(!rows.some(r=>r.x.id===p.id))rows.push({x:p,pr:p.prix,c:calc(p.prix)});
+  const avec=rows.filter(r=>r.c);let main=null;
+  for(const b of ["kg","L","tranche","piece"])if(avec.length&&avec.every(r=>r.c[b]!=null)){main=b;break}
+  if(!main){let n0=0;for(const b of ["kg","L","tranche","piece"]){const n=avec.filter(r=>r.c[b]!=null).length;if(n>n0){n0=n;main=b}}}
+  const sec=main==="kg"&&avec.some(r=>r.c.tranche!=null)?"tranche":main==="tranche"&&avec.some(r=>r.c.kg!=null)?"kg":null;
+  const v=r=>main&&r.c&&r.c[main]!=null?r.c[main]:null;
+  rows.sort((a,b)=>(v(a)==null)-(v(b)==null)||(v(a)??0)-(v(b)??0)||(a.x.id===p.id?-1:1));
+  const ok=rows.filter(r=>v(r)!=null),best=ok.length>=2?Math.min(...ok.map(v)):null;
+  const seul=rows.length<2;
+  return `<div class="cmp-h"><b>Comparaison</b>${!seul&&main?`<span>prix ${NOMB[main]}${sec?` et ${NOMB[sec]}`:""}</span>`:""}</div>`+
+    rows.map(r=>{const x=r.x,val=v(r),isBest=val!=null&&val===best;
+      const droite=!r.pr?`<small>pas de prix noté</small>`
+        :val!=null?`<b>${eur2(val)}<i>${SUF[main]}</i></b>${sec&&r.c[sec]!=null?`<small>${eur2(r.c[sec])}${SUF[sec]}</small>`:""}`
+        :main?`<small>prix ${NOMB[main]} impossible : ${MANQUE[main]}</small>`:`<small>ajoute le contenu pour comparer</small>`;
+      return `<div class="crow${isBest?" best":""}"><span class="cdot" style="${supStyle(x.fournisseur)}"></span>
+        <div class="who"><b>${esc(x.fournisseur)}${x.id===p.id?` <em>cet article</em>`:""}</b><small>${fold(x.nom)!==fold(p.nom)?esc(x.nom)+" · ":""}${r.pr&&main&&r.pr.u===({kg:"kg",L:"L"})[main]&&val!=null?(main==="kg"?"vendu au kilo":"vendu au litre"):esc(prixLigne(r.pr))}${r.pr&&r.pr.promo?" "+PROMO:""}</small></div>
+        <div class="val">${droite}${isBest?`<span class="cheap">Le moins cher</span>`:""}</div></div>`}).join("")+
+    (seul?`<p class="cvide">Pas encore de comparaison : ajoute ce produit chez un autre fournisseur, ou coche-le ci-dessous s'il y est déjà.</p>`:"");
+}
+/* Articles à comparer : cases à cocher, les noms qui se ressemblent en premier ; une recherche pour les autres */
+function choixHTML(p){
+  const k=gkey(p),sec=p.section||"cuisine";
+  const L=[...S.items.values()].filter(x=>x.id!==p.id&&x.fournisseur!==p.fournisseur&&(x.section||"cuisine")===sec&&!String(x.id).startsWith("tmp-"))
+    .map(x=>({x,on:gkey(x)===k,s:proche(p.nom,x.nom)})).sort((a,b)=>b.on-a.on||b.s-a.s||a.x.nom.localeCompare(b.x.nom,"fr"));
+  return `<div class="choix"><div class="cmp-h"><b>Le même produit chez</b><span>coche pour comparer</span></div>
+    <div class="clist">${L.map(o=>`<label class="copt" data-n="${esc(fold(o.x.nom+" "+o.x.fournisseur))}" data-s="${o.s}"><input type="checkbox" data-lien="${o.x.id}"${o.on?" checked":""}><span class="cdot" style="${supStyle(o.x.fournisseur)}"></span><span class="ct"><b>${esc(o.x.nom)}</b><small>${esc(o.x.fournisseur)}</small></span></label>`).join("")}</div>
+    <input class="csrch" type="search" placeholder="Chercher un autre article à comparer" autocomplete="off" aria-label="Chercher un article à comparer"></div>`}
+function filtreChoix(box){
+  const q=fold(box.querySelector(".csrch").value||"").split(/[^a-z0-9]+/).filter(Boolean);let n=0;
+  box.querySelectorAll(".copt").forEach(l=>{const on=l.querySelector("input").checked;
+    const show=on||(q.length?q.every(t=>l.dataset.n.includes(t)):+l.dataset.s>0);
+    l.hidden=!(show&&(on||n<8));if(!l.hidden&&!on)n++})}
+
+/* Contenu d'une pièce : deux petites cases (poids ou volume ; nombre de tranches ou d'unités) <-> texte gardé */
+function contenuDe(c){const q=parseC(c),o={po:"",pu:"g",nb:"",nu:"tranches"};
+  if(q.g){if(q.g>=1000){o.po=fmt(q.g/1000);o.pu="kg"}else{o.po=fmt(q.g);o.pu="g"}}
+  else if(q.ml){if(q.ml>=1000){o.po=fmt(q.ml/1000);o.pu="L"}else if(q.ml%10===0){o.po=fmt(q.ml/10);o.pu="cl"}else{o.po=fmt(q.ml);o.pu="ml"}}
+  if(q.t){o.nb=fmt(q.t);o.nu="tranches"}else if(q.n>1){o.nb=fmt(q.n);o.nu="unités"}
+  return o}
+const num=v=>{const n=parseFloat(String(v||"").replace(/\s|€/g,"").replace(",","."));return n>0?n:null};
+function contenuTxt(po,pu,nb,nu){const L=[];if(po)L.push(fmt(po)+" "+pu);if(nb)L.push(fmt(nb)+" "+(nu==="tranches"?(nb>1?"tranches":"tranche"):(nb>1?"unités":"unité")));return L.join(" · ")}
+
 async function openPrice(id,o={}){
-  const p=S.items.get(id);if(!p||String(id).startsWith("tmp-"))return;
-  const last=p.prix;const u0=last?last.u:(PUNITS.includes(p.unite)?p.unite:"kg");
+  let p=S.items.get(id);if(!p)return;
+  if(String(id).startsWith("tmp-")){toast("Un instant : l'article s'enregistre, réessaie dans une seconde");return}
+  const last=p.prix;const vu0=last&&["pièce","kg","L"].includes(last.u)?last.u:last&&/^(kg|l)$/i.test(last.u)?last.u:"pièce";
+  const c0=contenuDe(last&&last.c);
   const m=document.createElement("div");m.className="sheet";
-  m.innerHTML=`<div class="box" role="dialog" aria-label="Prix de ${esc(p.nom)}">
-    <h3>${esc(p.nom)}</h3><div class="sub">${esc(p.fournisseur)} · ${last?`dernier prix ${eur(+last.p)}/${esc(last.u)} le ${dshort(last.le)}${last.promo?" (promo)":""}`:"aucun prix noté"}</div>
+  m.innerHTML=`<div class="box fart" role="dialog" aria-label="${esc(p.nom)}">
+    <h3>${esc(p.nom)}</h3><div class="sub"><span class="cdot" style="${supStyle(p.fournisseur)}"></span>${esc(p.fournisseur)}</div>
     ${o.recherche?`<div class="fcmd" data-nodirty><span id="fcTxt"></span><button class="btn fct" type="button" data-t="${p.id}"></button></div>`:""}
-    <div class="prow"><div class="in"><input id="pv" inputmode="decimal" placeholder="0,00" autocomplete="off" aria-label="Prix"><span>€</span></div>
-      <select id="pu" aria-label="Unité du prix">${PUNITS.map(u=>`<option value="${u}"${u===u0?" selected":""}>par ${u}</option>`).join("")}</select></div>
-    <input class="pcont" id="pc" maxlength="80" autocomplete="off" placeholder="Contenu (facultatif), ex. 20 tranches 400 g" aria-label="Contenu du conditionnement" value="${esc(last&&last.c||"")}">
-    <div id="pcalc"></div>
-    <label class="promo"><span>🏷️ En promo</span><span class="sw"><input type="checkbox" id="pp"><i></i></span></label>
-    <button class="btn" id="psave" type="button">Enregistrer le prix du jour</button>
-    <div class="cmp" id="cmp" data-nodirty></div>
-    <div class="hist" id="ph"><h4><span>Historique des achats</span><span></span></h4><div class="hrow"><span class="dt">Chargement…</span></div></div>
+    <div class="pday">
+      <span class="lbl">Prix du jour</span>
+      <div class="prow1"><div class="in"><input id="pv" inputmode="decimal" placeholder="0,00" autocomplete="off" aria-label="Prix payé"><span>€</span></div>
+        <div class="seg3" role="group" aria-label="Vendu">${["pièce","kg","L"].map(u=>`<button type="button" data-vu="${u}" aria-pressed="${u===vu0}">${u==="pièce"?"la pièce":u==="kg"?"le kilo":"le litre"}</button>`).join("")}</div></div>
+      <div class="cont" id="cont"${vu0==="pièce"?"":" hidden"}><span class="lbl2">Dans une pièce <i>(facultatif)</i></span>
+        <div class="c2"><input id="cpo" inputmode="decimal" placeholder="Poids ou volume" value="${esc(c0.po)}" aria-label="Poids ou volume d'une pièce"><select id="cpu" aria-label="Unité du poids ou du volume">${["g","kg","cl","L","ml"].map(u=>`<option${u===c0.pu?" selected":""}>${u}</option>`).join("")}</select></div>
+        <div class="c2"><input id="cnb" inputmode="decimal" placeholder="Nombre" value="${esc(c0.nb)}" aria-label="Nombre de tranches ou d'unités"><select id="cnu" aria-label="Tranches ou unités">${["tranches","unités"].map(u=>`<option${u===c0.nu?" selected":""}>${u}</option>`).join("")}</select></div></div>
+      <input class="pdet" id="pdet" maxlength="80" placeholder="Détail (facultatif), ex. carton de 6" value="${esc(last&&last.d||"")}" aria-label="Détail">
+      <div class="pres" id="pres" hidden></div>
+      <label class="promo"><span>🏷️ En promo</span><span class="sw"><input type="checkbox" id="pp"><i></i></span></label>
+      <button class="btn" id="psave" type="button">Enregistrer le prix</button>
+    </div>
+    <div class="cmp" id="cmp"></div>
+    <div id="choix" data-nodirty></div>
+    <details class="hist" id="phd"><summary>Historique des prix</summary><div id="ph"><div class="hrow"><span class="dt">Chargement…</span></div></div></details>
     <button class="btn soft" id="pclose" type="button">Fermer</button></div>`;
   document.body.appendChild(m);
+  const P=()=>cur(id,p);
+  let vu=vu0;
   // depuis la recherche : on revient à la recherche, texte toujours là
   const close=()=>{m.remove();refresh();if(o.recherche&&S.q){const q=$("#q");q.focus({preventScroll:true});q.setSelectionRange(q.value.length,q.value.length)}};
   m.addEventListener("click",e=>{if(e.target===m)close()});$("#pclose").onclick=close;
-  if(o.recherche){const sync=()=>{const b=m.querySelector(".fcmd .fct");b.classList.toggle("soft",p.acommander);b.textContent=p.acommander?"Retirer":"Commander";
-      $("#fcTxt").textContent=p.acommander?"✓ Dans la liste à commander":"Pas encore commandé"};
+  if(o.recherche){const sync=()=>{const x=P(),b=m.querySelector(".fct");b.classList.toggle("soft",x.acommander);b.textContent=x.acommander?"Retirer":"Commander";
+      $("#fcTxt").textContent=x.acommander?"✓ Dans la liste à commander":"Pas encore commandé"};
     sync();m.querySelector(".fcmd").addEventListener("click",()=>setTimeout(sync,0))}
   else setTimeout(()=>$("#pv").focus(),150);
+  // calcul en direct pendant la saisie
+  const saisie=()=>{const v=num($("#pv").value);const c=vu==="pièce"?contenuTxt(num($("#cpo").value),$("#cpu").value,num($("#cnb").value),$("#cnu").value):"";return {v,c}};
+  const live=()=>{const {v,c}=saisie();const r=$("#pres");if(!v){r.hidden=true;return}
+    const k=calc({p:v,u:vu,c});const L=[];
+    if(k.kg!=null)L.push(eur2(k.kg)+"/kg");if(k.L!=null)L.push(eur2(k.L)+"/L");if(k.tranche!=null)L.push(eur2(k.tranche)+"/tranche");
+    if(k.piece!=null&&k.q.n>1)L.push(eur2(k.piece)+"/unité");if(k.gt!=null)L.push(`tranche de ${fmt(Math.round(k.gt*10)/10)} g`);
+    const manque=vu==="pièce"&&k.kg==null&&k.L==null?"Ajoute le poids ou le volume pour avoir le prix au kilo ou au litre.":"";
+    r.hidden=false;r.innerHTML=(L.length?`<b>= ${L.join(" · ")}</b>`:"")+(manque?`<small>${manque}</small>`:"")};
+  m.querySelectorAll("[data-vu]").forEach(b=>b.onclick=()=>{vu=b.dataset.vu;m.querySelectorAll("[data-vu]").forEach(x=>x.setAttribute("aria-pressed",x===b));$("#cont").hidden=vu!=="pièce";live()});
+  m.querySelectorAll("#pv,#cpo,#cpu,#cnb,#cnu").forEach(el=>{el.addEventListener("input",live);el.addEventListener("change",live)});
+  // comparaison et choix des articles comparés
+  const drawCmp=()=>{$("#cmp").innerHTML=cmpHTML(P())};
+  const box=$("#choix");box.innerHTML=choixHTML(P());filtreChoix(box);
+  if(!box.querySelector(".copt"))box.querySelector(".clist").remove();
+  box.querySelector(".csrch").addEventListener("input",()=>filtreChoix(box));
+  box.addEventListener("change",e=>{const c=e.target.closest("[data-lien]");if(!c)return;const x=S.items.get(c.dataset.lien);if(!x)return;
+    if(c.checked){lier(P(),x);toast(`Comparé avec ${x.fournisseur}`)}else delier(x);
+    const k=gkey(P());box.querySelectorAll("[data-lien]").forEach(i=>{const y=S.items.get(i.dataset.lien);if(y)i.checked=gkey(y)===k});drawCmp()});
+  drawCmp();
   async function hist(){
     try{const h=await rpc("historique_prix",{p_id:id});
-      const first=h[h.length-1],cur=h[0];const tot=h.length>1?varPct(cur,first):null;
-      $("#ph").innerHTML=`<h4><span>Historique des achats</span><span>${tot!=null?`depuis le ${dshort(first.le)} ${varHTML(tot)}`:""}</span></h4>`+
-        (h.length?h.map((x,i)=>`<div class="hrow"><span class="dt">${dshort(x.le)}</span><b>${eur(+x.p)}/${esc(x.u)}</b>${x.c?`<small style="color:var(--muted)">${esc(x.c)}</small>`:""}${x.promo?PROMO:""}${varHTML(varPct(x,h[i+1]))}<button class="x" data-hx="${x.id}" aria-label="Supprimer ce prix">×</button></div>`).join("")
-        :`<div class="hrow"><span class="dt">Pas encore de prix. Note-le à chaque commande pour suivre les hausses.</span></div>`);
+      $("#phd").querySelector("summary").textContent=`Historique des prix (${h.length})`;
+      $("#ph").innerHTML=h.length?h.map((x,i)=>`<div class="hrow"><span class="dt">${dshort(x.le)}</span><b>${esc(prixLigne(x))}</b>${x.promo?PROMO:""}${varHTML(varPct(x,h[i+1]))}<button class="x" data-hx="${x.id}" aria-label="Supprimer ce prix">×</button></div>`).join("")
+        :`<div class="hrow"><span class="dt">Pas encore de prix. Note-le à chaque commande pour suivre les hausses.</span></div>`;
     }catch(e){$("#ph").innerHTML=`<div class="hrow"><span class="dt">Historique indisponible (connexion).</span></div>`}
   }
   $("#ph").addEventListener("click",async e=>{const b=e.target.closest("[data-hx]");if(!b)return;
     const ok=await ask("Supprimer ce prix ?","Il sera retiré de l'historique.",[{label:"Oui, supprimer",value:true,cls:"danger"},{label:"Annuler",value:false,cls:"soft"}]);if(!ok)return;
-    try{await rpc("suppr_prix",{p_prix_id:+b.dataset.hx});toast("Prix supprimé");hist()}catch{toast("Pas supprimé : vérifie la connexion")}});
+    try{await rpc("suppr_prix",{p_prix_id:+b.dataset.hx});toast("Prix supprimé");hist();refresh()}catch{toast("Pas supprimé : vérifie la connexion")}});
   const save=async()=>{
-    const v=parseFloat(String($("#pv").value).replace(/\s|€/g,"").replace(",","."));
-    if(!v||v<=0||v>100000){toast("Entre un prix, ex. 2,40");$("#pv").focus();return}
-    const promo=$("#pp").checked;$("#psave").disabled=true;
-    const pu=$("#pu").value,pcv=/^(kg|L)$/.test(pu)?"":$("#pc").value.trim();
-    try{await rpc("ajout_prix",{p_id:id,p_prix:v,p_unite:pu,p_promo:promo,p_contenu:pcv||null});
-      if(p.prix&&!p.prix.promo)p.hab=p.prix;p.avant=p.prix;p.prix={p:v,u:pu,promo,c:pcv||null,le:new Date().toISOString()};if(!promo)p.hab=p.prix;toast(`Prix noté : ${eur(v)}/${$("#pu").value}${promo?" (promo)":""}`);
-      m.querySelector(".sub").textContent=`${p.fournisseur} · dernier prix ${eur(v)}/${$("#pu").value} aujourd'hui${promo?" (promo)":""}`;$("#pv").value="";$("#pp").checked=false;
-      live();cmp();window.Profil&&Profil.saved&&Profil.saved($("#pv"));await hist()}
+    const {v,c}=saisie();if(!v||v>100000){toast("Entre un prix, ex. 2,40");$("#pv").focus();return}
+    const promo=$("#pp").checked,d=$("#pdet").value.trim();$("#psave").disabled=true;
+    try{await rpc("ajout_prix",{p_id:id,p_prix:v,p_unite:vu,p_promo:promo,p_contenu:c||null,p_detail:d||null});
+      const x=P();x.avant=x.prix;x.prix={p:v,u:vu,promo,c:c||null,d:d||null,le:new Date().toISOString()};if(!promo)x.hab=x.prix;
+      $("#pv").value="";$("#pp").checked=false;live();drawCmp();window.Profil&&Profil.saved&&Profil.saved($("#pv"));
+      toast(`Prix enregistré : ${prixLigne(x.prix)}`);
+      $("#cmp").scrollIntoView({behavior:"smooth",block:"nearest"});   // le résultat juste en dessous
+      hist()}
     catch{toast("Pas enregistré : vérifie la connexion")}finally{$("#psave").disabled=false}
   };
-  $("#psave").onclick=save;$("#pv").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();save()}});
-  $("#pc").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();save()}});
-  // calcul en direct pendant la saisie ; sinon, celui du dernier prix
-  const live=()=>{const v=parseFloat(String($("#pv").value).replace(/\s|€/g,"").replace(",","."));const kgL=/^(kg|L)$/.test($("#pu").value);
-    $("#pc").hidden=kgL;
-    $("#pcalc").innerHTML=v>0?calcHTML({p:v,u:$("#pu").value,c:kgL?"":$("#pc").value},"Calcul automatique"):p.prix?calcHTML(p.prix,"Dernier prix"):""};
-  ["input","change"].forEach(ev=>m.querySelectorAll("#pv,#pu,#pc").forEach(el=>el.addEventListener(ev,live)));live();
-  // comparatif avec les autres fournisseurs
-  let base=null,avecPromo=true,choix=false;
-  const cmp=()=>{
-    const el=$("#cmp");if(!el)return;const ms=membres(p);
-    if(choix){const ts=terms2($("#cq")?$("#cq").value:"");
-      const cand=[...S.items.values()].filter(x=>gkey(x)!==gkey(p)&&(x.section||"cuisine")===(p.section||"cuisine")&&(!ts.length||ts.every(t=>fold(x.nom+" "+x.fournisseur).includes(t))))
-        .sort((a,b)=>(a.fournisseur===p.fournisseur)-(b.fournisseur===p.fournisseur)||a.nom.localeCompare(b.nom,"fr")).slice(0,30);
-      const q=$("#cq")?$("#cq").value:"";
-      el.innerHTML=`<h4>Comparer avec quel article ?</h4><div class="cpick"><input id="cq" placeholder="Cherche, ex. cheddar" autocomplete="off" value="${esc(q)}">${cand.map(x=>`<button type="button" class="it" data-lier="${x.id}"><span>${esc(x.nom)}</span><small>${esc(x.fournisseur)}</small></button>`).join("")||`<small style="color:var(--muted)">Aucun article trouvé.</small>`}</div><button type="button" class="cadd" data-cfin>Terminé</button>`;
-      const ci=$("#cq");ci.oninput=()=>{const pos=ci.selectionStart;cmp();const n=$("#cq");n.focus();n.setSelectionRange(pos,pos)};return}
-    if(ms.length<2){el.innerHTML=`<button type="button" class="cadd" style="border-top:0" data-cadd>＋ Comparer avec un autre fournisseur</button>`;return}
-    const prixDe=x=>avecPromo||!(x.prix&&x.prix.promo)?x.prix:x.hab;
-    const rows=ms.map(x=>{const pr=prixDe(x),c=calc(pr);return {x,pr,c}});
-    const dispo=b=>rows.filter(r=>r.c&&r.c[b]!=null).length;
-    if(!base||!dispo(base))base=(BASES.find(([b])=>dispo(b)>=2)||BASES.find(([b])=>dispo(b)>=1)||BASES[3])[0];
-    const v=r=>r.c&&r.c[base]!=null?r.c[base]:null;
-    rows.sort((a,b)=>(v(a)==null)-(v(b)==null)||(v(a)??0)-(v(b)??0));
-    const ok=rows.filter(r=>v(r)!=null),best=ok.length>=2?Math.min(...ok.map(v)):null;
-    const unite=BASES.find(b=>b[0]===base)[2];
-    const promos=rows.some(r=>r.x.prix&&r.x.prix.promo);
-    el.innerHTML=`<h4>Comparer les prix</h4><div class="cbase">${BASES.filter(([b])=>dispo(b)).map(([b,l])=>`<button type="button" data-base="${b}" aria-pressed="${b===base}">${l}</button>`).join("")}
-      ${promos?`<button type="button" data-promo aria-pressed="${!avecPromo}">Sans les promos</button>`:""}</div>`+
-      rows.map(r=>{const x=r.x,pr=r.pr,val=v(r);
-        const det=pr?`${eur(+pr.p)} ${/^(kg|L)$/.test(pr.u)?"/"+esc(pr.u):"par "+esc(pr.u)}${pr.c?" · "+esc(pr.c):""}`:"aucun prix noté";
-        const pourquoi=!pr?"":base==="kg"||base==="L"?"poids ou volume manquant":base==="tranche"?"nombre de tranches manquant":"nombre d'unités manquant";
-        return `<div class="crow${val!=null&&val===best?" best":""}"><div class="who"><b>${esc(x.fournisseur)}${x.id===p.id?" <small style=\"display:inline\">(cet article)</small>":""}</b><small>${fold(x.nom)!==fold(p.nom)?esc(x.nom)+" · ":""}${det}${pr&&pr.promo?" "+PROMO:""}</small></div>
-          <div class="val">${val!=null?eur2(val).replace(" €","")+" "+unite:`<small>${pourquoi?"Pas de prix "+BASES.find(b=>b[0]===base)[3]+" : "+pourquoi:"—"}</small>`}${val!=null&&val===best?`<br><span class="cheap">Le moins cher</span>`:""}</div>
-          ${x.id!==p.id?`<button type="button" class="ux" data-delier="${x.id}" aria-label="Ne plus comparer avec ${esc(x.fournisseur)}">✕</button>`:""}</div>`}).join("")+
-      `<button type="button" class="cadd" data-cadd>＋ Ajouter un autre fournisseur</button>`;
-  };
-  const terms2=q=>fold(q||"").split(/[^a-z0-9]+/).filter(Boolean);
-  $("#cmp").addEventListener("click",e=>{const t=e.target;
-    const b=t.closest("[data-base]");if(b){base=b.dataset.base;cmp();return}
-    if(t.closest("[data-promo]")){avecPromo=!avecPromo;cmp();return}
-    if(t.closest("[data-cadd]")){choix=true;cmp();setTimeout(()=>$("#cq")&&$("#cq").focus(),50);return}
-    if(t.closest("[data-cfin]")){choix=false;cmp();return}
-    const l=t.closest("[data-lier]");if(l){const x=S.items.get(l.dataset.lier);if(x){lier(p,x);choix=false;cmp();toast(`Comparé avec ${x.fournisseur}`)}return}
-    const d=t.closest("[data-delier]");if(d){const x=S.items.get(d.dataset.delier);if(x){delier(x);cmp()}return}});
-  cmp();
-  hist();
+  $("#psave").onclick=save;m.querySelectorAll("#pv,#cpo,#cnb,#pdet").forEach(el=>el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();save()}}));
+  $("#phd").addEventListener("toggle",()=>{if($("#phd").open&&!hist.ok){hist.ok=1;hist()}});
 }
 
 $("#invite").onclick=async()=>{
