@@ -155,7 +155,7 @@
   .xconf b{font-size:20px;font-family:"Bricolage Grotesque",system-ui,sans-serif}
   .xconf p{margin:0 0 4px;color:var(--muted,#6f695d);font-size:16px}
   .xconf button{height:54px;border-radius:15px;border:0;font:inherit;font-weight:800;font-size:17px;cursor:pointer}
-  .xconf .y{background:#c23a2b;color:#fff} .xconf .n{background:var(--sunken,#f9f7f2);color:var(--fg,#1d1b17);border:1px solid var(--line,#e6e1d5)}
+  .xconf .s{background:var(--accent,#f2a516);color:var(--accent-ink,#2a1d00)} .xconf .y{background:var(--sunken,#f9f7f2);color:#c23a2b;border:1px solid var(--line,#e6e1d5)} .xconf .n{height:44px!important;font-size:15px!important;background:transparent!important;border:0!important;color:var(--muted,#6f695d)!important} .xconf .n{background:var(--sunken,#f9f7f2);color:var(--fg,#1d1b17);border:1px solid var(--line,#e6e1d5)}
   @keyframes fIn{from{opacity:0}to{opacity:1}}
   @keyframes upIn{from{opacity:.4;transform:translateY(28px)}to{opacity:1;transform:none}}
   @keyframes tIn{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
@@ -318,25 +318,42 @@
   document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")ensureNav()});
   /* ---------- Croix ✕ sur toutes les fenêtres ----------
      Ajoutée automatiquement à chaque fenêtre qui s'ouvre (événement, article, prix, relevé, devis, confirmations…).
-     Elle ferme sans rien enregistrer ; si quelque chose a été tapé, on demande d'abord confirmation. */
+     Elle ferme tout de suite si rien n'est en attente. On ne demande que s'il reste une saisie pas encore enregistrée :
+     on compare les champs à ce qu'ils étaient avant le premier appui dans la fenêtre (ou après le dernier enregistrement,
+     Profil.saved). Un prix enregistré puis la case vidée = rien en attente = pas de message. */
   const BOXES=".sheet>.box,.modal>.box";
   let xPending=false;
   new MutationObserver(()=>{if(xPending)return;xPending=true;requestAnimationFrame(()=>{xPending=false;
     document.querySelectorAll(BOXES).forEach(box=>{if(box.querySelector(":scope>.xclose"))return;const b=document.createElement("button");b.type="button";b.className="xclose";b.setAttribute("aria-label","Fermer");b.textContent="✕";box.prepend(b)})})})
     .observe(document.documentElement,{childList:true,subtree:true});
-  document.addEventListener("input",e=>{const ov=e.target.closest&&e.target.closest(".sheet,.modal");if(ov)ov.dataset.dirty="1"},true);
-  function xConfirm(fn){const m=document.createElement("div");m.className="xconf";m.setAttribute("role","alertdialog");
-    m.innerHTML=`<div class="b"><b>Fermer sans enregistrer ?</b><p>Ce que tu as tapé sera perdu.</p><button type="button" class="y">Oui, fermer</button><button type="button" class="n">Non, continuer</button></div>`;
-    m.querySelector(".y").onclick=()=>{m.remove();fn()};m.querySelector(".n").onclick=()=>m.remove();document.body.appendChild(m)}
+  const etat=box=>[...box.querySelectorAll("input,select,textarea,[aria-pressed],[contenteditable=true]")].filter(el=>!el.closest("[data-nodirty]")).map(el=>
+    el.type==="checkbox"||el.type==="radio"?el.checked:el.hasAttribute("aria-pressed")&&!/^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName)?el.getAttribute("aria-pressed"):el.isContentEditable?el.textContent:el.value).join("\u0001");
+  const base=new WeakMap();
+  // photo des champs au premier appui (les valeurs chargées après l'ouverture sont donc déjà là)
+  const prendre=e=>{const box=e.target.closest&&e.target.closest(BOXES);if(box&&!base.has(box))base.set(box,etat(box))};
+  document.addEventListener("pointerdown",prendre,true);document.addEventListener("focusin",prendre,true);
+  const enAttente=box=>base.has(box)&&base.get(box)!==etat(box);
+  const saved=el=>{const box=el&&(el.closest?el.closest(BOXES)||el.querySelector(BOXES):null);if(box)base.set(box,etat(box))};
+  // le bouton qui enregistre : le premier bouton principal de la fenêtre (Enregistrer, Valider, Noter…)
+  const btnSave=box=>[...box.querySelectorAll("button.btn,button.save,button[type=submit]")].find(b=>!b.matches(".soft,.danger,.ghost,.xclose,[data-close],[data-c],[data-n],.cancel")&&!b.disabled&&b.offsetParent&&!/^\s*(annuler|fermer|supprimer)/i.test(b.textContent));
+  function xConfirm(box,ov,fn){const sv=btnSave(box);const m=document.createElement("div");m.className="xconf";m.setAttribute("role","alertdialog");
+    m.innerHTML=`<div class="b"><b>Enregistrer avant de fermer ?</b><p>Tu as tapé quelque chose qui n'est pas encore enregistré.</p>${sv?`<button type="button" class="s">Enregistrer</button>`:""}<button type="button" class="y">Ne pas enregistrer</button><button type="button" class="n">Continuer à modifier</button></div>`;
+    m.addEventListener("click",e=>{if(e.target===m)m.remove()});
+    m.querySelector(".y").onclick=()=>{m.remove();fn()};m.querySelector(".n").onclick=()=>m.remove();
+    if(sv)m.querySelector(".s").onclick=()=>{m.remove();sv.click();
+      // la fenêtre se ferme d'elle-même, ou se vide une fois enregistré : on la ferme ; sinon (prix manquant…) on la laisse ouverte
+      let n=0;const t=setInterval(()=>{n++;if(!ov.isConnected){clearInterval(t);return}
+        if(!enAttente(box)){clearInterval(t);fn();return}if(n>40)clearInterval(t)},100)};
+    document.body.appendChild(m)}
   document.addEventListener("click",e=>{const x=e.target.closest(".xclose");if(!x||x.closest(".pick"))return;e.preventDefault();e.stopPropagation();
     const box=x.parentElement,ov=box.closest(".sheet,.modal");if(!ov)return;
     const close=()=>{const c=[...box.querySelectorAll("button,[role=button]")].find(b=>b!==x&&(b.matches("[data-close],[data-c],[data-n],.cancel")||/^\s*(annuler|fermer)\s*$/i.test(b.textContent)));
       if(c)c.click();else ov.dispatchEvent(new MouseEvent("click",{bubbles:true}));   // comme un appui à côté de la fenêtre
       setTimeout(()=>{if(ov.isConnected){ov.remove();if(!document.querySelector(".sheet,.modal"))document.documentElement.style.overflow=""}},60)};
-    if(ov.dataset.dirty)xConfirm(close);else close()},true);
+    if(enAttente(box))xConfirm(box,ov,close);else close()},true);
 
   function ensure(){nav();if(!get())picker(false);else{bar();tour()}}
-  window.Profil={get,ensure,avatar,notifs:Notifs,noms:Object.fromEntries(Object.entries(AV).map(([k,v])=>[k,v.nom]))};
+  window.Profil={saved,get,ensure,avatar,notifs:Notifs,noms:Object.fromEntries(Object.entries(AV).map(([k,v])=>[k,v.nom]))};
   let hasCode=false;try{hasCode=!!localStorage.getItem("commande2b-code")}catch{}
   if(hasCode)nav();
   if(hasCode&&!document.getElementById("gate"))ensure();   // l'écran Commande l'appelle lui-même après le code

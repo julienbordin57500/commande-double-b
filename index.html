@@ -93,6 +93,19 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
 .qr-t b{display:block;font-weight:700;font-size:16px;line-height:1.2;overflow-wrap:anywhere}
 .qr-t small{display:block;font-size:13px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .qr-t small i{font-style:normal;font-weight:700;color:var(--fg)}
+.qr-t{cursor:pointer;border-radius:10px;margin:-4px 0 -4px -6px;padding:4px 0 4px 6px}
+.qr-t:active{background:var(--sunken)}
+.qr-t .qp{font-weight:700;color:var(--fg)}
+.qr-t .badge-promo{font-size:10px;vertical-align:1px}
+.qgo{color:var(--muted);font-weight:800}
+/* Fiche détail ouverte depuis la recherche */
+.fcmd{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:var(--sunken)}
+.fcmd span{flex:1;font-weight:700}
+.fcmd .fct{height:50px;padding:0 20px;flex:none}
+.ailleurs{border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.ailleurs h4{margin:0;padding:10px 12px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.ailleurs div{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line);align-items:center}
+.ailleurs div span{flex:1}
 .qr .qty{width:64px;height:46px;flex:none}
 .qr.on{flex-wrap:wrap}
 .qr-c{display:flex;align-items:center;gap:8px;width:100%;padding-bottom:2px}
@@ -518,7 +531,8 @@ function qrHTML(p){
   // Une fois commandé : quantité ET unité modifiables directement dans le résultat (avant, l'unité manquait ici)
   const tog=`<button class="toggle" type="button" data-t="${p.id}" aria-pressed="${p.acommander}" aria-label="${p.acommander?`Retirer ${esc(p.nom)} de la commande`:`Commander ${esc(p.nom)}`}"><span class="box">${CHECK}</span>${p.acommander?"":"Commander"}</button>`;
   const units=UNITS.includes(p.unite)||!p.unite?UNITS:[p.unite,...UNITS];
-  return `<div class="qr${p.acommander?" on":""}"><div class="qr-t"><b>${label(p.nom)}</b><small>${esc(p.fournisseur)}${other}</small></div>
+  const px=p.prix?` · <span class="qp">${eur(+p.prix.p)}/${esc(p.prix.u)}</span>${p.prix.promo?" "+PROMO:""}`:"";
+  return `<div class="qr${p.acommander?" on":""}"><div class="qr-t" role="button" tabindex="0" data-voir="${p.id}" aria-label="Voir la fiche de ${esc(p.nom)}"><b>${label(p.nom)} <span class="qgo" aria-hidden="true">›</span></b><small>${esc(p.fournisseur)}${px}${other}</small></div>
     ${p.acommander?`<div class="qr-c"><input class="qty" type="number" inputmode="decimal" min="0" max="10000" step="any" placeholder="Qté" value="${p.qte??""}" data-q="${p.id}" aria-label="Quantité de ${esc(p.nom)} (facultatif)">
       <select class="unit" data-u="${p.id}" aria-label="Unité de ${esc(p.nom)}">${units.map(u=>`<option${u===(p.unite||"pièce")?" selected":""}>${esc(u)}</option>`).join("")}</select>${tog}</div>`:tog}</div>`}
 /* La liste des résultats s'arrête juste au-dessus du clavier */
@@ -612,6 +626,7 @@ document.querySelectorAll("[data-sec]").forEach(b=>b.onclick=()=>{S.sec=b.datase
 document.addEventListener("click",async e=>{
   if(e.target.id==="qAdd"){$("#nNom").value=S.q.trim();$("#addForm").scrollIntoView({behavior:"smooth",block:"center"});setTimeout(()=>$("#nFour").focus(),300);return}
   const pc=e.target.closest("[data-prix]");if(pc){openPrice(pc.dataset.prix);return}
+  const vo=e.target.closest("[data-voir]");if(vo){$("#q").blur();openPrice(vo.dataset.voir,{recherche:true});return}
   const ed=e.target.closest("[data-edit]");if(ed){openEdit(ed.dataset.edit);return}
   const fi=e.target.closest("[data-fiche]");if(fi){openFiche(fi.dataset.fiche);return}
   const sd=e.target.closest("[data-send]");if(sd){sendSupplier(sd.dataset.send);return}
@@ -650,7 +665,7 @@ document.addEventListener("click",async e=>{
     S.busy=false;render();
     send("commande_effectuee_fournisseur",{p_fournisseur:f,p_section:sec}).then(()=>toast("Commande "+f+" effectuée")).catch(()=>{})}
 });
-document.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches("[data-ctog],[data-sup]")){e.preventDefault();e.target.click()}});
+document.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches("[data-ctog],[data-sup],[data-voir]")){e.preventDefault();e.target.click()}});
 
 /* Envoi de la commande au maraîcher : message tout prêt (WhatsApp, SMS…) */
 function sendSupplier(f){
@@ -779,13 +794,19 @@ function openEdit(id){
   };
 }
 
+/* Le même article chez les autres fournisseurs (nom identique, accents et majuscules mis à part) */
+function ailleurs(p){const k=fold(p.nom).replace(/\s+/g," ").trim();
+  const o=[...S.items.values()].filter(x=>x.id!==p.id&&fold(x.nom).replace(/\s+/g," ").trim()===k);if(!o.length)return "";
+  return `<div class="ailleurs"><h4>Aussi chez</h4>${o.map(x=>`<div><span>${esc(x.fournisseur)}</span>${chip(x)}</div>`).join("")}</div>`}
+
 /* Fenêtre prix : saisie + promo + historique */
-async function openPrice(id){
+async function openPrice(id,o={}){
   const p=S.items.get(id);if(!p||String(id).startsWith("tmp-"))return;
   const last=p.prix;const u0=last?last.u:(PUNITS.includes(p.unite)?p.unite:"kg");
   const m=document.createElement("div");m.className="sheet";
   m.innerHTML=`<div class="box" role="dialog" aria-label="Prix de ${esc(p.nom)}">
     <h3>${esc(p.nom)}</h3><div class="sub">${esc(p.fournisseur)} · ${last?`dernier prix ${eur(+last.p)}/${esc(last.u)} le ${dshort(last.le)}${last.promo?" (promo)":""}`:"aucun prix noté"}</div>
+    ${o.recherche?`<div class="fcmd" data-nodirty><span id="fcTxt"></span><button class="btn fct" type="button" data-t="${p.id}"></button></div>${ailleurs(p)}`:""}
     <div class="prow"><div class="in"><input id="pv" inputmode="decimal" placeholder="0,00" autocomplete="off" aria-label="Prix"><span>€</span></div>
       <select id="pu" aria-label="Unité du prix">${PUNITS.map(u=>`<option value="${u}"${u===u0?" selected":""}>par ${u}</option>`).join("")}</select></div>
     <label class="promo"><span>🏷️ En promo</span><span class="sw"><input type="checkbox" id="pp"><i></i></span></label>
@@ -793,9 +814,13 @@ async function openPrice(id){
     <div class="hist" id="ph"><h4><span>Historique des achats</span><span></span></h4><div class="hrow"><span class="dt">Chargement…</span></div></div>
     <button class="btn soft" id="pclose" type="button">Fermer</button></div>`;
   document.body.appendChild(m);
-  const close=()=>{m.remove();refresh()};
+  // depuis la recherche : on revient à la recherche, texte toujours là
+  const close=()=>{m.remove();refresh();if(o.recherche&&S.q){const q=$("#q");q.focus({preventScroll:true});q.setSelectionRange(q.value.length,q.value.length)}};
   m.addEventListener("click",e=>{if(e.target===m)close()});$("#pclose").onclick=close;
-  setTimeout(()=>$("#pv").focus(),150);
+  if(o.recherche){const sync=()=>{const b=m.querySelector(".fcmd .fct");b.classList.toggle("soft",p.acommander);b.textContent=p.acommander?"Retirer":"Commander";
+      $("#fcTxt").textContent=p.acommander?"✓ Dans la liste à commander":"Pas encore commandé"};
+    sync();m.querySelector(".fcmd").addEventListener("click",()=>setTimeout(sync,0))}
+  else setTimeout(()=>$("#pv").focus(),150);
   async function hist(){
     try{const h=await rpc("historique_prix",{p_id:id});
       const first=h[h.length-1],cur=h[0];const tot=h.length>1?varPct(cur,first):null;
@@ -812,7 +837,8 @@ async function openPrice(id){
     if(!v||v<=0||v>100000){toast("Entre un prix, ex. 2,40");$("#pv").focus();return}
     const promo=$("#pp").checked;$("#psave").disabled=true;
     try{await rpc("ajout_prix",{p_id:id,p_prix:v,p_unite:$("#pu").value,p_promo:promo});toast(`Prix noté : ${eur(v)}/${$("#pu").value}${promo?" (promo)":""}`);
-      m.querySelector(".sub").textContent=`${p.fournisseur} · dernier prix ${eur(v)}/${$("#pu").value} aujourd'hui${promo?" (promo)":""}`;$("#pv").value="";$("#pp").checked=false;await hist()}
+      m.querySelector(".sub").textContent=`${p.fournisseur} · dernier prix ${eur(v)}/${$("#pu").value} aujourd'hui${promo?" (promo)":""}`;$("#pv").value="";$("#pp").checked=false;
+      window.Profil&&Profil.saved&&Profil.saved($("#pv"));await hist()}
     catch{toast("Pas enregistré : vérifie la connexion")}finally{$("#psave").disabled=false}
   };
   $("#psave").onclick=save;$("#pv").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();save()}});
