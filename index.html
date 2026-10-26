@@ -194,6 +194,8 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
 .cmd-item:first-of-type{border-top:0}
 .cmd-item .name{flex:1;min-width:0;font-weight:600}
 .qpill{flex:none;font-weight:800;font-size:15px;padding:6px 12px;border-radius:10px;background:var(--accent-soft);font-variant-numeric:tabular-nums}
+.habq{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-top:1px}
+.qty.auto{background:color-mix(in srgb,var(--accent) 10%,var(--sunken))}
 .qpill.none{background:transparent;color:var(--muted);font-weight:500;font-size:13px;padding:0}
 .empty{text-align:center;color:var(--muted);padding:44px 18px;border:1px dashed var(--line);border-radius:20px;margin-top:16px;background:var(--surface)}
 .empty strong{display:block;color:var(--fg);font-size:19px;margin-bottom:6px;font-family:var(--display)}
@@ -612,7 +614,7 @@ function qrHTML(p){
   const units=UNITS.includes(p.unite)||!p.unite?UNITS:[p.unite,...UNITS];
   const px=p.prix?` · <span class="qp">${eur(+p.prix.p)}/${esc(p.prix.u)}</span>${p.prix.promo?" "+PROMO:""}`:"";
   return `<div class="qr${p.acommander?" on":""}"><div class="qr-t" role="button" tabindex="0" data-voir="${p.id}" aria-label="Voir la fiche de ${esc(p.nom)}"><b>${label(p.nom)} <span class="qgo" aria-hidden="true">›</span></b><small>${esc(p.fournisseur)}${px}${other}</small></div>
-    ${p.acommander?`<div class="qr-c"><input class="qty" type="number" inputmode="decimal" min="0" max="10000" step="any" placeholder="Qté" value="${p.qte??""}" data-q="${p.id}" aria-label="Quantité de ${esc(p.nom)} (facultatif)">
+    ${p.acommander?`<div class="qr-c"><input class="qty${estHab(p)?" auto":""}" type="number" inputmode="decimal" min="0" max="10000" step="any" placeholder="Qté" value="${p.qte??""}" data-q="${p.id}" aria-label="Quantité de ${esc(p.nom)} (facultatif)"${estHab(p)?` title="Comme d'habitude"`:""}>
       <select class="unit" data-u="${p.id}" aria-label="Unité de ${esc(p.nom)}">${units.map(u=>`<option${u===(p.unite||"pièce")?" selected":""}>${esc(u)}</option>`).join("")}</select>${tog}</div>`:tog}</div>`}
 /* La liste des résultats s'arrête juste au-dessus du clavier */
 function fitQres(){const el=$(".qres");if(!el)return;const vv=window.visualViewport;const h=vv?vv.height:innerHeight;
@@ -624,6 +626,8 @@ addEventListener("scroll",fitQres,{passive:true});
 
 /* Rendu */
 const inSec=p=>(p.section||"cuisine")===S.sec;
+// la quantité affichée est-elle celle de la dernière fois ? (petite mention « comme la dernière fois »)
+const estHab=p=>!!(p.qh&&p.qte!=null&&+p.qte===+p.qh.q&&(!p.qh.u||p.unite===p.qh.u));
 function allSups(){const extra=[...new Set([...S.items.values()].map(p=>p.fournisseur))].filter(f=>!S.sups.includes(f));return [...S.sups,...extra]}
 function supList(){return allSups().filter(f=>(S.supSec[f]||"cuisine")===S.sec||[...S.items.values()].some(p=>p.fournisseur===f&&inSec(p)))}
 function itemsOf(f){return [...S.items.values()].filter(p=>p.fournisseur===f&&inSec(p)).sort((a,b)=>a.ordre-b.ordre||a.nom.localeCompare(b.nom,"fr"))}
@@ -669,7 +673,7 @@ function supHTML(f){
 function itemHTML(p){
   return `<div class="item${p.acommander?" on":""}"><div class="name"><span>${label(p.nom)}</span>${chip(p)}${tools(p)}</div>
     <div class="ctrls">
-      <input class="qty" type="number" inputmode="decimal" min="0" max="10000" step="any" placeholder="Qté" value="${p.qte??""}" data-q="${p.id}" aria-label="Quantité de ${esc(p.nom)} (facultatif)">
+      <input class="qty${estHab(p)?" auto":""}" type="number" inputmode="decimal" min="0" max="10000" step="any" placeholder="Qté" value="${p.qte??""}" data-q="${p.id}" aria-label="Quantité de ${esc(p.nom)} (facultatif)"${estHab(p)?` title="Comme d'habitude"`:""}>
       <select class="unit" data-u="${p.id}" aria-label="Unité de ${esc(p.nom)}">${(UNITS.includes(p.unite)?UNITS:[p.unite,...UNITS]).map(u=>`<option${u===p.unite?" selected":""}>${esc(u)}</option>`).join("")}</select>
       <button class="toggle" data-t="${p.id}" aria-pressed="${p.acommander}"><span class="box">${CHECK}</span>${p.acommander?"À commander":"Commander"}</button>
     </div></div>`;
@@ -680,7 +684,7 @@ function renderCmd(sups){
   if(!groups.length){el.innerHTML=`<div class="empty"><strong>Rien à commander en ${SECN[S.sec].toLowerCase()}</strong>Dans l'onglet Produits, appuie sur « Commander » à côté de ce qui manque. La quantité est facultative.</div>`;return}
   el.innerHTML=groups.map(([f,ps])=>{const open=isCOpen(f);return `<section class="cmd-sup" data-open="${open}" data-cmdsup="${esc(f)}" style="${supStyle(f)}">
     <header role="button" tabindex="0" data-ctog="${esc(f)}" aria-expanded="${open}"><span class="ico" aria-hidden="true">${supIcon(f)}</span><h2>${esc(f)}</h2><span>${ps.length} article${ps.length>1?"s":""}</span>${supKind(f)==="mar"?`<button class="sendb" type="button" data-send="${esc(f)}" aria-label="Envoyer la commande à ${esc(f)}">${PLANE}</button>`:""}<span class="chev" aria-hidden="true">${CHEV}</span></header>
-    <div class="cmd-body">${ps.map(p=>`<div class="cmd-item"><div class="name"><span>${esc(p.nom)}</span>${chip(p)}</div>${p.qte?`<span class="qpill">${fmt(p.qte)} ${esc(plU(p.unite,p.qte))}</span>`:`<span class="qpill none">quantité libre</span>`}<button class="okc" data-ok="${p.id}" aria-label="${esc(p.nom)} est commandé"><span class="ring">${CHECK}</span>Commandé</button><button class="del" data-t="${p.id}" aria-label="Retirer ${esc(p.nom)} de la commande">Retirer</button></div>`).join("")}
+    <div class="cmd-body">${ps.map(p=>`<div class="cmd-item"><div class="name"><span>${esc(p.nom)}${estHab(p)?`<small class="habq">comme d'habitude</small>`:""}</span>${chip(p)}</div>${p.qte?`<span class="qpill">${fmt(p.qte)} ${esc(plU(p.unite,p.qte))}</span>`:`<span class="qpill none">quantité libre</span>`}<button class="okc" data-ok="${p.id}" aria-label="${esc(p.nom)} est commandé"><span class="ring">${CHECK}</span>Commandé</button><button class="del" data-t="${p.id}" aria-label="Retirer ${esc(p.nom)} de la commande">Retirer</button></div>`).join("")}
     <div class="cmd-done"><button class="btn" type="button" data-done="${esc(f)}">Commande effectuée chez ${esc(f)}</button></div></div></section>`}).join("");
 }
 
@@ -720,6 +724,8 @@ document.addEventListener("click",async e=>{
   const t=e.target.closest("[data-t]");
   if(t){const p=S.items.get(t.dataset.t);if(!p)return;
     p.acommander=!p.acommander;const champs={acommander:p.acommander};if(!p.acommander){p.qte=null;champs.qte=""}
+    // Quantité habituelle : la dernière quantité commandée est proposée d'office (modifiable, ou à effacer)
+    else if(p.qte==null&&p.qh&&+p.qh.q>0){p.qte=+p.qh.q;champs.qte=p.qte;if(p.qh.u){p.unite=p.qh.u;champs.unite=p.qh.u}}
     render();send("maj_produit",{p_id:p.id,p_champs:champs}).catch(()=>{});
     if(t.closest(".qres")){if(p.acommander&&navigator.vibrate)navigator.vibrate(12);const q=$("#q");if(document.activeElement===q||e.detail===0){q.focus({preventScroll:true});q.setSelectionRange(0,q.value.length)}}
     return}
