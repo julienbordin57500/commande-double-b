@@ -430,6 +430,25 @@
   @media (max-width:360px){.opill{width:74px}}`;
   document.head.appendChild(ostyle);
 
+  /* ---------- Fenêtre ouverte = arrière-plan figé ----------
+     Sur iPhone, « overflow:hidden » ne suffit pas : arrivé en haut ou en bas d'une fiche (ou en touchant une zone qui ne défile
+     pas), le doigt faisait défiler la page derrière. Tant qu'une fenêtre est ouverte, on fige la page à sa place
+     (position fixe) et on la remet exactement où elle était à la fermeture. Seul le contenu de la fenêtre défile. */
+  const OVERLAYS=".sheet:not([hidden]),.modal:not([hidden]),.pick,.npan,.xconf,.ouvx,.tour";
+  let figeY=null;
+  function figer(){
+    const ouvert=!!document.querySelector(OVERLAYS),b=document.body;
+    if(ouvert&&figeY===null){figeY=window.scrollY;
+      Object.assign(b.style,{position:"fixed",top:-figeY+"px",left:"0",right:"0",width:"100%"})}
+    else if(!ouvert&&figeY!==null){const y=figeY;figeY=null;
+      Object.assign(b.style,{position:"",top:"",left:"",right:"",width:""});window.scrollTo(0,y)}
+  }
+  new MutationObserver(figer).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:["hidden"]});
+  const fstyle=document.createElement("style");
+  fstyle.textContent=`.sheet,.modal,.pick,.npan,.xconf,.ouvx{overscroll-behavior:contain}
+  .sheet>.box,.modal>.box,.ob,.npan .nl{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}`;
+  document.head.appendChild(fstyle);
+
   function ensure(){nav();if(!get())picker(false);else{bar();tour()}}
   window.Profil={ouverture:Ouverture,saved,get,ensure,avatar,notifs:Notifs,noms:Object.fromEntries(Object.entries(AV).map(([k,v])=>[k,v.nom]))};
   let hasCode=false;try{hasCode=!!localStorage.getItem("commande2b-code")}catch{}
