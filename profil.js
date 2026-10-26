@@ -350,8 +350,88 @@
       setTimeout(()=>{if(ov.isConnected){ov.remove();if(!document.querySelector(".sheet,.modal"))document.documentElement.style.overflow=""}},60)};
     if(enAttente(box))xConfirm(box,ov,close);else close()},true);
 
+
+  /* ---------- Jours d'ouverture ----------
+     Semaine habituelle (par défaut : fermé samedi, dimanche et lundi soir) + changements au jour près, modifiables par tous
+     à tout moment. Un événement (privatisation, traiteur) ouvre son service tout seul. Quand c'est fermé, l'appli ne rappelle
+     ni les relevés d'hygiène ni les chiffres. La base décide (_ouvert) ; ici une copie gardée sur le téléphone. */
+  const SEM0={"1":{midi:true,soir:false},"2":{midi:true,soir:true},"3":{midi:true,soir:true},"4":{midi:true,soir:true},"5":{midi:true,soir:true},"6":{midi:false,soir:false},"7":{midi:false,soir:false}};
+  const JN=["","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
+  const isoJ=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  const dowJ=j=>String(new Date(j+"T12:00:00").getDay()||7);
+  const Ouverture={d:null,
+    lire(){if(!this.d){try{this.d=JSON.parse(localStorage.getItem("2b-horaires")||"null")}catch{}}return this.d},
+    garder(){try{localStorage.setItem("2b-horaires",JSON.stringify(this.d))}catch{}document.dispatchEvent(new CustomEvent("2b-horaires"))},
+    async load(){try{const d=await call("horaires_etat",{});if(d&&d.jours){this.d=d;this.garder()}}catch{}return this.d},
+    sem(){const d=this.lire();return (d&&d.semaine)||SEM0},
+    jour(j){const d=this.lire();const x=d&&d.jours&&d.jours.find(r=>r.jour===j);if(x)return x;
+      const s=this.sem()[dowJ(j)]||{midi:true,soir:true};return {jour:j,midi:s.midi,soir:s.soir,x_midi:null,x_soir:null,ev:null}},
+    ouvert(j,service){return !!this.jour(j)[service]},
+    // le dernier jour où l'on était ouvert, avant la date donnée (pour « Hier » : vendredi quand on est lundi)
+    dernierOuvert(avant){const d=new Date(avant+"T12:00:00");for(let i=1;i<=8;i++){d.setDate(d.getDate()-1);const x=this.jour(isoJ(d));if(x.midi||x.soir)return isoJ(d)}return null},
+    async changer(j,midi,soir){const x=this.jour(j),avant={...x};Object.assign(x,{midi,soir,x_midi:midi,x_soir:soir});
+      const d=this.lire();if(d&&d.jours&&!d.jours.includes(x))d.jours.push(x);this.garder();
+      try{await call("ouverture_jour",{p_jour:j,p_midi:midi,p_soir:soir,p_par:get()});await this.load()}
+      catch{Object.assign(x,avant);this.garder();this.toast("Pas enregistré : vérifie la connexion")}},   // pas de réseau : on revient comme avant
+    async remettre(j){try{await call("ouverture_jour",{p_jour:j,p_midi:null,p_soir:null});await this.load()}catch{this.toast("Pas enregistré : vérifie la connexion")}},
+    async semaine(s){const d=this.lire()||{},avant=d.semaine;d.semaine=s;this.d=d;this.garder();
+      try{await call("horaires_semaine",{p_semaine:s});await this.load()}catch{d.semaine=avant;this.garder();this.toast("Pas enregistré : vérifie la connexion")}},
+    toast(t){const el=document.createElement("div");el.className="ouvt";el.textContent=t;document.body.appendChild(el);setTimeout(()=>el.remove(),2600)},
+    // petites pastilles Midi / Soir : vert = ouvert, gris barré = fermé
+    pills(x,attr){return ["midi","soir"].map(s=>`<button type="button" class="opill${x[s]?" on":""}" ${attr} data-s="${s}" aria-pressed="${!!x[s]}" aria-label="${s==="midi"?"Midi":"Soir"} : ${x[s]?"ouvert":"fermé"}">${s==="midi"?"☀️ Midi":"🌙 Soir"}<small>${x[s]?"ouvert":"fermé"}</small></button>`).join("")},
+    ouvrir(){
+      const m=document.createElement("div");m.className="ouvx";document.documentElement.style.overflow="hidden";
+      const fermer=()=>{m.remove();document.documentElement.style.overflow=""};
+      const draw=()=>{const auj=new Date();const L=[];
+        for(let i=0;i<21;i++){const d=new Date(auj);d.setDate(d.getDate()+i);const j=isoJ(d),x=this.jour(j);
+          const lab=i===0?"Aujourd'hui":i===1?"Demain":d.toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"});
+          const modif=x.x_midi!=null||x.x_soir!=null;
+          L.push(`<div class="orow${modif?" mod":""}${d.getDay()===1&&i?" sep":""}"><span class="od"><b>${ESC(lab)}</b>${x.ev?`<small>🎉 ${ESC(x.ev)}</small>`:modif?`<small>changé pour ce jour</small>`:""}</span>${this.pills(x,`data-j="${j}"`)}${modif?`<button type="button" class="orz" data-reset="${j}" aria-label="Revenir à l'habitude pour ce jour">↺</button>`:`<span class="orz0"></span>`}</div>`)}
+        const S=this.sem();
+        m.innerHTML=`<div class="ob" role="dialog" aria-label="Jours d'ouverture"><div class="oh"><b>Jours d'ouverture</b><button type="button" class="ox" aria-label="Fermer">✕</button></div>
+          <p class="op">Touche <b>Midi</b> ou <b>Soir</b> pour ouvrir ou fermer. Quand c'est fermé, l'appli ne rappelle ni les relevés d'hygiène ni les chiffres.</p>
+          <h4>Les 3 prochaines semaines</h4><div class="olist">${L.join("")}</div>
+          <h4>Semaine habituelle</h4><p class="op">Elle s'applique à toutes les semaines, sauf aux jours changés au-dessus.</p>
+          <div class="olist">${[1,2,3,4,5,6,7].map(k=>`<div class="orow"><span class="od"><b>${JN[k]}</b></span>${this.pills(S[k]||{midi:true,soir:true},`data-dow="${k}"`)}<span class="orz0"></span></div>`).join("")}</div>
+          <button type="button" class="ofin">Fermer</button></div>`};
+      draw();document.body.appendChild(m);
+      const redraw=()=>{const y=m.querySelector(".ob").scrollTop;draw();m.querySelector(".ob").scrollTop=y};
+      document.addEventListener("2b-horaires",()=>{if(m.isConnected)redraw()});
+      m.addEventListener("click",async e=>{const t=e.target;
+        if(t===m||t.closest(".ox,.ofin")){fermer();return}
+        const r=t.closest("[data-reset]");if(r){await this.remettre(r.dataset.reset);redraw();return}
+        const p=t.closest(".opill");if(!p)return;const s=p.dataset.s;
+        if(p.dataset.j){const x=this.jour(p.dataset.j);const v={midi:x.midi,soir:x.soir};v[s]=!v[s];this.changer(p.dataset.j,v.midi,v.soir);redraw()}
+        else if(p.dataset.dow){const S=JSON.parse(JSON.stringify(this.sem()));S[p.dataset.dow][s]=!S[p.dataset.dow][s];this.semaine(S);redraw()}});
+    }};
+  const ostyle=document.createElement("style");ostyle.textContent=`
+  .opill{flex:none;width:84px;height:48px;border-radius:13px;border:1.5px solid var(--line,#e6e1d5);background:var(--sunken,#f9f7f2);color:var(--muted,#6f695d);font:inherit;font-weight:800;font-size:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;cursor:pointer;transition:background .15s,border-color .15s}
+  .opill small{font-size:11.5px;font-weight:700;opacity:.85}
+  .opill:not(.on) small{text-decoration:line-through}
+  .opill.on{background:color-mix(in srgb,#2f8a4a 14%,var(--surface,#fff));border-color:#2f8a4a;color:#1f6a37}
+  @media (prefers-color-scheme:dark){.opill.on{color:#8fd4a3}}
+  .ouvx{position:fixed;inset:0;z-index:80;background:rgba(10,8,4,.5);display:flex;align-items:flex-end;justify-content:center;font-family:"Figtree",system-ui,sans-serif}
+  .ob{background:var(--surface,#fff);color:var(--fg,#1d1b17);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:24px 24px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px}
+  .ob>*{flex:none}
+  .oh{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .oh b{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:21px}
+  .ox{width:46px;height:46px;border-radius:14px;border:1.5px solid var(--line,#e6e1d5);background:var(--surface,#fff);color:var(--fg,#1d1b17);font:inherit;font-size:20px;font-weight:800}
+  .op{margin:0;color:var(--muted,#6f695d);font-size:14.5px}
+  .ob h4{margin:10px 0 0;font-size:12.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted,#6f695d)}
+  .olist{border:1px solid var(--line,#e6e1d5);border-radius:16px;overflow:hidden}
+  .orow{display:flex;align-items:center;gap:6px;padding:8px 8px 8px 12px;border-top:1px solid var(--line,#e6e1d5)}
+  .orow:first-child{border-top:0} .orow.sep{border-top:2px solid var(--line,#e6e1d5)}
+  .orow.mod{background:color-mix(in srgb,var(--accent,#f2a516) 8%,var(--surface,#fff))}
+  .od{flex:1;min-width:0}.od b{display:block;font-size:15px;text-transform:capitalize}.od small{display:block;font-size:12.5px;color:var(--muted,#6f695d);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .orz,.orz0{flex:none;width:34px;height:34px}
+  .orz{border-radius:10px;border:1px solid var(--line,#e6e1d5);background:var(--surface,#fff);color:var(--muted,#6f695d);font:inherit;font-size:17px;font-weight:800}
+  .ofin{height:52px;border-radius:15px;border:1px solid var(--line,#e6e1d5);background:var(--sunken,#f9f7f2);color:var(--fg,#1d1b17);font:inherit;font-weight:800;font-size:16px;margin-top:6px}
+  .ouvt{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:95;background:var(--fg,#1d1b17);color:var(--bg,#fff);padding:11px 16px;border-radius:12px;font-weight:700}
+  @media (max-width:360px){.opill{width:74px}}`;
+  document.head.appendChild(ostyle);
+
   function ensure(){nav();if(!get())picker(false);else{bar();tour()}}
-  window.Profil={saved,get,ensure,avatar,notifs:Notifs,noms:Object.fromEntries(Object.entries(AV).map(([k,v])=>[k,v.nom]))};
+  window.Profil={ouverture:Ouverture,saved,get,ensure,avatar,notifs:Notifs,noms:Object.fromEntries(Object.entries(AV).map(([k,v])=>[k,v.nom]))};
   let hasCode=false;try{hasCode=!!localStorage.getItem("commande2b-code")}catch{}
   if(hasCode)nav();
   if(hasCode&&!document.getElementById("gate"))ensure();   // l'écran Commande l'appelle lui-même après le code

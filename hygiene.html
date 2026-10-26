@@ -236,6 +236,8 @@ button{cursor:pointer}
 @view-transition{navigation:auto}
 ::view-transition-old(root),::view-transition-new(root){animation-duration:.16s;animation-timing-function:ease-out}
 .pbar{view-transition-name:pbar}
+.fermeinfo{margin:10px 0 0;padding:12px 14px;border-radius:14px;background:var(--sunken);border:1px solid var(--line);color:var(--muted);font-size:15px}
+.fermeinfo b{color:var(--fg)}
 </style>
 </head>
 <body>
@@ -337,6 +339,8 @@ const TYPEL={releve:"relevé",modif:"modifié",correction:"correction"};
 const MOTIFS=["Erreur de saisie","Thermomètre mal placé","Relevé refait"];
 
 /* ---------- Affichage ---------- */
+document.addEventListener("2b-horaires",()=>{if(S.tab==="temp")render()});
+if(window.Profil&&Profil.ouverture)Profil.ouverture.load();
 function render(){
   document.querySelectorAll("#seg [data-t]").forEach(b=>b.setAttribute("aria-selected",b.dataset.t===S.tab));
   ["temp","huile","cell"].forEach(t=>$("#v-"+t).hidden=t!==S.tab);
@@ -348,6 +352,9 @@ function renderTemp(){
   const L=latest(TODAY,S.moment);const done=MINE.filter(a=>L[a.k]).length;
   const momBtn=(mo,lab)=>{const c=cnt(mo);return `<button type="button" data-mo="${mo}" aria-pressed="${S.moment===mo}">${lab}<small class="${c===MINE.length?"full":""}">${c===MINE.length?"✓":c+"/"+MINE.length}</small></button>`};
   let h=`<div class="mom">${momBtn("matin","☀️ Matin")}${momBtn("soir","🌙 Soir")}</div><div class="prog"><i style="width:${done/MINE.length*100}%"></i></div>`;
+  // jour ou service fermé (Aujourd'hui › Changer les jours) : rien à faire, on peut quand même noter
+  const OUV=window.Profil&&Profil.ouverture;
+  if(OUV&&!OUV.ouvert(TODAY,S.moment==="matin"?"midi":"soir")&&done<MINE.length)h+=`<div class="fermeinfo">😌 <b>Fermé ${S.moment==="matin"?"ce midi":"ce soir"}</b> : pas de relevé à faire, pas de rappel. Tu peux quand même en noter si besoin.</div>`;
   if(done===MINE.length)h+=`<div class="allok"><svg viewBox="0 0 46 46" aria-hidden="true"><circle cx="23" cy="23" r="23"/><path d="M13 23.5l6.5 6.5L33 16.5"/></svg><div><b>Tout est relevé pour ${S.moment==="matin"?"ce matin":"ce soir"}</b><small>Merci ! Le prochain relevé : ${S.moment==="matin"?"ce soir":"demain matin"}.</small></div></div>`;
   h+=`<div class="list">${MINE.map(a=>apHTML(a,L[a.k])).join("")}</div>`;
   const nDraft=MINE.filter(a=>!L[a.k]||S.draft[a.k]?.fix).filter(a=>S.draft[a.k]&&S.draft[a.k].t!=null).length;

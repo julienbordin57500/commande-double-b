@@ -78,6 +78,15 @@ a{color:inherit}
 .chips span{font-size:14px;font-weight:700;padding:6px 11px;border-radius:999px;background:var(--sunken);border:1px solid var(--line)}
 .chips span i{font-style:normal;color:var(--accent-ink);background:var(--accent);border-radius:999px;padding:0 7px;margin-left:6px;font-weight:800}
 
+/* Ouverture du jour */
+.ouv .card-h{align-items:center}
+.ouvgo{display:block;width:100%;margin-top:10px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--sunken);color:var(--fg);font:inherit;font-weight:800;font-size:15px}
+.ouvp{display:flex;gap:8px;margin-top:10px}
+.ouvp .opill{flex:1;width:auto;height:54px;font-size:16px}
+.ouvp .ouvn{flex-basis:100%;font-size:14px;color:var(--muted);margin:2px 0 0}
+.ouvp{flex-wrap:wrap}
+.hyg.ferme{opacity:.92}
+.hyg.ferme .hs{background:var(--sunken);color:var(--muted);border:1px solid var(--line)}
 /* Hier */
 .kp{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .kp div{background:var(--sunken);border-radius:14px;padding:10px 12px;min-width:0}
@@ -114,6 +123,12 @@ a{color:inherit}
   <header class="hello"><h1 id="hi">Bonjour 👋</h1><p id="date">&nbsp;</p></header>
 
   <button class="bell-cta" id="news" type="button" hidden><em aria-hidden="true">🛎️</em><span id="newsT"></span><b aria-hidden="true">›</b></button>
+
+  <div class="card ouv" id="cOuv">
+    <div class="card-h"><span class="ico" aria-hidden="true">🕒</span><h2 id="ouvT">Aujourd'hui</h2></div>
+    <div class="ouvp" id="ouvP"></div>
+    <button type="button" class="ouvgo" id="ouvGo">Changer les jours d'ouverture ›</button>
+  </div>
 
   <a class="card c2" href="evenements.html" id="cEv">
     <div class="card-h"><span class="ico" aria-hidden="true">📅</span><h2>Au programme</h2><span class="go" aria-hidden="true">›</span></div>
@@ -154,7 +169,11 @@ const cache=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(
 const pad=n=>String(n).padStart(2,"0");
 const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const now=new Date();const plus=n=>{const d=new Date(now);d.setDate(d.getDate()+n);return d};
-const TODAY=iso(now),TOMORROW=iso(plus(1)),Y=plus(-1),YESTERDAY=iso(Y);
+const OUV=window.Profil&&Profil.ouverture;
+const TODAY=iso(now),TOMORROW=iso(plus(1));
+// « Hier » = le dernier jour où l'on était ouvert (le lundi : vendredi), pour ne jamais réclamer les chiffres d'un jour fermé
+const YESTERDAY=(OUV&&OUV.dernierOuvert(TODAY))||iso(plus(-1)),Y=new Date(YESTERDAY+"T12:00:00");
+const VEILLE=YESTERDAY===iso(plus(-1));
 const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
 const nf0=new Intl.NumberFormat("fr-FR",{maximumFractionDigits:0});
 
@@ -196,12 +215,12 @@ function drawCmd(d){
 const v=(r,k)=>r&&typeof r[k]==="number"?r[k]:null;
 const add=(...a)=>{const x=a.filter(n=>n!=null);return x.length?x.reduce((s,n)=>s+n,0):null};
 function drawHier(month){
-  $("#hierT").textContent="Hier, "+Y.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric"});
+  $("#hierT").textContent=(VEILLE?"Hier, ":"Dernier service, ")+Y.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric"});
   const r=(month||{})[YESTERDAY];
   const ca=add(v(r,"ca_midi"),v(r,"ca_soir"));
   const cl=add(v(r,"clients_midi_sp"),v(r,"clients_midi_emp"),v(r,"clients_midi"),v(r,"clients_soir_sp"),v(r,"clients_soir_emp"),v(r,"clients_soir"));
   $("#cHier").href="chiffres.html#j="+YESTERDAY;
-  if(ca==null&&cl==null){$("#hier").innerHTML=`<div class="empty">Les chiffres d'hier ne sont pas encore notés.</div><div class="fill">✍️ Les noter maintenant</div>`;return}
+  if(ca==null&&cl==null){$("#hier").innerHTML=`<div class="empty">Les chiffres ${VEILLE?"d'hier":"de "+Y.toLocaleDateString("fr-FR",{weekday:"long"})} ne sont pas encore notés.</div><div class="fill">✍️ Les noter maintenant</div>`;return}
   $("#hier").innerHTML=`<div class="kp"><div><small>Chiffre d'affaires</small><b class="num">${ca==null?"–":nf0.format(ca)+" €"}</b></div><div><small>Clients</small><b class="num">${cl==null?"–":nf0.format(cl)}</b></div></div>`;
 }
 
@@ -213,9 +232,11 @@ function drawHyg(d){
   const rel=(d.releves||[]).filter(r=>r.jour===TODAY&&r.moment===MOMENT&&(FULL||r.appareil==="vitrine"));
   const faits=new Set(rel.map(r=>r.appareil)).size;const tous=faits>=NAPP;
   const anomalie=rel.some(r=>!r.ok&&!r.action);
-  const c=$("#cHyg");c.classList.toggle("todo",!tous);c.classList.toggle("fine",tous);
-  $("#hygS").textContent=tous?"✓ fait":"à faire";
-  let h=`<div class="hl"><em aria-hidden="true">${FULL?"🌡️":"🍰"}</em><span>${FULL?"Frigos et congélateurs":"Vitrine"} · ${MOMENT}</span><b class="${tous?"ok":"no"}">${tous?"✓":faits+"/"+NAPP}</b></div>`;
+  const ferme=OUV&&!OUV.ouvert(TODAY,MOMENT==="matin"?"midi":"soir")&&!tous;   // fermé : pas de relevé à faire
+  const c=$("#cHyg");c.classList.toggle("todo",!tous&&!ferme);c.classList.toggle("fine",tous);c.classList.toggle("ferme",!!ferme);
+  $("#hygS").textContent=tous?"✓ fait":ferme?"fermé":"à faire";
+  let h=ferme?`<div class="hl"><em aria-hidden="true">😌</em><span>Fermé ${MOMENT==="matin"?"ce midi":"ce soir"} : pas de relevé à faire</span></div>`
+    :`<div class="hl"><em aria-hidden="true">${FULL?"🌡️":"🍰"}</em><span>${FULL?"Frigos et congélateurs":"Vitrine"} · ${MOMENT}</span><b class="${tous?"ok":"no"}">${tous?"✓":faits+"/"+NAPP}</b></div>`;
   if(FULL){
     const days=f=>{const h=(d.huile||[]).filter(x=>x.friteuse===f).sort((a,b)=>String(b.le).localeCompare(String(a.le)))[0];if(!h)return "–";const a=new Date(h.le);a.setHours(0,0,0,0);const b=new Date();b.setHours(0,0,0,0);const n=Math.round((b-a)/864e5);return n===0?"neuve":n+" j"};
     h+=`<div class="hl"><em aria-hidden="true">🍟</em><span>Huile friteuses</span><b>F1 ${days(1)} · F2 ${days(2)}</b></div>`;
@@ -228,16 +249,28 @@ function drawHyg(d){
   $("#hyg").innerHTML=h;
 }
 
+/* Ouverture : aujourd'hui, modifiable d'un geste ; « Changer les jours » pour la suite et la semaine habituelle */
+let HYG=null;
+function drawOuv(){if(!OUV){$("#cOuv").hidden=true;return}
+  const x=OUV.jour(TODAY);
+  $("#ouvT").textContent=!x.midi&&!x.soir?"Fermé aujourd'hui":"Aujourd'hui";
+  $("#ouvP").innerHTML=OUV.pills(x,`data-j="${TODAY}"`)+(x.ev?`<p class="ouvn">🎉 ${esc(x.ev)}</p>`:"");
+  drawHyg(HYG)}
+$("#ouvP").addEventListener("click",e=>{const p=e.target.closest(".opill");if(!p)return;const x=OUV.jour(TODAY);const v={midi:x.midi,soir:x.soir};v[p.dataset.s]=!v[p.dataset.s];OUV.changer(TODAY,v.midi,v.soir);drawOuv()});
+$("#ouvGo").onclick=()=>OUV&&OUV.ouvrir();
+document.addEventListener("2b-horaires",drawOuv);
+
 /* Affichage immédiat avec les dernières valeurs connues, puis mise à jour */
 const MK=`${Y.getFullYear()}-${pad(Y.getMonth()+1)}-01`;
 drawEv(cache("accueil2b-ev-"+TODAY));
-drawHyg(cache("hyg2b-cache"));
+HYG=cache("hyg2b-cache");drawOuv();
 drawCmd(cache("commande2b-cache"));
 drawHier(cache("chiffres2b-cache-"+MK)&&cache("chiffres2b-cache-"+MK).d);
 async function load(){
   const [ev,et,mo,hy]=await Promise.allSettled([rpc("evenements_liste",{p_debut:TODAY,p_fin:TOMORROW}),rpc("etat"),rpc("suivi_mois",{p_mois:MK}),rpc("hyg_etat",{p_debut:TODAY,p_fin:TODAY})]);
   for(const x of [ev,et,mo,hy])if(x.status==="rejected"&&lost(x.reason))return;
-  if(hy.status==="fulfilled")drawHyg(hy.value);
+  if(hy.status==="fulfilled"){HYG=hy.value;drawHyg(HYG)}
+  if(OUV)OUV.load();
   if(ev.status==="fulfilled"){cache("accueil2b-ev-"+TODAY,ev.value);drawEv(ev.value)}
   if(et.status==="fulfilled"&&et.value){cache("commande2b-cache",et.value);drawCmd(et.value)}
   if(mo.status==="fulfilled"){drawHier(mo.value)}
