@@ -219,7 +219,7 @@ const add=(...a)=>{const x=a.filter(n=>n!=null);return x.length?x.reduce((s,n)=>
 function drawHier(month){
   $("#hierT").textContent=(VEILLE?"Hier, ":"Dernier service, ")+Y.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric"});
   const r=(month||{})[YESTERDAY];
-  const ca=add(v(r,"ca_midi"),v(r,"ca_soir"));
+  const ca=v(r,"ca_jour")!=null?v(r,"ca_jour"):add(v(r,"ca_midi"),v(r,"ca_soir"));   // total de la caisse s'il est noté
   const cl=add(v(r,"clients_midi_sp"),v(r,"clients_midi_emp"),v(r,"clients_midi"),v(r,"clients_soir_sp"),v(r,"clients_soir_emp"),v(r,"clients_soir"));
   $("#cHier").href="chiffres.html#j="+YESTERDAY;
   if(ca==null&&cl==null){$("#hier").innerHTML=`<div class="empty">Les chiffres ${VEILLE?"d'hier":"de "+Y.toLocaleDateString("fr-FR",{weekday:"long"})} ne sont pas encore notés.</div><div class="fill">✍️ Les noter maintenant</div>`;return}

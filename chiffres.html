@@ -102,6 +102,12 @@ header.top{display:flex;align-items:center;gap:14px}
 .f input.eur{padding-right:22px;padding-left:4px}
 .f .in span{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:14px;font-weight:700;color:var(--muted);pointer-events:none}
 .f input:focus{border-color:var(--c);outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 25%,transparent)}
+.soirc{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--surface);border:1.5px solid color-mix(in srgb,var(--c) 30%,transparent);font-size:15px;font-weight:700;color:var(--muted);text-align:center;line-height:1.35}
+.soirc b{font-family:var(--display,inherit);font-size:22px;font-weight:800;color:var(--c);font-variant-numeric:tabular-nums}
+.soirc small{display:block;font-size:13px;font-weight:600;margin-top:2px}
+.soirc.wait{border-style:dashed}
+.soirc.warn{background:#fdecea;border-color:#d93025;color:#a1251b}
+@media (prefers-color-scheme:dark){.soirc.warn{background:#3a1d1b;border-color:#f28b82;color:#f6aea9}}
 .daytot{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:15px;color:var(--muted);font-weight:600}
 .daytot b{color:var(--fg);font-weight:800}
 
@@ -303,9 +309,9 @@ html.vue-plats #vPlats{display:block} html.vue-plats #vMois{display:none}
         <div class="fields">
           <div class="f"><label for="clients_soir_sp">🍽️ Sur place</label><div class="in"><input id="clients_soir_sp" data-k="clients_soir_sp" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
           <div class="f"><label for="clients_soir_emp">🥡 À emporter</label><div class="in"><input id="clients_soir_emp" data-k="clients_soir_emp" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
-          <div class="f"><label for="ca_soir">CA</label><div class="in"><input id="ca_soir" class="eur" data-k="ca_soir" inputmode="decimal" autocomplete="off" placeholder="–"><span>€</span></div></div>
+          <div class="f"><label for="ca_jour">🧾 Total journée</label><div class="in"><input id="ca_jour" class="eur" data-k="ca_jour" inputmode="decimal" autocomplete="off" placeholder="–"><span>€</span></div></div>
           <div class="f"><label for="burgers_soir">🍔 Burger du mois</label><div class="in"><input id="burgers_soir" data-k="burgers_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
-        </div></div>
+        </div><div class="soirc" id="soirCalc" aria-live="polite"></div></div>
       <div class="grp autre"><h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>Refusés</h4>
         <div class="fields one">
           <div class="f"><label for="refuses">Clients refusés (faute de place)</label><div class="in"><input id="refuses" data-k="refuses" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
@@ -363,8 +369,8 @@ const S={y:now.getFullYear(),m:now.getMonth(),d:now.getDate(),data:{},pending:0,
 
 /* ---------- Nombres ---------- */
 // clients_midi / clients_soir : anciens totaux (saisis avant la séparation sur place / à emporter), comptés comme « sur place »
-const FIELDS=["clients_midi_sp","clients_midi_emp","ca_midi","burgers_midi","clients_soir_sp","clients_soir_emp","ca_soir","burgers_soir","refuses"];
-const EUR=new Set(["ca_midi","ca_soir"]);
+const FIELDS=["clients_midi_sp","clients_midi_emp","ca_midi","burgers_midi","clients_soir_sp","clients_soir_emp","ca_jour","burgers_soir","refuses"];
+const EUR=new Set(["ca_midi","ca_soir","ca_jour"]);
 const nf0=new Intl.NumberFormat("fr-FR",{maximumFractionDigits:0});
 const nf2=new Intl.NumberFormat("fr-FR",{minimumFractionDigits:0,maximumFractionDigits:2});
 const nf2f=new Intl.NumberFormat("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -377,8 +383,15 @@ const val=(row,k)=>row&&typeof row[k]==="number"?row[k]:null;
 const add=(...a)=>{const v=a.filter(x=>x!=null);return v.length?v.reduce((s,x)=>s+x,0):null};
 const sp=(r,svc)=>add(val(r,"clients_"+svc+"_sp"),val(r,"clients_"+svc));
 const emp=(r,svc)=>val(r,"clients_"+svc+"_emp");
+/* CA du soir : on tape le total de la caisse (ca_jour), le soir = total − midi.
+   Jours saisis avant (sans ca_jour) : on garde le soir tapé à part, sans rien recalculer.
+   Jamais de soir faux : midi manquant ou total plus petit que le midi → pas de soir. */
+const r2=v=>Math.round(v*100)/100;
+function soirCalc(j,m,old){if(j==null)return old;if(m==null||j<m)return null;return r2(j-m)}
+const soirCA=r=>soirCalc(val(r,"ca_jour"),val(r,"ca_midi"),val(r,"ca_soir"));
+const jourCA=r=>val(r,"ca_jour")!=null?val(r,"ca_jour"):add(val(r,"ca_midi"),val(r,"ca_soir"));
 function totals(r){const cm=add(sp(r,"midi"),emp(r,"midi")),cs=add(sp(r,"soir"),emp(r,"soir"));
-  return {cm,cs,clients:add(cm,cs),sp:add(sp(r,"midi"),sp(r,"soir")),emp:add(emp(r,"midi"),emp(r,"soir")),ca:add(val(r,"ca_midi"),val(r,"ca_soir")),burgers:add(val(r,"burgers_midi"),val(r,"burgers_soir"))}}
+  return {cm,cs,clients:add(cm,cs),sp:add(sp(r,"midi"),sp(r,"soir")),emp:add(emp(r,"midi"),emp(r,"soir")),ca:jourCA(r),burgers:add(val(r,"burgers_midi"),val(r,"burgers_soir"))}}
 /* Comparaison : même période (jusqu'au même jour si le mois est en cours) */
 function periodCA(data,y,m,upto){let ca=null,cl=null;for(let d=1;d<=Math.min(upto,daysIn(y,m));d++){const r=data[key(y,m,d)];if(!r)continue;const t=totals(r);ca=add(ca,t.ca);cl=add(cl,t.clients)}return {ca,cl}}
 function compare(){
@@ -395,7 +408,7 @@ function monthSums(){
   const s={midi_sp:null,midi_emp:null,soir_sp:null,soir_emp:null,ca_midi:null,ca_soir:null,burgers_midi:null,burgers_soir:null,refuses:null,clients:null,sp:null,emp:null,ca:null,burgers:null};
   for(let d=1;d<=daysIn(S.y,S.m);d++){const r=S.data[key(S.y,S.m,d)];if(!r)continue;const t=totals(r);
     s.midi_sp=add(s.midi_sp,sp(r,"midi"));s.midi_emp=add(s.midi_emp,emp(r,"midi"));s.soir_sp=add(s.soir_sp,sp(r,"soir"));s.soir_emp=add(s.soir_emp,emp(r,"soir"));
-    ["ca_midi","ca_soir","burgers_midi","burgers_soir","refuses"].forEach(k=>s[k]=add(s[k],val(r,k)));
+    ["ca_midi","burgers_midi","burgers_soir","refuses"].forEach(k=>s[k]=add(s[k],val(r,k)));s.ca_soir=add(s.ca_soir,soirCA(r));
     ["clients","sp","emp","ca","burgers"].forEach(k=>s[k]=add(s[k],t[k]))}
   return s;
 }
@@ -441,8 +454,20 @@ function fillInputs(){
     let v=val(row,k);if(k.endsWith("_sp")&&v==null)v=val(row,k.replace("_sp",""));
     el.value=v==null?"":String(v).replace(".",",")});
 }
+function renderSoir(){
+  const row=S.data[key(S.y,S.m,S.d)]||{};const box=$("#soirCalc");
+  const rd=id=>{const v=parseNum($(id).value,true);return v===undefined?null:v};
+  const m=rd("#ca_midi"),j=rd("#ca_jour"),old=val(row,"ca_soir");
+  let cls="",h;
+  if(j==null)h=old!=null?`Soir <b class="num">${eur(old)}</b><small>noté à part (ancienne saisie)</small>`:(cls="wait",`Tape le total de la caisse : le soir se calcule tout seul`);
+  else if(m==null){cls="wait";h=`Saisis d'abord le chiffre du midi<small>Total de la journée : ${eur(j)}</small>`}
+  else if(j<m){cls="warn";h=`⚠️ Le total de la journée (${eur(j)}) est plus petit que le midi (${eur(m)})<small>Vérifie les deux chiffres : le soir n'est pas calculé.</small>`}
+  else h=`Soir <b class="num">${eur(soirCalc(j,m))}</b><small>Journée ${eur(j)} − midi ${eur(m)}</small>`;
+  box.className="soirc"+(cls?" "+cls:"");box.innerHTML=h;
+}
+["#ca_midi","#ca_jour"].forEach(id=>$(id).addEventListener("input",renderSoir));
 function renderTotals(){
-  const row=S.data[key(S.y,S.m,S.d)]||{};const t=totals(row);
+  renderSoir();const row=S.data[key(S.y,S.m,S.d)]||{};const t=totals(row);
   $("#dayTot").innerHTML=`<span>Clients <b class="num">${t.clients==null?"–":int(t.clients)}</b>${t.emp?` <small>(dont ${int(t.emp)} à emporter)</small>`:""}</span><span>CA de la journée <b class="num">${t.ca==null?"–":eur(t.ca)}</b></span><span>Burgers du mois <b class="num">${t.burgers==null?"–":int(t.burgers)}</b></span>`;
   const s=monthSums();
   const cp=compare();
@@ -465,7 +490,7 @@ function tableHTML(live){
     const cls=[w===0||w===6?"we":"",live&&d===S.d?"sel":"",live&&S.y===now.getFullYear()&&S.m===now.getMonth()&&d===now.getDate()?"today":""].join(" ").trim();
     body+=`<tr data-day="${d}" class="${cls}"><td class="d">${pad(d)}/${pad(S.m+1)}<small>${esc(wd(S.y,S.m,d))}</small></td>
       ${cell("x",sp(r,"midi"))}${cell("x",emp(r,"midi"))}${cell("ca_midi",val(r,"ca_midi"))}${cell("x",val(r,"burgers_midi"))}
-      ${cell("x",sp(r,"soir"))}${cell("x",emp(r,"soir"))}${cell("ca_soir",val(r,"ca_soir"))}${cell("x",val(r,"burgers_soir"))}
+      ${cell("x",sp(r,"soir"))}${cell("x",emp(r,"soir"))}${cell("ca_soir",soirCA(r))}${cell("x",val(r,"burgers_soir"))}
       ${t.clients==null?`<td class="e">–</td>`:`<td class="tot">${int(t.clients)}</td>`}${t.ca==null?`<td class="e">–</td>`:`<td class="tot">${eur(t.ca)}</td>`}
       ${cell("x",val(r,"refuses"))}</tr>`;
   }
@@ -488,7 +513,7 @@ function compactHTML(){
   for(let d=1;d<=n;d++){const r=S.data[key(S.y,S.m,d)]||{};const t=totals(r);const w=new Date(S.y,S.m,d).getDay();
     const cls=[w===0||w===6?"we":"",d===S.d?"sel":"",S.y===now.getFullYear()&&S.m===now.getMonth()&&d===now.getDate()?"today-c":""].join(" ").trim();
     body+=`<tr data-day="${d}" class="${cls}"><td class="d">${pad(d)}<small>${esc(wd(S.y,S.m,d).slice(0,3))}.</small></td>
-      ${svc(val(r,"ca_midi"),sp(r,"midi"),emp(r,"midi"),val(r,"burgers_midi"))}${svc(val(r,"ca_soir"),sp(r,"soir"),emp(r,"soir"),val(r,"burgers_soir"))}${dayCell(t,val(r,"refuses"))}</tr>`}
+      ${svc(val(r,"ca_midi"),sp(r,"midi"),emp(r,"midi"),val(r,"burgers_midi"))}${svc(soirCA(r),sp(r,"soir"),emp(r,"soir"),val(r,"burgers_soir"))}${dayCell(t,val(r,"refuses"))}</tr>`}
   const s=monthSums();
   return `<colgroup><col class="c0"><col><col><col></colgroup>
     <thead><tr><th class="d">Jour</th><th class="gm">Midi</th><th class="gs">Soir</th><th>Journée</th></tr></thead><tbody>${body}</tbody>
@@ -513,7 +538,7 @@ addEventListener("resize",()=>{if(!$("#chartBox").hidden)drawChart()});
 $("#chartBtn").onclick=()=>{const b=$("#chartBox");b.hidden=!b.hidden;$("#chartBtn").setAttribute("aria-expanded",!b.hidden);try{localStorage.setItem("chiffres2b-graph",b.hidden?"0":"1")}catch{}if(!b.hidden)drawChart()};
 try{if(localStorage.getItem("chiffres2b-graph")==="1"){$("#chartBox").hidden=false;$("#chartBtn").setAttribute("aria-expanded","true")}}catch{}
 $("#chart").addEventListener("click",e=>{const r=e.target.closest("[data-cd]");if(!r)return;const d=+r.dataset.cd;const row=S.data[key(S.y,S.m,d)]||{};const t=totals(row);
-  $("#tip").innerHTML=`<b>${esc(cap(wd(S.y,S.m,d)))} ${d}</b> : ${t.ca==null?"pas de chiffre":eur(t.ca)}${val(row,"ca_midi")!=null||val(row,"ca_soir")!=null?` <span>(midi ${eur(val(row,"ca_midi")||0)} · soir ${eur(val(row,"ca_soir")||0)})</span>`:""}`;
+  $("#tip").innerHTML=`<b>${esc(cap(wd(S.y,S.m,d)))} ${d}</b> : ${t.ca==null?"pas de chiffre":eur(t.ca)}${val(row,"ca_midi")!=null||soirCA(row)!=null?` <span>(midi ${val(row,"ca_midi")==null?"–":eur(val(row,"ca_midi"))} · soir ${soirCA(row)==null?"–":eur(soirCA(row))})</span>`:""}`;
   $("#chart").querySelectorAll(".bar").forEach(b=>b.classList.remove("sel"))});
 
 /* ---------- Saisie : enregistrée pendant qu'on tape (après une petite pause) et en quittant la case ---------- */
@@ -590,7 +615,7 @@ $("#csv").onclick=()=>{
   const n=daysIn(S.y,S.m);const c=v=>v==null?"":String(v).replace(".",",");
   const lines=[["Date","Jour","Midi sur place","Midi à emporter","CA midi (€)","Burger du mois midi","Soir sur place","Soir à emporter","CA soir (€)","Burger du mois soir","Total clients","CA total journée (€)","Refusés"].join(";")];
   for(let d=1;d<=n;d++){const r=S.data[key(S.y,S.m,d)]||{};const t=totals(r);
-    lines.push([`${pad(d)}/${pad(S.m+1)}/${S.y}`,wd(S.y,S.m,d),c(sp(r,"midi")),c(emp(r,"midi")),c(val(r,"ca_midi")),c(val(r,"burgers_midi")),c(sp(r,"soir")),c(emp(r,"soir")),c(val(r,"ca_soir")),c(val(r,"burgers_soir")),c(t.clients),c(t.ca),c(val(r,"refuses"))].join(";"))}
+    lines.push([`${pad(d)}/${pad(S.m+1)}/${S.y}`,wd(S.y,S.m,d),c(sp(r,"midi")),c(emp(r,"midi")),c(val(r,"ca_midi")),c(val(r,"burgers_midi")),c(sp(r,"soir")),c(emp(r,"soir")),c(soirCA(r)),c(val(r,"burgers_soir")),c(t.clients),c(t.ca),c(val(r,"refuses"))].join(";"))}
   const s=monthSums();
   lines.push(["TOTAL","",c(s.midi_sp),c(s.midi_emp),c(s.ca_midi),c(s.burgers_midi),c(s.soir_sp),c(s.soir_emp),c(s.ca_soir),c(s.burgers_soir),c(s.clients),c(s.ca),c(s.refuses)].join(";"));
   offer(new Blob(["﻿"+lines.join("\r\n")],{type:"text/csv"}),fileBase()+".csv");
