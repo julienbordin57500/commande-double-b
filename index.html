@@ -808,16 +808,13 @@ async function openAppel(f){
 }
 
 /* Envoi de la commande par message (maraîcher, Sysco, Coup de Pâtes, Pro à pro) : un seul geste.
-   Numéro dans la fiche → l'appli Messages s'ouvre avec le numéro et le texte, il ne reste qu'à appuyer sur Envoyer.
-   Pas de numéro → le menu de partage du téléphone (WhatsApp, SMS…). */
+   Le menu de partage du téléphone s'ouvre avec le texte prêt : on choisit soi-même l'appli (SMS, WhatsApp…) et le destinataire. */
 const parMessage=f=>/marai|primeur|sysco|coup de pat|pro a pro/.test(fold(f));
 function sendSupplier(f){
   const ps=itemsOf(f).filter(p=>p.acommander);if(!ps.length)return;
   const pl=(u,q)=>q>1&&/^(pièce|botte|barquette|bouteille|carton|colis|sac|seau|pack|douzaine)$/.test(u)?u+"s":u;
   const lignes=ps.map(p=>`- ${p.nom}${p.qte?` : ${fmt(p.qte)} ${pl(p.unite,p.qte)}`:""}`).join("\n");
   const text=supKind(f)==="mar"?`Bonjour, si possible en livraison demain au Double B :\n\n${lignes}\n\nMerci !`:`Commande ${f} :\n${lignes}`;
-  const tel=(S.fiches[f]&&S.fiches[f].tel||"").replace(/[^\d+]/g,"");
-  if(tel){location.href=`sms:${tel}?&body=${encodeURIComponent(text)}`;return}
   if(navigator.share){navigator.share({text}).catch(()=>{});return}
   navigator.clipboard.writeText(text).then(()=>toast("Message copié : colle-le dans WhatsApp ou SMS")).catch(()=>prompt("Copie ce message :",text));
 }
