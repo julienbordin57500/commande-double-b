@@ -184,12 +184,14 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
 .linkbtn{background:none;border:0;color:var(--muted);text-decoration:underline;font-size:15px;padding:6px 0}
 
 /* Commande */
-.cmd-sup{margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.cmd-sup{margin-top:16px;background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--c);border-radius:20px;overflow:hidden}
 .cmd-sup header{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
 .cmd-sup .ico{width:44px;height:44px;border-radius:13px}
 .cmd-sup .ico svg{width:26px;height:26px}
-.cmd-sup h2{font-size:19px;font-weight:800;flex:1}
-.cmd-sup header span{font-size:13px;color:var(--muted);font-weight:600}
+.cmd-sup .cnom{flex:1;min-width:0;display:flex;flex-direction:column}
+.cmd-sup h2{font-size:19px;font-weight:800;line-height:1.15;overflow-wrap:anywhere}
+.cmd-sup .cnom span{font-size:13px;color:var(--muted);font-weight:600}
+.cmd-sup header .ico{flex:none}
 .cmd-item{display:flex;align-items:center;gap:12px;padding:10px 10px 10px 16px;border-top:1px solid var(--line);min-height:58px}
 .cmd-item:first-of-type{border-top:0}
 .cmd-item .name{flex:1;min-width:0;font-weight:600}
@@ -316,6 +318,9 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
 .cmd-done{padding:12px 14px;border-top:1px solid var(--line);background:var(--sunken)}
 .cmd-done .btn{width:100%;height:54px;font-size:17px;background:var(--go);color:var(--go-ink)}
 .cmd-done .btn.confirm{background:var(--fg);color:var(--bg)}
+.cmd-done{display:flex;flex-direction:column;gap:10px}
+.cmd-done .btn.msgb{background:var(--soft);color:var(--c);border:2px solid var(--c);display:flex;align-items:center;justify-content:center;gap:10px}
+.cmd-done .btn.msgb svg{width:20px;height:20px;flex:none}
 /* Coup de couteau */
 .cut{position:relative;margin-top:16px;pointer-events:none}
 .cut>.cmd-sup{position:absolute;inset:0;margin:0!important;transition:transform .32s cubic-bezier(.5,0,.75,0),opacity .32s ease-in}
@@ -698,9 +703,9 @@ function renderCmd(sups){
   const groups=sups.map(f=>[f,itemsOf(f).filter(p=>p.acommander)]).filter(g=>g[1].length);
   if(!groups.length){el.innerHTML=`<div class="empty"><strong>Rien à commander en ${SECN[S.sec].toLowerCase()}</strong>Dans l'onglet Produits, appuie sur « Commander » à côté de ce qui manque. La quantité est facultative.</div>`;return}
   el.innerHTML=groups.map(([f,ps])=>{const open=isCOpen(f);return `<section class="cmd-sup" data-open="${open}" data-cmdsup="${esc(f)}" style="${supStyle(f)}">
-    <header role="button" tabindex="0" data-ctog="${esc(f)}" aria-expanded="${open}"><span class="ico" aria-hidden="true">${supIcon(f)}</span><h2>${esc(f)}</h2><span>${ps.length} article${ps.length>1?"s":""}</span><button class="sendb appb" type="button" data-appel="${esc(f)}" aria-label="Mode appel : dicter la commande à ${esc(f)}">${PHONE}</button>${supKind(f)==="mar"?`<button class="sendb" type="button" data-send="${esc(f)}" aria-label="Envoyer la commande à ${esc(f)}">${PLANE}</button>`:""}<span class="chev" aria-hidden="true">${CHEV}</span></header>
+    <header role="button" tabindex="0" data-ctog="${esc(f)}" aria-expanded="${open}"><span class="ico" aria-hidden="true">${supIcon(f)}</span><span class="cnom"><h2>${esc(f)}</h2><span>${ps.length} article${ps.length>1?"s":""}</span></span><button class="sendb appb" type="button" data-appel="${esc(f)}" aria-label="Mode appel : dicter la commande à ${esc(f)}">${PHONE}</button><span class="chev" aria-hidden="true">${CHEV}</span></header>
     <div class="cmd-body">${ps.map(p=>`<div class="cmd-item"><div class="name"><span>${esc(p.nom)}${estHab(p)?`<small class="habq">comme d'habitude</small>`:""}</span>${chip(p)}</div>${p.qte?`<span class="qpill">${fmt(p.qte)} ${esc(plU(p.unite,p.qte))}</span>`:`<span class="qpill none">quantité libre</span>`}<button class="okc" data-ok="${p.id}" aria-label="${esc(p.nom)} est commandé"><span class="ring">${CHECK}</span>Commandé</button><button class="del" data-t="${p.id}" aria-label="Retirer ${esc(p.nom)} de la commande">Retirer</button></div>`).join("")}
-    <div class="cmd-done"><button class="btn" type="button" data-done="${esc(f)}">Commande effectuée chez ${esc(f)}</button></div></div></section>`}).join("");
+    <div class="cmd-done">${parMessage(f)?`<button class="btn msgb" type="button" data-send="${esc(f)}">${PLANE}Envoyer par message</button>`:""}<button class="btn" type="button" data-done="${esc(f)}">Commande effectuée chez ${esc(f)}</button></div></div></section>`}).join("");
 }
 
 /* Petites fenêtres (confirmations, choix) : gros boutons, rien de caché */
@@ -802,15 +807,18 @@ async function openAppel(f){
     const dn=document.querySelector(`.cmd-sup [data-done="${CSS.escape(f)}"]`);if(dn){dn.scrollIntoView({block:"center"});dn.click();dn.click()}};
 }
 
-/* Envoi de la commande au maraîcher : message tout prêt (WhatsApp, SMS…) */
+/* Envoi de la commande par message (maraîcher, Sysco, Coup de Pâtes, Pro à pro) : un seul geste.
+   Numéro dans la fiche → l'appli Messages s'ouvre avec le numéro et le texte, il ne reste qu'à appuyer sur Envoyer.
+   Pas de numéro → le menu de partage du téléphone (WhatsApp, SMS…). */
+const parMessage=f=>/marai|primeur|sysco|coup de pat|pro a pro/.test(fold(f));
 function sendSupplier(f){
   const ps=itemsOf(f).filter(p=>p.acommander);if(!ps.length)return;
   const pl=(u,q)=>q>1&&/^(pièce|botte|barquette|bouteille|carton|colis|sac|seau|pack|douzaine)$/.test(u)?u+"s":u;
   const lignes=ps.map(p=>`- ${p.nom}${p.qte?` : ${fmt(p.qte)} ${pl(p.unite,p.qte)}`:""}`).join("\n");
-  const text=`Bonjour, si possible en livraison demain au Double B :\n\n${lignes}\n\nMerci !`;
+  const text=supKind(f)==="mar"?`Bonjour, si possible en livraison demain au Double B :\n\n${lignes}\n\nMerci !`:`Commande ${f} :\n${lignes}`;
   const tel=(S.fiches[f]&&S.fiches[f].tel||"").replace(/[^\d+]/g,"");
-  if(navigator.share){navigator.share({text}).catch(()=>{});return}
   if(tel){location.href=`sms:${tel}?&body=${encodeURIComponent(text)}`;return}
+  if(navigator.share){navigator.share({text}).catch(()=>{});return}
   navigator.clipboard.writeText(text).then(()=>toast("Message copié : colle-le dans WhatsApp ou SMS")).catch(()=>prompt("Copie ce message :",text));
 }
 

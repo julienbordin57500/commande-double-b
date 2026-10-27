@@ -225,6 +225,10 @@ html.vue-plats #vPlats{display:block} html.vue-plats #vMois{display:none}
 .ln-q{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr) minmax(0,1fr);gap:8px;align-items:center}
 .ln-c{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:center;font-size:14px;font-weight:700;color:var(--muted)}
 .ln-c.m{grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr)}
+.ln-c.c{grid-template-columns:auto minmax(0,1fr) minmax(0,1.1fr)}
+.ln-c.need span{color:var(--mid)}
+.ln-up{display:block;text-align:right;font-size:13px;font-weight:600;color:var(--muted);margin-top:-4px}
+.ln-up:empty{display:none}
 .lc{text-align:right;font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
 .lc.err{font-size:13px;font-weight:700;color:var(--mid);white-space:normal;line-height:1.2}
 .addbox{position:relative;margin:4px 0 12px}
@@ -595,38 +599,60 @@ $("#csv").onclick=()=>{
    Le coût utilise le dernier prix noté ; un prix promo est ignoré s'il existe un prix normal juste avant. */
 const P={plats:[],prods:new Map(),loaded:false};
 const PK="plats2b-cache";
-const DIM={g:["m",1],kg:["m",1000],ml:["v",1],cl:["v",10],L:["v",1000],"pièce":["n",1],douzaine:["n",12]};
-const QUNITS=["g","kg","cl","ml","L","pièce"];
-const CUNITS=["kg","g","L","cl","pièce"];
+// Même lecture du contenu que le comparateur de prix de Commande : « 5,4 kg », « 400 g · 20 tranches », « 6 x 1 L »…
+const CU=[[/^(kg|kgs|kilos?|kilogrammes?)$/,"g",1000],[/^(g|gr|grs|grammes?)$/,"g",1],[/^(l|litres?)$/,"ml",1000],[/^cl$/,"ml",10],[/^dl$/,"ml",100],[/^ml$/,"ml",1],
+  [/^(tranches?|tr)$/,"t",1],[/^douzaines?$/,"n",12],[/^(pieces?|pcs?|pces?|unites?|u|portions?|boites?|bouteilles?|btl|sachets?|paquets?|pots?|canettes?|oeufs?|barquettes?|briques?|rouleaux?)$/,"n",1]];
+const unitOf=u=>{for(const [re,k,f] of CU)if(re.test(u))return [k,f];return null};
+function parseC(txt){
+  const r={};if(!txt)return r;
+  let s=norm(String(txt)).replace(/(\d),(\d)/g,"$1.$2");
+  s=s.replace(/(\d+(?:\.\d+)?)\s*[x×*]\s*(\d+(?:\.\d+)?)\s*([a-z]+)/g,(m,a,b,u)=>{const k=unitOf(u);if(!k)return m;
+    r[k[0]]=(r[k[0]]||0)+a*b*k[1];if(k[0]!=="n")r.n=(r.n||0)+ +a;return " "});
+  s.replace(/(\d+(?:\.\d+)?)\s*([a-z]+)/g,(m,a,u)=>{const k=unitOf(u);if(k)r[k[0]]=(r[k[0]]||0)+a*k[1];return m});
+  return r}
+// Unité de la quantité par plat → ce qu'il faut connaître dans l'unité achetée (g, ml, pièces, tranches)
+const DIMOF={g:["g",1],kg:["g",1000],ml:["ml",1],cl:["ml",10],L:["ml",1000],"pièce":["n",1],tranche:["t",1],douzaine:["n",12]};
+const QUNITS=["g","kg","cl","L","pièce","tranche"];
+const CUNITS=["kg","g","L","cl","pièces","tranches"];
+const BASE={g:["kg",1000],ml:["L",1000],n:["pièce",1],t:["tranche",1]};
+const CNEED={g:"kg",ml:"L",n:"pièces",t:"tranches"};
 const VAT=1.10;
-const eur2=v=>nf2f.format(v)+" €";
-const norm=s=>String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/œ/g,"oe").replace(/æ/g,"ae");
+const eur2=v=>new Intl.NumberFormat("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:v<1?3:2}).format(v)+" €";
+const norm=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/œ/g,"oe").replace(/æ/g,"ae");
 const shortDate=s=>new Date(s).toLocaleDateString("fr-FR",{day:"numeric",month:"short"});
+const prixU=u=>{const n=norm(u);return n==="kg"?"le kilo":n==="l"?"le litre":n==="piece"?"la pièce":"le "+u};
+// Prix d'achat : celui noté dans Commande (le coût suit tout seul quand il change) ; sinon celui tapé dans le plat
 function priceOf(L){
   const p=L.id&&P.prods.get(L.id);
-  if(p&&p.prix){const promoOff=p.prix.promo&&p.avant&&!p.avant.promo;return {p:+(promoOff?p.avant.p:p.prix.p),u:promoOff?p.avant.u:p.prix.u,promoOff,src:"cmd"}}
-  if(L.pm>0)return {p:+L.pm,u:L.pu||"kg",src:"main"};
+  if(p&&p.prix){const off=p.prix.promo&&p.avant&&!p.avant.promo;const x=off?p.avant:p.prix;return {p:+x.p,u:x.u,c:x.c||null,promoOff:off,src:"cmd"}}
+  if(L.pm>0)return {p:+L.pm,u:L.pu||"kg",c:null,src:"main"};
   return null;
 }
-function perBase(L,pr){
-  if(DIM[pr.u])return {dim:DIM[pr.u][0],per:pr.p/DIM[pr.u][1]};
-  const c=L.c;if(!c||!(c.n>0)||!DIM[c.u])return null;     // carton, colis… : il faut savoir ce qu'il contient
-  return {dim:DIM[c.u][0],per:pr.p/(c.n*DIM[c.u][1])};
+// Ce que contient l'unité achetée : {g, ml, n, t}. Le kilo et le litre se suffisent ; une pièce (carton, lot…) se lit dans son contenu.
+function qOf(L,pr){
+  const u=norm(pr.u);if(u==="kg")return {g:1000};if(u==="l")return {ml:1000};
+  const q=parseC(pr.c);
+  const extra=L.cc||(L.c&&L.c.n>0?`${L.c.n} ${L.c.u}`:"");   // contenu tapé dans le plat (pas encore dans Commande)
+  if(extra){const x=parseC(extra);for(const k in x)if(!(q[k]>0))q[k]=x[k]}
+  if((u==="piece"||u==="paquet")&&!(q.n>0))q.n=1;if(u==="douzaine"&&!(q.n>0))q.n=12;
+  return q;
 }
 function lineCost(L,pr=priceOf(L)){
   if(!pr)return {err:"Prix à taper"};
-  const b=perBase(L,pr);if(!b)return {err:"Contenu à préciser"};
-  const q=DIM[L.u];if(!(L.q>0))return {err:"Quantité ?"};
-  if(!q||q[0]!==b.dim)return {err:"Unité à revoir"};
-  return {v:L.q*q[1]*b.per};
+  if(!(L.q>0))return {err:"Quantité ?"};
+  const d=DIMOF[L.u];if(!d)return {err:"Unité à revoir"};
+  const q=qOf(L,pr);if(!(q[d[0]]>0))return {err:"Contenu à préciser"};
+  return {v:L.q*d[1]*pr.p/q[d[0]]};
 }
+// « soit 2,70 €/kg » pour vérifier d'un coup d'œil
+function unitPrice(L,pr){const d=DIMOF[L.u];if(!pr||!d)return "";const q=qOf(L,pr);if(!(q[d[0]]>0))return "";const b=BASE[d[0]];return `soit ${eur2(pr.p/q[d[0]]*b[1])}/${b[0]}`}
 function platCost(pl){
   let cost=0,miss=0,prev=0,chg=[],last="";
   (pl.lignes||[]).forEach(L=>{const r=lineCost(L);if(r.err){miss++;return}cost+=r.v;
     // Variation : dernier prix changé il y a moins de 60 jours → coût avec l'ancien prix
     const p=L.id&&P.prods.get(L.id);let pv=r.v;
     if(p&&p.prix&&p.avant&&!p.prix.promo&&Date.now()-new Date(p.prix.le)<60*864e5){
-      const o=lineCost(L,{p:+p.avant.p,u:p.avant.u});if(!o.err&&Math.abs(o.v-r.v)>=0.005){pv=o.v;chg.push(L.nom);if(p.prix.le>last)last=p.prix.le}}
+      const o=lineCost(L,{p:+p.avant.p,u:p.avant.u,c:p.avant.c||p.prix.c||null});if(!o.err&&Math.abs(o.v-r.v)>=0.005){pv=o.v;chg.push(L.nom);if(p.prix.le>last)last=p.prix.le}}
     prev+=pv});
   const ht=pl.prix_vente>0?pl.prix_vente/VAT:null;const pct=ht&&cost?cost/ht*100:null;
   return {cost,miss,n:(pl.lignes||[]).length,ht,pct,marge:ht!=null?ht-cost:null,delta:cost-prev,chg,last};
@@ -664,8 +690,8 @@ $("#pNew").onclick=()=>openPlat(null);
 
 /* Fiche d'un plat */
 let E=null;
-function defUnit(pr,L){if(!pr)return "g";if(pr.u==="kg")return "g";if(pr.u==="L")return "cl";if(DIM[pr.u])return "pièce";return L.c&&L.c.u?({kg:"g",L:"cl"}[L.c.u]||L.c.u):"pièce"}
-function knownC(id){for(const pl of P.plats)for(const L of pl.lignes||[])if(L.id===id&&L.c&&L.c.n>0)return {...L.c};return null}
+function defUnit(pr,L){if(!pr)return "g";const u=norm(pr.u);if(u==="kg")return "g";if(u==="l")return "cl";
+  const q=qOf(L,pr);return q.t>0?"tranche":q.n>1?"pièce":q.g>0?"g":q.ml>0?"cl":"pièce"}
 function openPlat(pl){
   E={id:pl?pl.id:null,nom:pl?pl.nom:"",prix:pl&&pl.prix_vente>0?+pl.prix_vente:null,lignes:JSON.parse(JSON.stringify(pl?pl.lignes||[]:[])),dirty:false};
   const s=$("#sheet");
@@ -693,24 +719,34 @@ function askBox(title,text,yes,fn){
   m.querySelector("[data-y]").onclick=()=>{m.remove();fn()};m.querySelector("[data-n]").onclick=()=>m.remove();document.body.appendChild(m);
 }
 function priceInfo(L,pr){
-  const p=L.id&&P.prods.get(L.id);const f=p&&p.fournisseur?" · "+p.fournisseur:"";
-  if(!pr)return p?"Pas encore de prix dans Commande":"Ingrédient tapé à la main";
-  return pr.src==="main"?"Prix tapé à la main":`${eur2(pr.p)} / ${pr.u}${pr.promoOff?" (prix normal, la promo est ignorée)":p&&p.prix&&p.prix.promo?" (prix promo)":""}${f}`;
+  const p=L.id&&P.prods.get(L.id);const f=p&&p.fournisseur?p.fournisseur+" · ":"";
+  if(!pr)return p?f+"pas encore de prix dans Commande : tape-le ici, il y sera enregistré":"Pas dans Commande : tape son prix";
+  if(pr.src==="main")return f+(p?"prix tapé ici, enregistré dans Commande avec le plat":"prix tapé à la main");
+  return `${f}${eur2(pr.p)} ${prixU(pr.u)}${pr.c?" · "+pr.c:""}${pr.promoOff?" (prix normal, la promo est ignorée)":p.prix.promo?" (prix promo)":""}`;
 }
 const opts=(list,cur)=>(list.includes(cur)||!cur?list:[cur,...list]).map(u=>`<option${u===cur?" selected":""}>${esc(u)}</option>`).join("");
+const PUNITS=[["kg","le kilo"],["pièce","la pièce"],["L","le litre"]];
+function qUnits(pr){const u=pr&&norm(pr.u);return u==="kg"?["g","kg"]:u==="l"?["cl","L"]:QUNITS}
 function drawLines(){
   $("#eLines").innerHTML=E.lignes.length?E.lignes.map((L,i)=>{
-    const pr=priceOf(L);const needC=pr&&!DIM[pr.u];const needP=!(L.id&&P.prods.get(L.id)&&P.prods.get(L.id).prix);
+    const p=L.id&&P.prods.get(L.id);const pr=priceOf(L);const needP=!(p&&p.prix);
+    const d=DIMOF[L.u];const u=pr&&norm(pr.u);
+    // Contenu : demandé seulement s'il manque pour convertir, ou pour un prix « à la pièce » tapé ici (carton, lot…)
+    const manque=pr&&d&&!(qOf(L,pr)[d[0]]>0);
+    const showC=pr&&u!=="kg"&&u!=="l"&&(manque||L.cc!=null||(needP&&!pr.c));
+    const cu=L.cu||(manque?CNEED[d[0]]:"pièces");
     return `<div class="ln" data-i="${i}">
       <div class="ln-top"><div><b>${esc(L.nom)}</b><small>${esc(priceInfo(L,pr))}</small></div><button class="ln-x" type="button" data-rm="${i}" aria-label="Retirer ${esc(L.nom)}">✕</button></div>
-      ${needP?`<div class="ln-c m"><span>Prix</span><input data-f="pm" inputmode="decimal" placeholder="€" aria-label="Prix de ${esc(L.nom)} en euros" value="${L.pm>0?String(L.pm).replace(".",","):""}"><span>€ par</span><select data-f="pu" aria-label="Unité du prix">${opts(["kg","L","pièce"],L.pu||"kg")}</select></div>`:""}
-      ${needC?`<div class="ln-c"><span>1 ${esc(pr.u)} =</span><input data-f="cn" inputmode="decimal" placeholder="combien ?" aria-label="Contenu d'un ${esc(pr.u)}" value="${L.c&&L.c.n>0?String(L.c.n).replace(".",","):""}"><select data-f="cu" aria-label="Unité du contenu">${opts(CUNITS,(L.c&&L.c.u)||"pièce")}</select></div>`:""}
-      <div class="ln-q"><input data-f="q" inputmode="decimal" placeholder="Qté" aria-label="Quantité de ${esc(L.nom)}" value="${L.q>0?String(L.q).replace(".",","):""}"><select data-f="u" aria-label="Unité">${opts(QUNITS,L.u)}</select><span class="lc" data-lc="${i}"></span></div>
+      ${needP?`<div class="ln-c m"><span>Prix</span><input data-f="pm" inputmode="decimal" placeholder="€" aria-label="Prix d'achat de ${esc(L.nom)} en euros" value="${L.pm>0?String(L.pm).replace(".",","):""}"><span>€</span><select data-f="pu" aria-label="Le prix est pour">${PUNITS.map(([v,t])=>`<option value="${v}"${v===(L.pu||"kg")?" selected":""}>${t}</option>`).join("")}</select></div>`:""}
+      ${showC?`<div class="ln-c c${manque?" need":""}"><span>${manque?"⚠️ ":""}1 ${u==="piece"?"pièce":esc(pr.u)} contient</span><input data-f="cn" inputmode="decimal" placeholder="${manque?"combien ?":"si carton"}" aria-label="Contenu" value="${L.cn>0?String(L.cn).replace(".",","):""}"><select data-f="cu" aria-label="Unité du contenu">${opts(CUNITS,cu)}</select></div>`:""}
+      <div class="ln-q"><input data-f="q" inputmode="decimal" placeholder="Qté" aria-label="Quantité de ${esc(L.nom)} par plat" value="${L.q>0?String(L.q).replace(".",","):""}"><select data-f="u" aria-label="Unité">${opts(qUnits(pr),L.u)}</select><span class="lc" data-lc="${i}"></span></div>
+      <small class="ln-up" data-up="${i}"></small>
     </div>`}).join(""):`<div class="pempty" style="padding:14px">Ajoute les ingrédients un par un avec la case ci-dessous.</div>`;
   updCosts();
 }
 function updCosts(){
-  E.lignes.forEach((L,i)=>{const el=document.querySelector(`[data-lc="${i}"]`);if(!el)return;const r=lineCost(L);el.className="lc"+(r.err?" err":"");el.textContent=r.err?r.err:eur2(r.v)});
+  E.lignes.forEach((L,i)=>{const el=document.querySelector(`[data-lc="${i}"]`);if(!el)return;const r=lineCost(L);el.className="lc"+(r.err?" err":"");el.textContent=r.err?r.err:eur2(r.v);
+    const up=document.querySelector(`[data-up="${i}"]`);if(up)up.textContent=r.err?"":unitPrice(L,priceOf(L))});
   const c=platCost({prix_vente:E.prix,lignes:E.lignes});const lv=level(c.pct);
   $("#eTot").innerHTML=`<span>Coût<b>${eur2(c.cost)}</b></span><span>Marge HT<b>${c.marge!=null?eur2(c.marge):"–"}</b></span><span class="${lv==="n"?"":lv}">Marchandise<b>${c.pct!=null?Math.round(c.pct)+" %":"–"}</b></span>`;
 }
@@ -722,10 +758,12 @@ $("#sheet").addEventListener("input",e=>{
   if(t.id==="eSrch"){search(t.value);return}
   const ln=t.closest(".ln");if(!ln||!t.dataset.f)return;const L=E.lignes[+ln.dataset.i];E.dirty=true;
   const f=t.dataset.f;
-  if(f==="q")L.q=numIn(t.value);else if(f==="pm")L.pm=numIn(t.value);
-  else if(f==="cn")L.c={...(L.c||{u:"pièce"}),n:numIn(t.value)};
-  if(f==="u"||f==="pu"||f==="cu"){if(f==="u")L.u=t.value;if(f==="pu"){L.pu=t.value;if(DIM[L.pu]&&DIM[L.u]&&DIM[L.pu][0]!==DIM[L.u][0])L.u=defUnit({u:L.pu},L)}
-    if(f==="cu"){L.c={...(L.c||{}),u:t.value};if(DIM[L.u]&&DIM[L.u][0]!==DIM[t.value][0])L.u=defUnit(priceOf(L),L)}
+  const setC=()=>{const cu=L.cu||t.closest(".ln").querySelector('[data-f="cu"]')?.value||"pièces";L.cu=cu;L.cc=L.cn>0?`${String(L.cn).replace(".",",")} ${cu}`:"";delete L.c};
+  if(f==="q")L.q=numIn(t.value);else if(f==="pm"){L.pm=numIn(t.value);L.np=true}
+  else if(f==="cn"){L.cn=numIn(t.value);setC()}
+  if(f==="u"||f==="pu"||f==="cu"){if(f==="u")L.u=t.value;
+    if(f==="pu"){L.pu=t.value;L.np=true;if(!qUnits({u:L.pu}).includes(L.u))L.u=defUnit({u:L.pu},L)}
+    if(f==="cu"){L.cu=t.value;setC()}
     const foc=document.activeElement;drawLines();if(foc&&foc.dataset.f)document.querySelector(`.ln[data-i="${ln.dataset.i}"] [data-f="${foc.dataset.f}"]`)?.focus({preventScroll:true});return}
   updCosts();
 });
@@ -742,8 +780,8 @@ $("#sheet").addEventListener("click",e=>{
   const a=e.target.closest("[data-add]"),fr=e.target.closest("[data-free]"),rm=e.target.closest("[data-rm]");
   if(a||fr){
     let L;
-    if(a){const p=P.prods.get(a.dataset.add);L={id:p.id,nom:p.nom,q:null};const c=knownC(p.id);if(c)L.c=c;L.u=defUnit(priceOf(L),L)}
-    else{L={id:null,nom:$("#eSrch").value.trim().slice(0,80),q:null,pm:null,pu:"kg",u:"g"};if(!L.nom)return}
+    if(a){const p=P.prods.get(a.dataset.add);L={id:p.id,nom:p.nom,q:null};if(!p.prix){L.pu="kg"}L.u=defUnit(priceOf(L),L)}
+    else{L={id:null,nom:$("#eSrch").value.trim().slice(0,80),q:null,pm:null,pu:"pièce",u:"pièce"};if(!L.nom)return}
     E.lignes.push(L);E.dirty=true;$("#eSrch").value="";$("#eRes").innerHTML="";drawLines();
     const ln=document.querySelector(`.ln[data-i="${E.lignes.length-1}"]`);ln.scrollIntoView({block:"center",behavior:"smooth"});
     setTimeout(()=>(ln.querySelector('[data-f="pm"]')||ln.querySelector('[data-f="cn"]')||ln.querySelector('[data-f="q"]')).focus({preventScroll:true}),300);return}
@@ -752,12 +790,29 @@ $("#sheet").addEventListener("click",e=>{
   if(e.target.closest("#eDel")){askBox("Supprimer ce plat ?",`« ${E.nom||"Sans nom"} » sera supprimé pour toute l'équipe.`,"Supprimer",delPlat)}
 });
 $("#sheet").addEventListener("keydown",e=>{if(e.key==="Escape")closePlat(false);if(e.key==="Enter"&&e.target.id==="eSrch"){e.preventDefault();const b=$("#eRes button");if(b)b.click()}});
-const clean=L=>{const o={id:L.id||null,nom:String(L.nom||"").slice(0,80),q:L.q>0?L.q:null,u:L.u};if(L.c&&L.c.n>0)o.c={n:L.c.n,u:L.c.u||"pièce"};if(!L.id||L.pm>0){o.pm=L.pm>0?L.pm:null;o.pu=L.pu||"kg"}return o};
+const clean=L=>{const o={id:L.id||null,nom:String(L.nom||"").slice(0,80),q:L.q>0?L.q:null,u:L.u};
+  if(L.c&&L.c.n>0)o.c={n:L.c.n,u:L.c.u||"pièce"};if(L.cc)o.cc=L.cc;if(L.cn>0){o.cn=L.cn;o.cu=L.cu}
+  if(!L.id||L.pm>0){o.pm=L.pm>0?L.pm:null;o.pu=L.pu||"kg"}return o};
+// Ce qui est tapé dans le plat pour un article de Commande y est enregistré (prix, contenu du carton) :
+// le comparateur en profite, et le plat suit ensuite tout seul les changements de prix.
+async function versCommande(){
+  for(const L of E.lignes){const p=L.id&&P.prods.get(L.id);if(!p)continue;
+    if(!p.prix&&L.np&&L.pm>0){
+      const u=L.pu==="kg"||L.pu==="L"?L.pu:"pièce",c=L.cc||null;
+      await rpc("ajout_prix",{p_id:p.id,p_prix:L.pm,p_unite:u,p_promo:false,p_contenu:c,p_detail:null});
+      p.prix={p:L.pm,u,promo:false,c,d:null,le:new Date().toISOString()};delete L.pm;delete L.pu;delete L.np;delete L.cc;delete L.cn;delete L.cu;delete L.c}
+    else if(p.prix&&L.cc){
+      const off=p.prix.promo&&p.avant&&!p.avant.promo;if(off)continue;   // promo en cours : on garde le contenu dans le plat
+      const c=[p.prix.c,L.cc].filter(Boolean).join(" · ");
+      await rpc("prix_contenu",{p_id:p.id,p_contenu:c});p.prix.c=c;delete L.cc;delete L.cn;delete L.cu;delete L.c}
+  }
+}
 async function savePlat(){
   const nom=E.nom.trim();if(!nom){toast("Donne un nom au plat");$("#eNom").focus();return}
   const b=$("#eSave");b.disabled=true;b.textContent="Enregistrement…";
-  const champs={nom,prix_vente:E.prix,lignes:E.lignes.map(clean),par:(window.Profil&&Profil.get())||null};
-  try{const id=await rpc("plat_enregistrer",{p_id:E.id,p_champs:champs});
+  try{await versCommande();
+    const champs={nom,prix_vente:E.prix,lignes:E.lignes.map(clean),par:(window.Profil&&Profil.get())||null};
+    const id=await rpc("plat_enregistrer",{p_id:E.id,p_champs:champs});
     const pl={id,nom,prix_vente:E.prix,lignes:champs.lignes};const i=P.plats.findIndex(p=>p.id===id);if(i>=0)P.plats[i]=pl;else P.plats.push(pl);
     closePlat(true);toast("Plat enregistré");loadPlats();
   }catch(e){if(lost(e))return;b.disabled=false;b.textContent="Enregistrer";toast("Pas de réseau : réessaie dans un instant")}
