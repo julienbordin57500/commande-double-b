@@ -100,6 +100,25 @@
   .pbar .bell .nb{position:absolute;top:-6px;right:-6px;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:#d63a2a;color:#fff;font-size:13px;font-weight:800;line-height:22px;text-align:center;box-shadow:0 0 0 2px var(--surface,#fff)}
   @keyframes ring{0%,40%,100%{transform:rotate(0)}5%{transform:rotate(-14deg)}10%{transform:rotate(12deg)}15%{transform:rotate(-9deg)}20%{transform:rotate(6deg)}25%{transform:rotate(-3deg)}}
   @media (max-width:400px){.pbar .chg .lg{display:none}}
+  @media (max-width:400px){.pbar{gap:6px}.pbar .chg{padding:0 10px}.pbar .bell{width:42px}}
+  /* Paramètres : notifications du téléphone */
+  .rg .rgb{overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:0 16px 20px;display:flex;flex-direction:column;gap:10px}
+  .rg h4{margin:4px 0 0;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:19px;font-weight:800}
+  .rg .rgbt{height:56px;border-radius:16px;border:0;background:var(--accent,#f2a516);color:var(--accent-ink,#2a1d00);font:inherit;font-weight:800;font-size:17px;cursor:pointer}
+  .rg .rgbt.soft{background:var(--surface,#fff);color:var(--fg,#1d1b17);border:1px solid var(--line,#e6e1d5);height:50px;font-size:16px}
+  .rg .rgok{padding:12px 14px;border-radius:14px;background:#e3f2e8;color:#2f7d4f;font-weight:800;font-size:16px}
+  .rg .rginfo{padding:12px 14px;border-radius:14px;background:var(--accent-soft,#fdf1d6);color:var(--fg,#1d1b17);font-size:15.5px;line-height:1.45}
+  .rg small.rgh{color:var(--muted,#6f695d);font-size:14px;text-align:center}
+  .rg .rgl{display:flex;align-items:center;gap:12px;padding:14px;border-radius:16px;border:1px solid var(--line,#e6e1d5);background:var(--surface,#fff);cursor:pointer}
+  .rg .rgt{flex:1;min-width:0}.rg .rgt b{display:block;font-size:17px;font-weight:800}.rg .rgt small{display:block;color:var(--muted,#6f695d);font-size:14px;line-height:1.35;margin-top:3px}
+  .rg .rgs{position:relative;width:56px;height:32px;flex:none}
+  .rg .rgs input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+  .rg .rgs i{position:absolute;inset:0;border-radius:16px;background:var(--line,#e6e1d5);transition:background .15s}
+  .rg .rgs i::after{content:"";position:absolute;left:3px;top:3px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .15s}
+  .rg .rgs input:checked+i{background:#2f8a4a}
+  .rg .rgs input:checked+i::after{transform:translateX(24px)}
+  .rg .rgs input:focus-visible+i{outline:3px solid var(--accent,#f2a516);outline-offset:2px}
+  .rg .rgn{margin:2px 4px 0;color:var(--muted,#6f695d);font-size:14px;line-height:1.4;text-align:center}
   .npan{position:fixed;inset:0;z-index:45;background:rgba(10,8,4,.5);display:flex;align-items:flex-end;justify-content:center;animation:fIn .18s ease-out;font-family:"Figtree",system-ui,sans-serif}
   .npan .nbx{background:var(--bg,#f4f2ec);color:var(--fg,#1d1b17);width:100%;max-width:560px;max-height:88vh;border-radius:24px 24px 0 0;display:flex;flex-direction:column;animation:upIn .28s cubic-bezier(.2,.85,.25,1);padding-bottom:env(safe-area-inset-bottom,0px)}
   @media (min-width:700px){.npan{align-items:flex-start;justify-content:flex-end;padding:70px 24px}.npan .nbx{border-radius:24px;max-width:440px;max-height:80vh}}
@@ -180,10 +199,11 @@
     const id=get();if(!id)return;
     let b=document.getElementById("pbar")||document.querySelector(".pbar");
     if(!b){const wrap=document.querySelector(".wrap:not([hidden]):not(.gate)")||document.querySelector("#app");if(!wrap)return;b=document.createElement("div");b.className="pbar";wrap.prepend(b)}
-    b.innerHTML=`<div class="who">${avatar(id,40)}<div>${AV[id].nom}<small>Profil sur ce téléphone</small></div></div><button type="button" class="chg">Changer<span class="lg"> de profil</span></button><button type="button" class="bell" aria-label="Notifications">${BELL}<span class="nb" hidden></span></button>`;
+    b.innerHTML=`<div class="who">${avatar(id,40)}<div>${AV[id].nom}<small>Profil sur ce téléphone</small></div></div><button type="button" class="chg">Changer<span class="lg"> de profil</span></button><button type="button" class="bell" aria-label="Notifications">${BELL}<span class="nb" hidden></span></button><button type="button" class="bell gear" aria-label="Paramètres">${GEAR}</button>`;
     b.querySelector(".chg").onclick=()=>picker(true);
-    b.querySelector(".bell").onclick=()=>Notifs.open();
-    Notifs.badge();Notifs.start();
+    b.querySelector(".bell:not(.gear)").onclick=()=>Notifs.open();
+    b.querySelector(".gear").onclick=()=>reglages();
+    Notifs.badge();Notifs.start();Push.sync();
   }
   /* Mini visite guidée : une seule fois par téléphone */
   function tour(){
@@ -238,7 +258,7 @@
     save(){try{localStorage.setItem(NK(),JSON.stringify(this.list))}catch{}},
     unread(){return this.list.filter(n=>!n.lu).length},
     badge(){if(!this.list.length)this.load();const k=this.unread();
-      document.querySelectorAll(".pbar .bell").forEach(b=>{const nb=b.querySelector(".nb");nb.hidden=!k;nb.textContent=k>9?"9+":k;b.classList.toggle("has",k>0);
+      document.querySelectorAll(".pbar .bell:not(.gear)").forEach(b=>{const nb=b.querySelector(".nb");nb.hidden=!k;nb.textContent=k>9?"9+":k;b.classList.toggle("has",k>0);
         b.setAttribute("aria-label",k?`Notifications : ${k} non lue${k>1?"s":""}`:"Notifications")});document.dispatchEvent(new CustomEvent("2b-notifs",{detail:k}))},
     async refresh(force){if(!get()||!code())return;
       try{const t=+localStorage.getItem("2b-notifs-t")||0;if(!force&&Date.now()-t<60000)return;localStorage.setItem("2b-notifs-t",String(Date.now()))}catch{}
@@ -450,7 +470,74 @@
   document.head.appendChild(fstyle);
 
   function ensure(){nav();if(!get())picker(false);else{bar();tour()}}
-  window.Profil={ouverture:Ouverture,saved,get,ensure,avatar,notifs:Notifs,noms:Object.fromEntries(Object.entries(AV).map(([k,v])=>[k,v.nom]))};
+  /* ---------- Notifications du téléphone (même appli fermée) ----------
+     Rappel des relevés d'hygiène (14 h / 21 h si pas faits, jamais quand c'est fermé) et rappel d'événement la veille à 10 h.
+     Envoyées par le serveur (Supabase, toutes les 5 min), une seule fois par contrôle ou événement.
+     Sur iPhone : seulement avec l'appli posée sur l'écran d'accueil. */
+  const GEAR=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>`;
+  const b64u=s=>{const p="=".repeat((4-s.length%4)%4);const r=atob((s+p).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from(r,c=>c.charCodeAt(0))};
+  const Push={
+    PUB:"BPZ56UYav4HDeqBDTsh1PD31OfV9qnB80yDXn1kQaMj0Nt06VCv8ZApQ6DcSjKpSGzg4Leen3YF8vpRRYQ_PrIY",
+    FN:"https://kokjumjhpasxxxrpspng.supabase.co/functions/v1/rappels",
+    prefs(){const d={hygiene:true,evenements:true};try{return {...d,...JSON.parse(localStorage.getItem("2b-push")||"{}")}}catch{return d}},
+    setPrefs(p){try{localStorage.setItem("2b-push",JSON.stringify(p))}catch{}},
+    ios:/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1),
+    standalone:()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true,
+    ok:()=>"serviceWorker" in navigator&&"PushManager" in window&&"Notification" in window,
+    async sub(){if(!this.ok())return null;const r=await navigator.serviceWorker.getRegistration();return r?await r.pushManager.getSubscription():null},
+    async etat(){
+      if(!this.ok())return this.ios&&!this.standalone()?"installer":"impossible";
+      if(Notification.permission==="denied")return "bloque";
+      const s=await this.sub().catch(()=>null);return s&&Notification.permission==="granted"?"actif":"inactif"},
+    async envoyer(s){const p=this.prefs();await call("push_abonner",{p_abo:s.toJSON(),p_profil:get(),p_hygiene:p.hygiene,p_evenements:p.evenements})},
+    async activer(){
+      const perm=await Notification.requestPermission();if(perm!=="granted")return false;
+      const r=await navigator.serviceWorker.ready;let s=await r.pushManager.getSubscription();
+      if(!s)s=await r.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(this.PUB)});
+      await this.envoyer(s);try{localStorage.setItem("2b-push-t",String(Date.now()))}catch{}return true},
+    async essai(){const s=await this.sub();if(!s)return false;
+      const r=await fetch(this.FN,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code:code(),essai:s.endpoint})});
+      const d=await r.json().catch(()=>({}));return !!d.ok},
+    // Une fois par jour : le serveur garde la bonne adresse du téléphone (elle peut changer)
+    async sync(){try{if(!this.ok()||Notification.permission!=="granted")return;const t=+localStorage.getItem("2b-push-t")||0;if(Date.now()-t<864e5)return;
+      const s=await this.sub();if(!s)return;await this.envoyer(s);localStorage.setItem("2b-push-t",String(Date.now()))}catch{}}
+  };
+  const ETAT={
+    actif:`<div class="rgok">✓ Activées sur ce téléphone</div><button class="rgbt soft" type="button" data-essai>Envoyer une notification d'essai</button>`,
+    inactif:`<button class="rgbt" type="button" data-on>🔔 Activer les notifications</button><small class="rgh">Le téléphone va demander : réponds « Autoriser ».</small>`,
+    installer:`<div class="rginfo"><b>Sur iPhone, une étape avant :</b> pose l'appli sur l'écran d'accueil. Dans Safari, touche <b>Partager</b> (le carré avec la flèche ⬆️), puis <b>« Sur l'écran d'accueil »</b>. Ouvre ensuite l'appli depuis son icône et reviens ici.</div>`,
+    bloque:`<div class="rginfo">Les notifications sont bloquées pour l'appli. Pour les remettre : <b>Réglages</b> du téléphone → <b>Notifications</b> → <b>Double B</b> → Autoriser.</div>`,
+    impossible:`<div class="rginfo">Ce téléphone (ou ce navigateur) ne permet pas les notifications.</div>`};
+  async function reglages(){
+    const m=document.createElement("div");m.className="npan rg";
+    const p=Push.prefs();
+    const row=(k,t,d)=>`<label class="rgl"><span class="rgt"><b>${t}</b><small>${d}</small></span><span class="rgs"><input type="checkbox" data-k="${k}"${p[k]?" checked":""} aria-label="${t}"><i></i></span></label>`;
+    m.innerHTML=`<div class="nbx" role="dialog" aria-label="Paramètres"><div class="nh"><h3>Paramètres</h3><button class="nx" type="button" data-x aria-label="Fermer">✕</button></div>
+      <div class="rgb"><h4>🔔 Notifications sur ce téléphone</h4><div id="rgEtat" style="display:flex;flex-direction:column;gap:8px"></div>
+      ${row("hygiene","🌡️ Relevés d'hygiène","À 14 h et à 21 h, seulement si les températures ne sont pas notées. Jamais quand c'est fermé.")}
+      ${row("evenements","📅 Événements","La veille à 10 h : privatisation ou traiteur prévu le lendemain.")}
+      <p class="rgn" id="rgMsg">Une seule notification par contrôle ou par événement. Rien pour les commandes.</p></div></div>`;
+    document.body.appendChild(m);
+    const msg=t=>{const el=m.querySelector("#rgMsg");el.textContent=t};
+    const etat=async()=>{m.querySelector("#rgEtat").innerHTML=ETAT[await Push.etat()]};etat();
+    m.addEventListener("click",async e=>{
+      if(e.target===m||e.target.closest("[data-x]")){m.remove();return}
+      const on=e.target.closest("[data-on]");
+      if(on){on.disabled=true;on.textContent="Un instant…";
+        try{const ok=await Push.activer();await etat();msg(ok?"C'est activé ✓ Touche « Envoyer une notification d'essai » pour vérifier.":"Pas autorisé : rien ne sera envoyé sur ce téléphone.")}
+        catch{on.disabled=false;on.textContent="🔔 Activer les notifications";msg("Pas de réseau : réessaie dans un instant.")}return}
+      const es=e.target.closest("[data-essai]");
+      if(es){es.disabled=true;es.textContent="Envoi…";
+        try{const ok=await Push.essai();msg(ok?"Envoyée ✓ Elle arrive dans quelques secondes.":"L'essai n'est pas parti : touche « Activer » à nouveau.");if(!ok){await Push.sub().then(s=>s&&s.unsubscribe()).catch(()=>{});await etat()}}
+        catch{msg("Pas de réseau : réessaie dans un instant.")}
+        if(es.isConnected){es.disabled=false;es.textContent="Envoyer une notification d'essai"}return}
+    });
+    m.addEventListener("change",async e=>{const k=e.target.dataset.k;if(!k)return;
+      const q=Push.prefs();q[k]=e.target.checked;Push.setPrefs(q);
+      try{const s=await Push.sub();if(s&&Notification.permission==="granted")await Push.envoyer(s);msg(e.target.checked?"Activé ✓":"Coupé : plus de notification de ce type.")}
+      catch{msg("Pas de réseau : le choix sera envoyé plus tard.");try{localStorage.removeItem("2b-push-t")}catch{}}});
+  }
+  window.Profil={reglages,push:Push,ouverture:Ouverture,saved,get,ensure,avatar,notifs:Notifs,noms:Object.fromEntries(Object.entries(AV).map(([k,v])=>[k,v.nom]))};
   let hasCode=false;try{hasCode=!!localStorage.getItem("commande2b-code")}catch{}
   if(hasCode)nav();
   if(hasCode&&!document.getElementById("gate"))ensure();   // l'écran Commande l'appelle lui-même après le code
