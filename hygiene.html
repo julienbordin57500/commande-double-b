@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<script>/* Changement d'onglet : sens de la transition (gauche / droite) ; retour en arrière ou lien interne : pas d'effet */
+addEventListener("pagereveal",e=>{if(!e.viewTransition)return;let d=null;try{d=sessionStorage.getItem("2b-sens");sessionStorage.removeItem("2b-sens")}catch(x){}
+if(d)try{e.viewTransition.types.add(d)}catch(x){}else e.viewTransition.skipTransition()});</script>
 <title>Hygiène · Double B</title>
 <meta name="description" content="Relevés d'hygiène du Double B : températures, huile des friteuses, refroidissement en cellule.">
 <meta name="theme-color" content="#f2a516">
@@ -234,7 +237,6 @@ button{cursor:pointer}
 @keyframes oil{0%{height:0;opacity:1}55%{height:100%;opacity:1}100%{height:100%;opacity:0}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @view-transition{navigation:auto}
-::view-transition-old(root),::view-transition-new(root){animation-duration:.16s;animation-timing-function:ease-out}
 .pbar{view-transition-name:pbar}
 .fermeinfo{margin:10px 0 0;padding:12px 14px;border-radius:14px;background:var(--sunken);border:1px solid var(--line);color:var(--muted);font-size:15px}
 .fermeinfo b{color:var(--fg)}

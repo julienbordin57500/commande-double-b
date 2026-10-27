@@ -161,7 +161,21 @@
   @media (max-width:360px){.bnav{padding-inline:2px}.bnav a{font-size:10px;letter-spacing:-.2px}.bnav .ic{width:46px}}
   .bnav a{position:relative}.bnav .bdot{position:absolute;top:0;left:calc(50% + 9px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--accent,#f2a516);color:var(--accent-ink,#2a1d00);font-size:11px;font-weight:800;line-height:18px;text-align:center;box-shadow:0 0 0 2px var(--surface,#fff)}
   .bnav a[aria-current="page"] .bdot{display:none}
-  @view-transition{navigation:none}
+  /* Changement d'onglet en douceur (transition native du navigateur, rien n'attend plus longtemps) :
+     la page glisse un peu dans le sens de l'onglet touché et apparaît en fondu ; barres du haut et du bas immobiles. */
+  @view-transition{navigation:auto}
+  .pbar{view-transition-name:pbar}
+  ::view-transition-group(bnav),::view-transition-group(pbar),::view-transition-old(bnav),::view-transition-new(bnav),::view-transition-old(pbar),::view-transition-new(pbar){animation:none}
+  ::view-transition-old(root){animation:vtOut .16s cubic-bezier(.4,0,1,1) both}
+  ::view-transition-new(root){animation:vtIn .22s cubic-bezier(0,0,.2,1) both}
+  html:active-view-transition-type(droite)::view-transition-old(root){animation-name:vtOutG}
+  html:active-view-transition-type(droite)::view-transition-new(root){animation-name:vtInD}
+  html:active-view-transition-type(gauche)::view-transition-old(root){animation-name:vtOutD}
+  html:active-view-transition-type(gauche)::view-transition-new(root){animation-name:vtInG}
+  @keyframes vtOut{to{opacity:0}} @keyframes vtIn{from{opacity:0}}
+  @keyframes vtOutG{to{opacity:0;transform:translateX(-28px)}} @keyframes vtInD{from{opacity:0;transform:translateX(28px)}}
+  @keyframes vtOutD{to{opacity:0;transform:translateX(28px)}} @keyframes vtInG{from{opacity:0;transform:translateX(-28px)}}
+  @media (prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}}
   .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))!important}
   @keyframes icPop{0%{transform:scale(.8)}100%{transform:none}}
   @media (prefers-reduced-motion:reduce){.bnav a[aria-current="page"] .ic{animation:none}}
@@ -323,9 +337,12 @@
     b.innerHTML=`<div class="in">${TABS.map(([h,i,l])=>`<a href="${h}"${cur(h)?' aria-current="page"':""}><span class="ic">${IC[i]}</span>${i==="cmd"&&n?`<span class="bdot">${n>99?"99+":n}</span>`:""}<span>${l}</span></a>`).join("")}</div>`;
     document.body.appendChild(b);
   }
-  // Onglet touché : il s'allume tout de suite, sans attendre que la page suivante arrive
+  // Onglet touché : il s'allume tout de suite, sans attendre que la page suivante arrive ; on retient le sens (gauche / droite) pour la transition
   document.addEventListener("click",e=>{const a=e.target.closest(".bnav a");if(!a||a.getAttribute("aria-current"))return;
+    const all=[...document.querySelectorAll(".bnav a")],from=all.findIndex(x=>x.getAttribute("aria-current")),to=all.indexOf(a);
+    try{sessionStorage.setItem("2b-sens",to>from?"droite":"gauche")}catch{}
     document.querySelectorAll(".bnav a[aria-current]").forEach(x=>x.removeAttribute("aria-current"));a.setAttribute("aria-current","page")});
+  // Le sens est lu en haut de chaque page (petit script dans <head>) : la transition démarre avant le chargement de ce fichier
   addEventListener("pageshow",e=>{if(e.persisted){document.querySelectorAll(".bnav").forEach(b=>b.remove());nav()}});
   // Mises à jour : on vérifie s'il y a une nouvelle version quand on revient dans l'appli
   document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&navigator.serviceWorker)navigator.serviceWorker.getRegistration().then(r=>r&&r.update()).catch(()=>{})});

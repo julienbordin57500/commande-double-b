@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<script>/* Changement d'onglet : sens de la transition (gauche / droite) ; retour en arrière ou lien interne : pas d'effet */
+addEventListener("pagereveal",e=>{if(!e.viewTransition)return;let d=null;try{d=sessionStorage.getItem("2b-sens");sessionStorage.removeItem("2b-sens")}catch(x){}
+if(d)try{e.viewTransition.types.add(d)}catch(x){}else e.viewTransition.skipTransition()});</script>
 <title>Aujourd'hui · Double B</title>
 <meta name="description" content="Le résumé du jour au Double B : événements, commandes et chiffres d'hier.">
 <meta name="theme-color" content="#f2a516">
@@ -111,7 +114,6 @@ a{color:inherit}
 
 @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @view-transition{navigation:auto}
-::view-transition-old(root),::view-transition-new(root){animation-duration:.16s;animation-timing-function:ease-out}
 .pbar{view-transition-name:pbar}
 @media (prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}}
 </style>
