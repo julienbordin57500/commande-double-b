@@ -75,7 +75,8 @@ header.top{display:flex;align-items:center;gap:14px}
 .chartbtn{margin-top:10px;width:100%;height:46px;border-radius:14px;border:1px solid var(--line);background:var(--surface);font-weight:700;font-size:15px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:8px}
 .chartbtn .cv{transition:transform .2s}.chartbtn[aria-expanded="true"] .cv{transform:rotate(180deg)}
 .chartbox{margin-top:8px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px 10px 6px}
-/* Calendrier du mois : une grosse case par jour (facile à toucher) avec une barre, toutes à la même échelle */
+/* Graphique : tous les jours côte à côte. On touche n'importe où (le jour le plus proche est choisi),
+   on peut glisser le doigt, et les flèches avancent d'un jour */
 .chopt{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 2px 8px}
 .sw{display:flex;align-items:center;gap:10px;min-height:44px;font-weight:700;font-size:15px;cursor:pointer;user-select:none}
 .sw input{position:absolute;opacity:0;pointer-events:none}
@@ -85,25 +86,16 @@ header.top{display:flex;align-items:center;gap:14px}
 .sw input:focus-visible+.tg{outline:2px solid var(--fg);outline-offset:2px}
 .lg{display:flex;gap:10px;font-size:13px;font-weight:700;color:var(--muted)} .lg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
 .tip{font-size:15px;color:var(--muted);min-height:62px;margin:0 2px 8px;padding:9px 12px;border-radius:12px;background:var(--sunken);line-height:1.3}.tip b{color:var(--fg)}.tip span{font-size:14px}
-.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;animation:calIn .18s ease-out}
-@keyframes calIn{from{opacity:.4}to{opacity:1}}
-@media (prefers-reduced-motion:reduce){.cal{animation:none}}
-.cal .wh{font-size:12px;font-weight:800;color:var(--muted);text-align:center;text-transform:uppercase;letter-spacing:.03em;padding:2px 0}
-.cc{border:0;border-radius:10px;padding:5px 0 0;background:var(--sunken);color:var(--fg);font:inherit;display:flex;flex-direction:column;align-items:stretch;gap:2px;cursor:pointer;position:relative}
-.cc.x{background:none;cursor:default}
-.cc i{font-style:normal;font-size:12px;font-weight:700;color:var(--muted);text-align:left;padding-left:6px;line-height:1}
-.cc.td i{color:var(--accent);font-weight:800}
-/* Barres : même échelle pour toutes les cases, la valeur écrite au-dessus */
-.cc .bz{height:74px;display:flex;align-items:flex-end;justify-content:center;gap:3px;margin:0 4px;border-bottom:2px solid var(--line)}
-.cc .br{width:62%;max-width:26px;height:var(--h);min-height:3px;border-radius:5px 5px 0 0;background:var(--accent);position:relative;transition:height .25s ease-out}
-.cal.split .br{width:40%}
-.cc .br.m{background:var(--midi)} .cc .br.s{background:var(--soir)}
-.cc .br em{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:2px;font-style:normal;font-size:12px;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--fg)}
-.cc .nd{align-self:flex-end;color:var(--muted);font-weight:700;padding-bottom:4px}
-.cc.sel{box-shadow:0 0 0 2.5px var(--fg);background:var(--surface)}
-.cal .avg{background:none;border:1.5px dashed var(--line)}
-.cal .avl{grid-column:1/-1;font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:6px}
-@media (prefers-reduced-motion:reduce){.cc .br{transition:none}}
+.tipr{display:flex;gap:8px;align-items:stretch;margin-bottom:8px}.tipr .tip{flex:1;margin:0}
+.tipr .arrow{width:46px;height:auto;min-height:46px;flex:none}
+.chartbox svg{width:100%;display:block;touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:pointer}
+.chartbox .bar{fill:var(--accent)} .chartbox .bar.m{fill:var(--midi)} .chartbox .bar.s{fill:var(--soir)} .chartbox .bar.sel{fill:var(--fg)}
+.chartbox .wk{fill:var(--sunken)} .chartbox .base{stroke:var(--line);stroke-width:1.5} .chartbox .grid{stroke:var(--line);stroke-dasharray:3 3}
+.chartbox .cur{fill:color-mix(in srgb,var(--fg) 8%,transparent)}
+.chartbox text{font-size:10px;fill:var(--muted);font-family:var(--body);font-weight:600} .chartbox .mx{font-size:11px;font-weight:700}
+.chartbox text.vl{font-size:13px;font-weight:800;fill:var(--fg)} .chartbox text.td{fill:var(--accent);font-weight:800}
+.ch-t{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin:8px 2px 2px}
+.ch-t.m{color:var(--midi)} .ch-t.s{color:var(--soir)}
 .daytot small{font-weight:500}
 
 /* Saisie du jour */
@@ -312,10 +304,11 @@ html.vue-plats #vPlats{display:block} html.vue-plats #vMois{display:none}
   </div>
 
   <div class="kpis" id="kpis"></div>
-  <button class="chartbtn" id="chartBtn" type="button" aria-expanded="false">📅 CA jour par jour <span class="cv">▾</span></button>
+  <button class="chartbtn" id="chartBtn" type="button" aria-expanded="false">📈 Graphique du CA jour par jour <span class="cv">▾</span></button>
   <div class="chartbox" id="chartBox" hidden>
     <div class="chopt"><label class="sw"><input type="checkbox" id="split" autocomplete="off"><span class="tg"></span>Séparer midi et soir</label><span class="lg" id="lg" hidden><span><i style="background:var(--midi)"></i>Midi</span><span><i style="background:var(--soir)"></i>Soir</span></span></div>
-    <div class="tip" id="tip">Touche un jour pour voir le détail.</div><div id="chart"></div></div>
+    <div class="tipr"><button class="arrow" id="cPrev" type="button" aria-label="Jour précédent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><div class="tip" id="tip" aria-live="polite">Touche le graphique pour voir le détail d'un jour.</div><button class="arrow" id="cNext" type="button" aria-label="Jour suivant"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button></div>
+    <div id="chart"></div></div>
 
   <section class="day" aria-label="Saisie du jour">
     <div class="dayhead">
@@ -546,50 +539,59 @@ function compactHTML(){
     <tfoot><tr><td class="d">Total</td>${svc(s.ca_midi,s.midi_sp,s.midi_emp,s.burgers_midi)}${svc(s.ca_soir,s.soir_sp,s.soir_emp,s.burgers_soir)}${dayCell(s,s.refuses)}</tr></tfoot>`;
 }
 
-/* Graphique : calendrier du mois, lundi → dimanche. Une case par jour avec son CA écrit dedans,
-   plus une ligne « Moyenne » par jour de semaine pour comparer les lundis entre eux, etc.
-   « Séparer midi et soir » (décoché au départ) coupe chaque case en deux, chaque service avec sa propre échelle. */
+/* Graphique : CA de chaque jour, côte à côte. « Séparer midi et soir » (décoché au départ) donne deux graphiques
+   l'un sous l'autre, à la même échelle : on compare les midis entre eux et les soirs entre eux.
+   Toucher n'importe où choisit le jour le plus proche ; glisser le doigt fait défiler ; flèches = jour d'avant / d'après. */
 const k0=v=>new Intl.NumberFormat("fr-FR",{maximumFractionDigits:0}).format(Math.round(v));
 const SPLIT=()=>$("#split").checked;
-const JOURS=["lundis","mardis","mercredis","jeudis","vendredis","samedis","dimanches"];
 function chartVals(){
   const n=daysIn(S.y,S.m),days=[];
   for(let d=1;d<=n;d++){const r=S.data[key(S.y,S.m,d)]||{};days.push({d,w:(new Date(S.y,S.m,d).getDay()+6)%7,j:totals(r).ca,m:val(r,"ca_midi"),s:soirCA(r)})}
-  const avg=[...Array(7)].map((_,w)=>{const o={w};["j","m","s"].forEach(k=>{const v=days.filter(x=>x.w===w&&x[k]!=null).map(x=>x[k]);o[k]=v.length?v.reduce((a,b)=>a+b,0)/v.length:null;o["n"+k]=v.length});return o});
-  return {days,avg};
+  return {days};
 }
 let chartSel=null;
-function drawChart(){
-  const {days,avg}=chartVals(),sp=SPLIT();$("#lg").hidden=!sp;
-  if(!days.some(x=>x.j!=null)){$("#chart").innerHTML=`<div class="tip">Pas encore de CA saisi ce mois-ci.</div>`;return}
-  // une seule échelle : le plus gros chiffre affiché (journée, ou midi/soir quand c'est séparé)
-  const keys=sp?["m","s"]:["j"];const MX=Math.max(1,...days.flatMap(x=>keys.map(k=>x[k]||0)));
+const CG={left:2,top:22,bot:30};
+function chartSVG(days,k,H,MX,W){
+  const n=days.length,bw=(W-CG.left*2)/n,base=H-CG.bot,sc=v=>(base-CG.top)*v/MX;
   const isT=d=>S.y===now.getFullYear()&&S.m===now.getMonth()&&d===now.getDate();
-  const bar=(v,c,lbl)=>`<span class="br ${c}" style="--h:${Math.round(76*v/MX)}%">${lbl?`<em>${k0(v)}</em>`:""}</span>`;
-  const inner=o=>{const v=keys.filter(k=>o[k]!=null);if(!v.length)return `<span class="bz"><span class="nd">–</span></span>`;
-    return `<span class="bz">${keys.map(k=>o[k]==null?`<span class="br ${k}" style="--h:0%;opacity:0"></span>`:bar(o[k],k,!sp)).join("")}</span>`};
-  const box=(o,id,lbl,extra)=>`<button type="button" class="cc${extra||""}${chartSel===id?" sel":""}" data-cd="${id}" aria-label="${lbl}"><i>${lbl}</i>${inner(o)}</button>`;
-  let h=["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"].map(x=>`<span class="wh">${x}</span>`).join("");
-  h+=`<span class="cc x"></span>`.repeat(days[0].w);
-  days.forEach(o=>h+=box(o,String(o.d),o.d,isT(o.d)?" td":""));
-  h+=`<span class="avl">Moyenne par jour de semaine</span>`;
-  avg.forEach(o=>h+=box(o,"a"+o.w,"moy."," avg"));
-  $("#chart").innerHTML=`<div class="cal${sp?" split":""}" role="group" aria-label="CA jour par jour">${h}</div>`;
+  let g="",bars="",lbl="";
+  let wk=0;days.forEach((o,i)=>{if(o.w===0&&wk++%2===0)g+=`<rect class="wk" x="${CG.left+i*bw}" y="0" width="${bw*Math.min(7,n-i)}" height="${base}"/>`});   // une semaine sur deux grisée
+  days.forEach((o,i)=>{const x=CG.left+i*bw,w=Math.max(3,bw-3),cx=x+bw/2,v=o[k],sel=chartSel==o.d;
+    if(sel)g+=`<rect class="cur" x="${x}" y="0" width="${bw}" height="${H}" rx="4"/>`;
+    if(v){const h=Math.max(2,sc(v)),y=base-h,r=Math.min(4,w/2,h),bx=x+1.5;
+      bars+=`<path class="bar ${k}${sel?" sel":""}" d="M${bx} ${base}V${y+r}Q${bx} ${y} ${bx+r} ${y}H${bx+w-r}Q${bx+w} ${y} ${bx+w} ${y+r}V${base}Z"/>`;
+      if(sel)lbl+=`<text class="vl" x="${Math.min(W-2,Math.max(2,cx))}" y="${y-5}" text-anchor="${cx<24?"start":cx>W-24?"end":"middle"}">${k0(v)}</text>`}
+    lbl+=`<text x="${cx}" y="${base+12}" text-anchor="middle"${isT(o.d)?' class="td"':""}>${"LMMJVSD"[o.w]}</text>`;
+    if(o.w===0||o.d===1||sel)lbl+=`<text x="${cx}" y="${base+25}" text-anchor="middle" class="${isT(o.d)?"td":""}"${sel?' style="fill:var(--fg);font-weight:800"':""}>${o.d}</text>`});
+  return `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" data-k="${k}" role="img" aria-label="CA jour par jour">${g}
+    <line x1="0" y1="${CG.top}" x2="${W}" y2="${CG.top}" class="grid"/><text x="${W-2}" y="${CG.top-6}" text-anchor="end" class="mx">${e0(MX)}</text>
+    <line x1="0" y1="${base}" x2="${W}" y2="${base}" class="base"/>${bars}${lbl}</svg>`;
 }
-function chartTip(id){
-  const sp=SPLIT(),{days,avg}=chartVals();
-  const det=o=>`<span>(midi ${o.m==null?"–":eur(Math.round(o.m*100)/100)} · soir ${o.s==null?"–":eur(Math.round(o.s*100)/100)})</span>`;
-  if(id[0]==="a"){const o=avg[+id.slice(1)];
-    $("#tip").innerHTML=`<b>Moyenne des ${JOURS[o.w]}</b> : `+(sp?`midi <b>${o.m==null?"–":e0(o.m)}</b> · soir <b>${o.s==null?"–":e0(o.s)}</b>`:`${o.j==null?"pas de chiffre":e0(o.j)}`)+(o.nj?` <span>sur ${o.nj} jour${o.nj>1?"s":""}</span>`:"");return}
-  const o=days[+id-1];
-  $("#tip").innerHTML=`<b>${esc(cap(wd(S.y,S.m,o.d)))} ${o.d}</b> : ${o.j==null?"pas de chiffre":eur(o.j)} ${o.m!=null||o.s!=null?det(o):""}`;
+function drawChart(){
+  const {days}=chartVals(),sp=SPLIT();$("#lg").hidden=!sp;
+  if(!days.some(x=>x.j!=null)){$("#chart").innerHTML=`<div class="tip">Pas encore de CA saisi ce mois-ci.</div>`;return}
+  const W=Math.max(280,$("#chart").clientWidth||340);
+  const keys=sp?["m","s"]:["j"];const MX=Math.max(1,...days.flatMap(x=>keys.map(k=>x[k]||0)));
+  $("#chart").innerHTML=sp?`<div class="ch-t m">☀️ Midi</div>${chartSVG(days,"m",140,MX,W)}<div class="ch-t s">🌙 Soir</div>${chartSVG(days,"s",140,MX,W)}`:chartSVG(days,"j",180,MX,W);
 }
+function chartTip(){
+  const {days}=chartVals();const o=days[chartSel-1];if(!o)return;
+  const det=`<span>(midi ${o.m==null?"–":eur(o.m)} · soir ${o.s==null?"–":eur(o.s)})</span>`;
+  $("#tip").innerHTML=`<b>${esc(cap(wd(S.y,S.m,o.d)))} ${o.d}</b> : ${o.j==null?"pas de chiffre":eur(o.j)} ${o.m!=null||o.s!=null?det:""}`;
+}
+function chartPick(d){const n=daysIn(S.y,S.m);d=Math.max(1,Math.min(n,d));if(d===chartSel)return;chartSel=d;chartTip();drawChart()}
+function dayAt(e){const sv=e.target.closest("svg");if(!sv)return null;const r=sv.getBoundingClientRect(),W=sv.viewBox.baseVal.width;
+  const x=(e.clientX-r.left)*W/r.width;return Math.floor((x-CG.left)/((W-CG.left*2)/daysIn(S.y,S.m)))+1}
+let chartDown=false;
+$("#chart").addEventListener("pointerdown",e=>{const d=dayAt(e);if(d==null)return;chartDown=true;chartPick(d)});
+$("#chart").addEventListener("pointermove",e=>{if(!chartDown)return;const d=dayAt(e);if(d!=null)chartPick(d)});
+["pointerup","pointercancel","pointerleave"].forEach(t=>$("#chart").addEventListener(t,()=>chartDown=false));
+$("#cPrev").onclick=()=>chartPick((chartSel||now.getDate()+1)-1);
+$("#cNext").onclick=()=>chartPick((chartSel||0)+1);
 addEventListener("resize",()=>{if(!$("#chartBox").hidden)drawChart()});
 $("#chartBtn").onclick=()=>{const b=$("#chartBox");b.hidden=!b.hidden;$("#chartBtn").setAttribute("aria-expanded",!b.hidden);try{localStorage.setItem("chiffres2b-graph",b.hidden?"0":"1")}catch{}if(!b.hidden)drawChart()};
 try{if(localStorage.getItem("chiffres2b-graph")==="1"){$("#chartBox").hidden=false;$("#chartBtn").setAttribute("aria-expanded","true")}}catch{}
-$("#split").addEventListener("change",()=>{drawChart();if(chartSel)chartTip(chartSel)});
-$("#chart").addEventListener("click",e=>{const r=e.target.closest("[data-cd]");if(!r)return;chartSel=r.dataset.cd;chartTip(chartSel);
-  $("#chart").querySelectorAll(".cc.sel").forEach(b=>b.classList.remove("sel"));r.classList.add("sel")});
+$("#split").addEventListener("change",drawChart);
 
 /* ---------- Saisie : enregistrée pendant qu'on tape (après une petite pause) et en quittant la case ---------- */
 const timers={};
@@ -613,10 +615,10 @@ function goDay(delta){
   flushAll();document.activeElement&&document.activeElement.blur&&document.activeElement.blur();
   const dt=new Date(S.y,S.m,S.d+delta);const mChanged=dt.getMonth()!==S.m||dt.getFullYear()!==S.y;
   S.y=dt.getFullYear();S.m=dt.getMonth();S.d=dt.getDate();
-  if(mChanged){chartSel=null;$("#tip").textContent="Touche un jour pour voir le détail.";S.data={};render();load()}else render();
+  if(mChanged){chartSel=null;$("#tip").textContent="Touche le graphique pour voir le détail d'un jour.";S.data={};render();load()}else render();
 }
 function goMonth(delta){
-  flushAll();chartSel=null;$("#tip").textContent="Touche un jour pour voir le détail.";const dt=new Date(S.y,S.m+delta,1);S.y=dt.getFullYear();S.m=dt.getMonth();
+  flushAll();chartSel=null;$("#tip").textContent="Touche le graphique pour voir le détail d'un jour.";const dt=new Date(S.y,S.m+delta,1);S.y=dt.getFullYear();S.m=dt.getMonth();
   S.d=S.y===now.getFullYear()&&S.m===now.getMonth()?now.getDate():1;S.data={};render();load();
 }
 $("#dPrev").onclick=()=>goDay(-1);$("#dNext").onclick=()=>goDay(1);
