@@ -75,11 +75,39 @@ header.top{display:flex;align-items:center;gap:14px}
 .chartbtn{margin-top:10px;width:100%;height:46px;border-radius:14px;border:1px solid var(--line);background:var(--surface);font-weight:700;font-size:15px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:8px}
 .chartbtn .cv{transition:transform .2s}.chartbtn[aria-expanded="true"] .cv{transform:rotate(180deg)}
 .chartbox{margin-top:8px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px 10px 6px}
-.chartbox svg{width:100%;display:block;overflow:visible}
-.chartbox .bar{fill:var(--midi)} .chartbox .bar.sel{fill:var(--fg)}
-.chartbox .grid{stroke:var(--line);stroke-dasharray:3 3} .chartbox .base{stroke:var(--muted);stroke-width:1}
-.chartbox text{font-size:11px;fill:var(--muted);font-family:var(--body)} .chartbox .mx{font-weight:700}
-.tip{font-size:14px;color:var(--muted);min-height:20px;margin:0 2px 6px}.tip b{color:var(--fg)}.tip span{font-size:13px}
+/* Calendrier du mois : une grosse case par jour (facile à toucher), couleur d'autant plus forte que le CA est haut */
+.chopt{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 2px 8px}
+.sw{display:flex;align-items:center;gap:10px;min-height:44px;font-weight:700;font-size:15px;cursor:pointer;user-select:none}
+.sw input{position:absolute;opacity:0;pointer-events:none}
+.sw .tg{width:46px;height:28px;border-radius:99px;background:var(--line);position:relative;flex:none;transition:background .2s}
+.sw .tg::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.sw input:checked+.tg{background:var(--accent)} .sw input:checked+.tg::after{transform:translateX(18px)}
+.sw input:focus-visible+.tg{outline:2px solid var(--fg);outline-offset:2px}
+.lg{display:flex;gap:10px;font-size:13px;font-weight:700;color:var(--muted)} .lg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.tip{font-size:15px;color:var(--muted);min-height:62px;margin:0 2px 8px;padding:9px 12px;border-radius:12px;background:var(--sunken);line-height:1.3}.tip b{color:var(--fg)}.tip span{font-size:14px}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;animation:calIn .18s ease-out}
+@keyframes calIn{from{opacity:.4}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.cal{animation:none}}
+.cal .wh{font-size:12px;font-weight:800;color:var(--muted);text-align:center;text-transform:uppercase;letter-spacing:.03em;padding:2px 0}
+.cc{min-height:56px;border:0;border-radius:10px;padding:4px 2px;background:var(--sunken);color:var(--fg);font:inherit;display:flex;flex-direction:column;align-items:stretch;gap:3px;cursor:pointer;position:relative}
+.cc.x{background:none;cursor:default}
+.cc i{font-style:normal;font-size:12px;font-weight:700;color:var(--muted);text-align:left;padding-left:4px;line-height:1}
+.cc.td i{color:var(--accent);font-weight:800}
+.cc b,.cc .m,.cc .s{font-size:14px;font-weight:800;text-align:center;font-variant-numeric:tabular-nums;border-radius:7px;line-height:1.1;white-space:nowrap;overflow:hidden}
+.cc b{flex:1;display:flex;align-items:center;justify-content:center;margin:0 -2px -4px;border-radius:0 0 10px 10px}
+.cc .m,.cc .s{font-size:13px;padding:4px 0}
+.cc .m{background:color-mix(in srgb,var(--midi) var(--p),var(--surface))}
+.cc .s{background:color-mix(in srgb,var(--soir) var(--p),var(--surface))}
+.cc.v{background:color-mix(in srgb,var(--accent) var(--p),var(--surface))}
+.cc .e{color:var(--muted);font-weight:600}
+.cc.sel{box-shadow:0 0 0 2.5px var(--fg)}
+.cal .avg{background:none;border:1.5px dashed var(--line)}
+.cal .avl{grid-column:1/-1;font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:6px}
+.cal.split .cc{min-height:72px}
+@media (prefers-color-scheme:dark){   /* couleurs plus douces : le chiffre clair reste lisible */
+  .cc .m{background:color-mix(in srgb,var(--midi) calc(var(--p)*.7),var(--surface))}
+  .cc .s{background:color-mix(in srgb,var(--soir) calc(var(--p)*.7),var(--surface))}
+  .cc.v{background:color-mix(in srgb,var(--accent) calc(var(--p)*.7),var(--surface))}}
 .daytot small{font-weight:500}
 
 /* Saisie du jour */
@@ -288,8 +316,10 @@ html.vue-plats #vPlats{display:block} html.vue-plats #vMois{display:none}
   </div>
 
   <div class="kpis" id="kpis"></div>
-  <button class="chartbtn" id="chartBtn" type="button" aria-expanded="false">📈 Graphique du CA jour par jour <span class="cv">▾</span></button>
-  <div class="chartbox" id="chartBox" hidden><div class="tip" id="tip">Touche une barre pour voir le détail du jour.</div><div id="chart"></div></div>
+  <button class="chartbtn" id="chartBtn" type="button" aria-expanded="false">📅 CA jour par jour <span class="cv">▾</span></button>
+  <div class="chartbox" id="chartBox" hidden>
+    <div class="chopt"><label class="sw"><input type="checkbox" id="split" autocomplete="off"><span class="tg"></span>Séparer midi et soir</label><span class="lg" id="lg" hidden><span><i style="background:var(--midi)"></i>Midi</span><span><i style="background:var(--soir)"></i>Soir</span></span></div>
+    <div class="tip" id="tip">Touche un jour pour voir le détail.</div><div id="chart"></div></div>
 
   <section class="day" aria-label="Saisie du jour">
     <div class="dayhead">
@@ -520,26 +550,49 @@ function compactHTML(){
     <tfoot><tr><td class="d">Total</td>${svc(s.ca_midi,s.midi_sp,s.midi_emp,s.burgers_midi)}${svc(s.ca_soir,s.soir_sp,s.soir_emp,s.burgers_soir)}${dayCell(s,s.refuses)}</tr></tfoot>`;
 }
 
-/* Graphique : CA total de chaque jour du mois (une seule série), détail au toucher */
+/* Graphique : calendrier du mois, lundi → dimanche. Une case par jour avec son CA écrit dedans,
+   plus une ligne « Moyenne » par jour de semaine pour comparer les lundis entre eux, etc.
+   « Séparer midi et soir » (décoché au départ) coupe chaque case en deux, chaque service avec sa propre échelle. */
+const k0=v=>new Intl.NumberFormat("fr-FR",{maximumFractionDigits:0}).format(Math.round(v));
+const pct=(v,max)=>v==null||!max?0:Math.round(14+46*v/max);
+const SPLIT=()=>$("#split").checked;
+const JOURS=["lundis","mardis","mercredis","jeudis","vendredis","samedis","dimanches"];
+function chartVals(){
+  const n=daysIn(S.y,S.m),days=[];
+  for(let d=1;d<=n;d++){const r=S.data[key(S.y,S.m,d)]||{};days.push({d,w:(new Date(S.y,S.m,d).getDay()+6)%7,j:totals(r).ca,m:val(r,"ca_midi"),s:soirCA(r)})}
+  const avg=[...Array(7)].map((_,w)=>{const o={w};["j","m","s"].forEach(k=>{const v=days.filter(x=>x.w===w&&x[k]!=null).map(x=>x[k]);o[k]=v.length?v.reduce((a,b)=>a+b,0)/v.length:null;o["n"+k]=v.length});return o});
+  return {days,avg};
+}
+let chartSel=null;
 function drawChart(){
-  const n=daysIn(S.y,S.m),W=Math.max(280,$("#chart").clientWidth||340),H=150,top=12,bot=22,left=4,bw=(W-left*2)/n;
-  const vals=[];for(let d=1;d<=n;d++){const t=totals(S.data[key(S.y,S.m,d)]||{});vals.push(t.ca)}
-  const max=Math.max(...vals.map(v=>v||0));const sc=v=>max?(H-top-bot)*v/max:0;
-  let bars="",hits="",lbl="";
-  vals.forEach((v,i)=>{const x=left+i*bw,w=Math.max(2,bw-3),h=sc(v||0),y=H-bot-h;
-    if(v){const r=Math.min(4,w/2,h);bars+=`<path d="M${x} ${H-bot}V${y+r}Q${x} ${y} ${x+r} ${y}H${x+w-r}Q${x+w} ${y} ${x+w} ${y+r}V${H-bot}Z" class="bar${i+1===S.d?" sel":""}"/>`}
-    hits+=`<rect x="${x}" y="0" width="${bw}" height="${H}" fill="transparent" data-cd="${i+1}"/>`;
-    if((i+1)%5===0||i===0)lbl+=`<text x="${x+w/2}" y="${H-6}" text-anchor="middle">${i+1}</text>`});
-  $("#chart").innerHTML=max?`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="CA jour par jour, maximum ${eur(max)}">
-    <line x1="0" y1="${top}" x2="${W}" y2="${top}" class="grid"/><text x="${W-2}" y="${top-3}" text-anchor="end" class="mx">${e0(max)}</text>
-    <line x1="0" y1="${H-bot}" x2="${W}" y2="${H-bot}" class="base"/>${bars}${lbl}${hits}</svg>`:`<div class="tip">Pas encore de CA saisi ce mois-ci.</div>`;
+  const {days,avg}=chartVals(),sp=SPLIT();$("#lg").hidden=!sp;
+  if(!days.some(x=>x.j!=null)){$("#chart").innerHTML=`<div class="tip">Pas encore de CA saisi ce mois-ci.</div>`;return}
+  const mx=k=>Math.max(0,...days.map(x=>x[k]||0));const MX={j:mx("j"),m:mx("m"),s:mx("s")};
+  const isT=d=>S.y===now.getFullYear()&&S.m===now.getMonth()&&d===now.getDate();
+  const inner=(o,avgRow)=>sp?`<span class="m" style="--p:${pct(o.m,MX.m)}%">${o.m==null?"–":k0(o.m)}</span><span class="s" style="--p:${pct(o.s,MX.s)}%">${o.s==null?"–":k0(o.s)}</span>`
+    :`<b class="${o.j==null?"e":""}">${o.j==null?"–":k0(o.j)}</b>`;
+  const box=(o,id,lbl,extra)=>`<button type="button" class="cc${!sp&&o.j!=null?" v":""}${extra||""}${chartSel===id?" sel":""}" data-cd="${id}" style="--p:${pct(o.j,MX.j)}%"><i>${lbl}</i>${inner(o)}</button>`;
+  let h=["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"].map(x=>`<span class="wh">${x}</span>`).join("");
+  h+=`<span class="cc x"></span>`.repeat(days[0].w);
+  days.forEach(o=>h+=box(o,String(o.d),o.d,isT(o.d)?" td":""));
+  h+=`<span class="avl">Moyenne par jour de semaine</span>`;
+  avg.forEach(o=>h+=box(o,"a"+o.w,"moy."," avg"));
+  $("#chart").innerHTML=`<div class="cal${sp?" split":""}" role="group" aria-label="CA jour par jour">${h}</div>`;
+}
+function chartTip(id){
+  const sp=SPLIT(),{days,avg}=chartVals();
+  const det=o=>`<span>(midi ${o.m==null?"–":eur(Math.round(o.m*100)/100)} · soir ${o.s==null?"–":eur(Math.round(o.s*100)/100)})</span>`;
+  if(id[0]==="a"){const o=avg[+id.slice(1)];
+    $("#tip").innerHTML=`<b>Moyenne des ${JOURS[o.w]}</b> : `+(sp?`midi <b>${o.m==null?"–":e0(o.m)}</b> · soir <b>${o.s==null?"–":e0(o.s)}</b>`:`${o.j==null?"pas de chiffre":e0(o.j)}`)+(o.nj?` <span>sur ${o.nj} jour${o.nj>1?"s":""}</span>`:"");return}
+  const o=days[+id-1];
+  $("#tip").innerHTML=`<b>${esc(cap(wd(S.y,S.m,o.d)))} ${o.d}</b> : ${o.j==null?"pas de chiffre":eur(o.j)} ${o.m!=null||o.s!=null?det(o):""}`;
 }
 addEventListener("resize",()=>{if(!$("#chartBox").hidden)drawChart()});
 $("#chartBtn").onclick=()=>{const b=$("#chartBox");b.hidden=!b.hidden;$("#chartBtn").setAttribute("aria-expanded",!b.hidden);try{localStorage.setItem("chiffres2b-graph",b.hidden?"0":"1")}catch{}if(!b.hidden)drawChart()};
 try{if(localStorage.getItem("chiffres2b-graph")==="1"){$("#chartBox").hidden=false;$("#chartBtn").setAttribute("aria-expanded","true")}}catch{}
-$("#chart").addEventListener("click",e=>{const r=e.target.closest("[data-cd]");if(!r)return;const d=+r.dataset.cd;const row=S.data[key(S.y,S.m,d)]||{};const t=totals(row);
-  $("#tip").innerHTML=`<b>${esc(cap(wd(S.y,S.m,d)))} ${d}</b> : ${t.ca==null?"pas de chiffre":eur(t.ca)}${val(row,"ca_midi")!=null||soirCA(row)!=null?` <span>(midi ${val(row,"ca_midi")==null?"–":eur(val(row,"ca_midi"))} · soir ${soirCA(row)==null?"–":eur(soirCA(row))})</span>`:""}`;
-  $("#chart").querySelectorAll(".bar").forEach(b=>b.classList.remove("sel"))});
+$("#split").addEventListener("change",()=>{drawChart();if(chartSel)chartTip(chartSel)});
+$("#chart").addEventListener("click",e=>{const r=e.target.closest("[data-cd]");if(!r)return;chartSel=r.dataset.cd;chartTip(chartSel);
+  $("#chart").querySelectorAll(".cc.sel").forEach(b=>b.classList.remove("sel"));r.classList.add("sel")});
 
 /* ---------- Saisie : enregistrée pendant qu'on tape (après une petite pause) et en quittant la case ---------- */
 const timers={};
@@ -563,10 +616,10 @@ function goDay(delta){
   flushAll();document.activeElement&&document.activeElement.blur&&document.activeElement.blur();
   const dt=new Date(S.y,S.m,S.d+delta);const mChanged=dt.getMonth()!==S.m||dt.getFullYear()!==S.y;
   S.y=dt.getFullYear();S.m=dt.getMonth();S.d=dt.getDate();
-  if(mChanged){S.data={};render();load()}else render();
+  if(mChanged){chartSel=null;$("#tip").textContent="Touche un jour pour voir le détail.";S.data={};render();load()}else render();
 }
 function goMonth(delta){
-  flushAll();const dt=new Date(S.y,S.m+delta,1);S.y=dt.getFullYear();S.m=dt.getMonth();
+  flushAll();chartSel=null;$("#tip").textContent="Touche un jour pour voir le détail.";const dt=new Date(S.y,S.m+delta,1);S.y=dt.getFullYear();S.m=dt.getMonth();
   S.d=S.y===now.getFullYear()&&S.m===now.getMonth()?now.getDate():1;S.data={};render();load();
 }
 $("#dPrev").onclick=()=>goDay(-1);$("#dNext").onclick=()=>goDay(1);
