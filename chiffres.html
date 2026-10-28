@@ -75,7 +75,7 @@ header.top{display:flex;align-items:center;gap:14px}
 .chartbtn{margin-top:10px;width:100%;height:46px;border-radius:14px;border:1px solid var(--line);background:var(--surface);font-weight:700;font-size:15px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:8px}
 .chartbtn .cv{transition:transform .2s}.chartbtn[aria-expanded="true"] .cv{transform:rotate(180deg)}
 .chartbox{margin-top:8px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px 10px 6px}
-/* Calendrier du mois : une grosse case par jour (facile à toucher), couleur d'autant plus forte que le CA est haut */
+/* Calendrier du mois : une grosse case par jour (facile à toucher) avec une barre, toutes à la même échelle */
 .chopt{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 2px 8px}
 .sw{display:flex;align-items:center;gap:10px;min-height:44px;font-weight:700;font-size:15px;cursor:pointer;user-select:none}
 .sw input{position:absolute;opacity:0;pointer-events:none}
@@ -89,25 +89,21 @@ header.top{display:flex;align-items:center;gap:14px}
 @keyframes calIn{from{opacity:.4}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){.cal{animation:none}}
 .cal .wh{font-size:12px;font-weight:800;color:var(--muted);text-align:center;text-transform:uppercase;letter-spacing:.03em;padding:2px 0}
-.cc{min-height:56px;border:0;border-radius:10px;padding:4px 2px;background:var(--sunken);color:var(--fg);font:inherit;display:flex;flex-direction:column;align-items:stretch;gap:3px;cursor:pointer;position:relative}
+.cc{border:0;border-radius:10px;padding:5px 0 0;background:var(--sunken);color:var(--fg);font:inherit;display:flex;flex-direction:column;align-items:stretch;gap:2px;cursor:pointer;position:relative}
 .cc.x{background:none;cursor:default}
-.cc i{font-style:normal;font-size:12px;font-weight:700;color:var(--muted);text-align:left;padding-left:4px;line-height:1}
+.cc i{font-style:normal;font-size:12px;font-weight:700;color:var(--muted);text-align:left;padding-left:6px;line-height:1}
 .cc.td i{color:var(--accent);font-weight:800}
-.cc b,.cc .m,.cc .s{font-size:14px;font-weight:800;text-align:center;font-variant-numeric:tabular-nums;border-radius:7px;line-height:1.1;white-space:nowrap;overflow:hidden}
-.cc b{flex:1;display:flex;align-items:center;justify-content:center;margin:0 -2px -4px;border-radius:0 0 10px 10px}
-.cc .m,.cc .s{font-size:13px;padding:4px 0}
-.cc .m{background:color-mix(in srgb,var(--midi) var(--p),var(--surface))}
-.cc .s{background:color-mix(in srgb,var(--soir) var(--p),var(--surface))}
-.cc.v{background:color-mix(in srgb,var(--accent) var(--p),var(--surface))}
-.cc .e{color:var(--muted);font-weight:600}
-.cc.sel{box-shadow:0 0 0 2.5px var(--fg)}
+/* Barres : même échelle pour toutes les cases, la valeur écrite au-dessus */
+.cc .bz{height:74px;display:flex;align-items:flex-end;justify-content:center;gap:3px;margin:0 4px;border-bottom:2px solid var(--line)}
+.cc .br{width:62%;max-width:26px;height:var(--h);min-height:3px;border-radius:5px 5px 0 0;background:var(--accent);position:relative;transition:height .25s ease-out}
+.cal.split .br{width:40%}
+.cc .br.m{background:var(--midi)} .cc .br.s{background:var(--soir)}
+.cc .br em{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:2px;font-style:normal;font-size:12px;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--fg)}
+.cc .nd{align-self:flex-end;color:var(--muted);font-weight:700;padding-bottom:4px}
+.cc.sel{box-shadow:0 0 0 2.5px var(--fg);background:var(--surface)}
 .cal .avg{background:none;border:1.5px dashed var(--line)}
 .cal .avl{grid-column:1/-1;font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:6px}
-.cal.split .cc{min-height:72px}
-@media (prefers-color-scheme:dark){   /* couleurs plus douces : le chiffre clair reste lisible */
-  .cc .m{background:color-mix(in srgb,var(--midi) calc(var(--p)*.7),var(--surface))}
-  .cc .s{background:color-mix(in srgb,var(--soir) calc(var(--p)*.7),var(--surface))}
-  .cc.v{background:color-mix(in srgb,var(--accent) calc(var(--p)*.7),var(--surface))}}
+@media (prefers-reduced-motion:reduce){.cc .br{transition:none}}
 .daytot small{font-weight:500}
 
 /* Saisie du jour */
@@ -554,7 +550,6 @@ function compactHTML(){
    plus une ligne « Moyenne » par jour de semaine pour comparer les lundis entre eux, etc.
    « Séparer midi et soir » (décoché au départ) coupe chaque case en deux, chaque service avec sa propre échelle. */
 const k0=v=>new Intl.NumberFormat("fr-FR",{maximumFractionDigits:0}).format(Math.round(v));
-const pct=(v,max)=>v==null||!max?0:Math.round(14+46*v/max);
 const SPLIT=()=>$("#split").checked;
 const JOURS=["lundis","mardis","mercredis","jeudis","vendredis","samedis","dimanches"];
 function chartVals(){
@@ -567,11 +562,13 @@ let chartSel=null;
 function drawChart(){
   const {days,avg}=chartVals(),sp=SPLIT();$("#lg").hidden=!sp;
   if(!days.some(x=>x.j!=null)){$("#chart").innerHTML=`<div class="tip">Pas encore de CA saisi ce mois-ci.</div>`;return}
-  const mx=k=>Math.max(0,...days.map(x=>x[k]||0));const MX={j:mx("j"),m:mx("m"),s:mx("s")};
+  // une seule échelle : le plus gros chiffre affiché (journée, ou midi/soir quand c'est séparé)
+  const keys=sp?["m","s"]:["j"];const MX=Math.max(1,...days.flatMap(x=>keys.map(k=>x[k]||0)));
   const isT=d=>S.y===now.getFullYear()&&S.m===now.getMonth()&&d===now.getDate();
-  const inner=(o,avgRow)=>sp?`<span class="m" style="--p:${pct(o.m,MX.m)}%">${o.m==null?"–":k0(o.m)}</span><span class="s" style="--p:${pct(o.s,MX.s)}%">${o.s==null?"–":k0(o.s)}</span>`
-    :`<b class="${o.j==null?"e":""}">${o.j==null?"–":k0(o.j)}</b>`;
-  const box=(o,id,lbl,extra)=>`<button type="button" class="cc${!sp&&o.j!=null?" v":""}${extra||""}${chartSel===id?" sel":""}" data-cd="${id}" style="--p:${pct(o.j,MX.j)}%"><i>${lbl}</i>${inner(o)}</button>`;
+  const bar=(v,c,lbl)=>`<span class="br ${c}" style="--h:${Math.round(76*v/MX)}%">${lbl?`<em>${k0(v)}</em>`:""}</span>`;
+  const inner=o=>{const v=keys.filter(k=>o[k]!=null);if(!v.length)return `<span class="bz"><span class="nd">–</span></span>`;
+    return `<span class="bz">${keys.map(k=>o[k]==null?`<span class="br ${k}" style="--h:0%;opacity:0"></span>`:bar(o[k],k,!sp)).join("")}</span>`};
+  const box=(o,id,lbl,extra)=>`<button type="button" class="cc${extra||""}${chartSel===id?" sel":""}" data-cd="${id}" aria-label="${lbl}"><i>${lbl}</i>${inner(o)}</button>`;
   let h=["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"].map(x=>`<span class="wh">${x}</span>`).join("");
   h+=`<span class="cc x"></span>`.repeat(days[0].w);
   days.forEach(o=>h+=box(o,String(o.d),o.d,isT(o.d)?" td":""));
