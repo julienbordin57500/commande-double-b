@@ -24,7 +24,7 @@ if(d)try{e.viewTransition.types.add(d)}catch(x){}else e.viewTransition.skipTrans
 :root{
   --bg:#f4f2ec; --surface:#ffffff; --sunken:#f9f7f2; --line:#e6e1d5; --fg:#1d1b17; --muted:#6f695d;
   --accent:#f2a516; --accent-ink:#2a1d00; --accent-soft:#fdf1d6; --go:#2f7d4f; --go-soft:#e3f2e8; --danger:#c23a2b;
-  --priv:#c2410c; --priv-soft:#fdeadf; --trait:#2f5d9e; --trait-soft:#e4ecf8; --note:#2f7d4f; --note-soft:#e3f2e8;
+  --priv:#c2410c; --priv-soft:#fdeadf; --trait:#2f5d9e; --trait-soft:#e4ecf8; --note:#2f7d4f; --note-soft:#e3f2e8; --theme:#7c3aed; --theme-soft:#ede4fb;
   --display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
   --body:"Figtree","Segoe UI",system-ui,sans-serif;
   color-scheme:light;
@@ -32,7 +32,7 @@ if(d)try{e.viewTransition.types.add(d)}catch(x){}else e.viewTransition.skipTrans
 @media (prefers-color-scheme: dark){:root{
   --bg:#141310; --surface:#1f1d18; --sunken:#191814; --line:#34312a; --fg:#f3efe5; --muted:#a69f90;
   --accent:#f5b232; --accent-ink:#231800; --accent-soft:#3a2e12; --go:#5fbf86; --go-soft:#16301f; --danger:#e8705f;
-  --priv:#fb923c; --priv-soft:#3b2414; --trait:#8db7ee; --trait-soft:#1b2a40; --note:#5fbf86; --note-soft:#16301f; color-scheme:dark}}
+  --priv:#fb923c; --priv-soft:#3b2414; --trait:#8db7ee; --trait-soft:#1b2a40; --note:#5fbf86; --note-soft:#16301f; --theme:#c4a5f5; --theme-soft:#2a1f3d; color-scheme:dark}}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.35;
@@ -69,7 +69,7 @@ a{color:inherit}
 .ev .t{flex:1;min-width:0}
 .ev .t b{display:block;font-size:16.5px;font-weight:800;line-height:1.2;overflow-wrap:anywhere}
 .ev .t small{display:block;font-size:14px;color:var(--muted);font-weight:600;margin-top:2px}
-.ev.privatisation{--c:var(--priv);--soft:var(--priv-soft)} .ev.traiteur{--c:var(--trait);--soft:var(--trait-soft)} .ev.note{--c:var(--note);--soft:var(--note-soft)}
+.ev.privatisation{--c:var(--priv);--soft:var(--priv-soft)} .ev.traiteur{--c:var(--trait);--soft:var(--trait-soft)} .ev.note{--c:var(--note);--soft:var(--note-soft)} .ev.theme{--c:var(--theme);--soft:var(--theme-soft)}
 .st{flex:none;font-size:12px;font-weight:800;padding:4px 9px;border-radius:999px;background:var(--surface);color:var(--muted);white-space:nowrap}
 .st.confirme{color:var(--go)}
 
@@ -193,7 +193,7 @@ if(window.Profil&&Profil.notifs){Profil.notifs.load();news(Profil.notifs.unread(
 $("#news").onclick=()=>window.Profil&&Profil.notifs.open();
 
 /* Au programme : aujourd'hui et demain */
-const TYPES={privatisation:"🏠",traiteur:"🚚",note:"📌"};
+const TYPES={privatisation:"🏠",traiteur:"🚚",theme:"🎉",note:"📌"};
 const STAT={option:"En option",confirme:"Confirmé"};
 function drawEv(list){
   list=(list||[]).filter(e=>e.statut!=="annule");

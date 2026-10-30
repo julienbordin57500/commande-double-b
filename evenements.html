@@ -23,7 +23,7 @@ if(d)try{e.viewTransition.types.add(d)}catch(x){}else e.viewTransition.skipTrans
 :root{
   --bg:#f4f2ec; --surface:#ffffff; --sunken:#f9f7f2; --line:#e6e1d5; --fg:#1d1b17; --muted:#6f695d;
   --accent:#f2a516; --accent-ink:#2a1d00; --accent-soft:#fdf1d6; --go:#2f7d4f; --danger:#c23a2b;
-  --priv:#c2410c; --priv-soft:#fde4d3; --trait:#2f5d9e; --trait-soft:#e2ebf8; --note:#2f7d4f; --note-soft:#dff1e6;
+  --priv:#c2410c; --priv-soft:#fde4d3; --trait:#2f5d9e; --trait-soft:#e2ebf8; --note:#2f7d4f; --note-soft:#dff1e6; --theme:#7c3aed; --theme-soft:#ede4fb;
   --display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
   --body:"Figtree","Segoe UI",system-ui,sans-serif;
   color-scheme:light;
@@ -31,7 +31,7 @@ if(d)try{e.viewTransition.types.add(d)}catch(x){}else e.viewTransition.skipTrans
 @media (prefers-color-scheme: dark){:root{
   --bg:#141310; --surface:#1f1d18; --sunken:#191814; --line:#34312a; --fg:#f3efe5; --muted:#a69f90;
   --accent:#f5b232; --accent-ink:#231800; --accent-soft:#3a2e12; --go:#4fae78; --danger:#e8705f;
-  --priv:#fb923c; --priv-soft:#3b2414; --trait:#8db7ee; --trait-soft:#1b2a40; --note:#5fbf86; --note-soft:#16301f; color-scheme:dark}}
+  --priv:#fb923c; --priv-soft:#3b2414; --trait:#8db7ee; --trait-soft:#1b2a40; --note:#5fbf86; --note-soft:#16301f; --theme:#c4a5f5; --theme-soft:#2a1f3d; color-scheme:dark}}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.35;-webkit-tap-highlight-color:transparent;
@@ -78,7 +78,7 @@ header.top{display:flex;align-items:center;gap:14px}
 .day.sel{border-color:var(--accent);background:var(--accent-soft)}
 .day .tags{display:flex;flex-direction:column;gap:2px;width:100%}
 .day .t{display:block;height:7px;border-radius:4px;width:100%;overflow:hidden;font-size:0;color:transparent;line-height:0}
-.day .t.privatisation{background:var(--priv)} .day .t.traiteur{background:var(--trait)} .day .t.note{background:var(--note)}
+.day .t.privatisation{background:var(--priv)} .day .t.traiteur{background:var(--trait)} .day .t.note{background:var(--note)} .day .t.theme{background:var(--theme)}
 .day .t.option{opacity:.45}
 .day .more{font-size:10px;font-weight:800;color:var(--muted);line-height:1}
 @media (min-width:560px){.day{min-height:78px}.day .t{height:auto;line-height:1.3;font-size:11px;font-weight:700;color:#fff;padding:1px 4px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
@@ -93,17 +93,18 @@ header.top{display:flex;align-items:center;gap:14px}
 .list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
 .ev{display:flex;gap:12px;align-items:stretch;padding:12px;border-radius:16px;border:1px solid var(--line);background:var(--sunken);text-align:left;width:100%}
 .ev .bar{flex:none;width:6px;border-radius:3px}
-.ev.privatisation .bar{background:var(--priv)} .ev.traiteur .bar{background:var(--trait)} .ev.note .bar{background:var(--note)}
+.ev.privatisation .bar{background:var(--priv)} .ev.traiteur .bar{background:var(--trait)} .ev.note .bar{background:var(--note)} .ev.theme .bar{background:var(--theme)}
 .ev.note b{font-size:16px;font-weight:700;white-space:normal}
 .ev .body{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
 .ev .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .ev b{font-size:18px;font-weight:800}
 .ty{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;border-radius:7px;padding:2px 7px}
-.ty.privatisation{color:var(--priv);background:var(--priv-soft)} .ty.traiteur{color:var(--trait);background:var(--trait-soft)}
+.ty.privatisation{color:var(--priv);background:var(--priv-soft)} .ty.traiteur{color:var(--trait);background:var(--trait-soft)} .ty.theme{color:var(--theme);background:var(--theme-soft)}
 .st{font-size:12px;font-weight:800;border-radius:7px;padding:2px 7px}
 .st.option{background:var(--accent-soft);color:var(--fg)} .st.confirme{background:var(--go);color:#fff} .st.annule{background:var(--line);color:var(--muted);text-decoration:line-through}
 .ev .meta{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:14px;color:var(--muted);font-weight:600}
 .ev .meta span{white-space:nowrap}
+.ev .meta .nc{color:var(--danger);font-weight:800} .ev .meta .ok{color:var(--go);font-weight:800}
 .ev .who{font-size:12px;color:var(--muted)}
 .ev .date{font-size:13px;font-weight:800;color:var(--fg)}
 .empty{color:var(--muted);text-align:center;padding:16px 8px;font-size:15px}
@@ -144,6 +145,10 @@ input[type=date]::-webkit-date-and-time-value,input[type=time]::-webkit-date-and
 .warn{background:var(--accent-soft);border:1px solid var(--accent);border-radius:12px;padding:10px 12px;font-size:14px;font-weight:600}
 .acts{display:grid;gap:8px}
 .acts .btn{height:56px;font-size:17px}
+.caisse{display:flex;align-items:center;gap:12px;min-height:60px;padding:10px 12px;border-radius:14px;border:2px solid var(--line);background:var(--sunken);cursor:pointer;font-weight:800;font-size:16px}
+.caisse input{width:28px;height:28px;flex:none;accent-color:var(--go);margin:0}
+.caisse small{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-top:2px}
+.caisse:has(input:checked){border-color:var(--go);background:color-mix(in srgb,var(--go) 12%,var(--surface))}
 .call{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 12px;border-radius:10px;background:var(--go);color:#fff;font-weight:800;text-decoration:none;font-size:15px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:11px 16px;border-radius:12px;font-weight:600;font-size:15px;z-index:30;max-width:calc(100% - 32px)}
 @media (max-width:400px){.titles h1{font-size:25px}header.top .logo{width:92px;height:54px}.apps a{font-size:12px}.calhead h2{font-size:19px}.day{font-size:14px}}
@@ -161,7 +166,7 @@ input[type=date]::-webkit-date-and-time-value,input[type=time]::-webkit-date-and
   <div class="sync" id="sync">Connexion…</div>
   <header class="top">
     <div class="logo"><img src="logo-hd.png" alt="Double B" width="1000" height="403"></div>
-    <div class="titles"><h1>Événements</h1><p>Privatisations et traiteur, visibles par toute l'équipe.</p></div>
+    <div class="titles"><h1>Événements</h1><p>Privatisations, traiteur et soirées à thème, visibles par toute l'équipe.</p></div>
   </header>
 
   <button class="btn new" id="newBtn" type="button"><span>＋</span> Nouvel événement</button>
@@ -175,7 +180,7 @@ input[type=date]::-webkit-date-and-time-value,input[type=time]::-webkit-date-and
     <button class="todayb" id="today" type="button">Revenir à aujourd'hui</button>
     <div class="dow"><span>Lun</span><span>Mar</span><span>Mer</span><span>Jeu</span><span>Ven</span><span>Sam</span><span>Dim</span></div>
     <div class="grid" id="grid"></div>
-    <div class="legend"><span><i style="background:var(--priv)"></i>Privatisation</span><span><i style="background:var(--trait)"></i>Traiteur</span><span><i style="background:var(--note)"></i>Note</span><span><i style="background:var(--muted);opacity:.45"></i>Pâle = en option</span></div>
+    <div class="legend"><span><i style="background:var(--priv)"></i>Privatisation</span><span><i style="background:var(--trait)"></i>Traiteur</span><span><i style="background:var(--theme)"></i>Soirée à thème</span><span><i style="background:var(--note)"></i>Note</span><span><i style="background:var(--muted);opacity:.45"></i>Pâle = en option</span></div>
   </section>
 
   <section class="panel" aria-label="Prochains événements">
@@ -226,7 +231,8 @@ const now=new Date();const TODAY=iso(now);
 const S={y:now.getFullYear(),m:now.getMonth(),sel:TODAY,evs:[],up:[]};
 
 /* ---------- Libellés ---------- */
-const TYPES={privatisation:{l:"Privatisation",e:"🏠"},traiteur:{l:"Traiteur",e:"🚚"},note:{l:"Note",e:"📌"}};
+const TYPES={privatisation:{l:"Privatisation",e:"🏠"},traiteur:{l:"Traiteur",e:"🚚"},theme:{l:"Soirée à thème",e:"🎉"},note:{l:"Note",e:"📌"}};
+const PAYE=e=>e.type==="privatisation"||e.type==="traiteur";   // prestations payées à part : prix + case « Entré en caisse »
 const STATUTS={option:"En option",confirme:"Confirmé",annule:"Annulé"};
 const eur=v=>new Intl.NumberFormat("fr-FR",{maximumFractionDigits:2}).format(v)+" €";
 const who=()=>{try{return localStorage.getItem("2b-profil")||""}catch{return ""}};
@@ -269,12 +275,13 @@ function card(e,withDate){
   if(e.personnes!=null)meta.push(`👥 ${e.personnes} pers.`);
   if(e.budget!=null)meta.push(`💶 ${eur(+e.budget)}`);
   if(e.acompte!=null)meta.push(`✅ Acompte ${eur(+e.acompte)}`);
+  if(PAYE(e)&&e.statut!=="annule")meta.push(e.en_caisse?`<span class="ok">💰 En caisse</span>`:e.jour<=TODAY?`<span class="nc">⚠️ Pas encore en caisse</span>`:"");
   if(e.type==="traiteur"&&e.lieu)meta.push(`📍 ${esc(e.lieu)}`);
   if(e.telephone)meta.push(`📞 ${esc(e.telephone)}`);
   return `<button class="ev ${e.type}" data-ev="${e.id}"><span class="bar"></span><span class="body">
     ${withDate?`<span class="date">${esc(shortDay(parse(e.jour)))}</span>`:""}
     <span class="top"><b>${esc(e.client)}</b><span class="ty ${e.type}">${t.e} ${t.l}</span><span class="st ${e.statut}">${STATUTS[e.statut]||""}</span></span>
-    ${meta.length?`<span class="meta">${meta.map(m=>`<span>${m}</span>`).join("")}</span>`:""}
+    ${meta.filter(Boolean).length?`<span class="meta">${meta.filter(Boolean).map(m=>`<span>${m}</span>`).join("")}</span>`:""}
     ${e.notes?`<span class="meta" style="white-space:normal">📝 ${esc(e.notes.length>90?e.notes.slice(0,90)+"…":e.notes)}</span>`:""}
     ${e.cree_par?`<span class="who">Ajouté par ${esc(NOMS[e.cree_par]||e.cree_par)}</span>`:""}</span></button>`;
 }
@@ -360,10 +367,12 @@ function openForm(ev,day){
   m.innerHTML=`<div class="box" role="dialog" aria-label="Fiche client">
     <h3>${isNew?"Nouvel événement":"Fiche client"}</h3>
     ${!isNew&&e.cree_par?`<div class="sub">Ajouté par ${esc(NOMS[e.cree_par]||e.cree_par)}</div>`:""}
-    <div class="field"><label>Type</label><div class="seg">
-      <button type="button" data-ty="privatisation" aria-pressed="${type==="privatisation"}"><span class="e">🏠</span>Privatisation de la salle</button>
-      <button type="button" data-ty="traiteur" aria-pressed="${type==="traiteur"}"><span class="e">🚚</span>Traiteur extérieur</button></div></div>
-    <div class="field"><label for="fClient">Nom du client</label><input id="fClient" maxlength="120" autocomplete="off" placeholder="ex. Mme Dupont – anniversaire" value="${esc(e.client||"")}"></div>
+    <div class="field"><label>Type</label><div class="seg three">
+      <button type="button" data-ty="privatisation" aria-pressed="${type==="privatisation"}"><span class="e">🏠</span>Privatisation</button>
+      <button type="button" data-ty="traiteur" aria-pressed="${type==="traiteur"}"><span class="e">🚚</span>Traiteur extérieur</button>
+      <button type="button" data-ty="theme" aria-pressed="${type==="theme"}"><span class="e">🎉</span>Soirée à thème</button></div></div>
+    <div class="field"><label for="fClient" id="fClientL">Nom du client</label><input id="fClient" maxlength="120" autocomplete="off" placeholder="ex. Mme Dupont – anniversaire" value="${esc(e.client||"")}"></div>
+    <div class="hint" id="fThemeH">Le chiffre de cette soirée, c'est le CA du soir de ce jour-là : il sera compté à part dans Chiffres.</div>
     <div class="row2">
       <div class="field"><label for="fJour">Date</label><input id="fJour" type="date" value="${esc(e.jour)}"></div>
       <div class="field"><label for="fHeure">Heure <em>(facultatif)</em></label><input id="fHeure" type="time" value="${esc(e.heure||"")}"></div>
@@ -371,26 +380,30 @@ function openForm(ev,day){
     <div class="warn" id="fWarn" hidden></div>
     <div class="row2">
       <div class="field"><label for="fPers">Personnes <em>(facult.)</em></label><input id="fPers" inputmode="numeric" placeholder="–" value="${e.personnes??""}"></div>
-      <div class="field"><label for="fBudget">Budget <em>(facult.)</em></label><div class="in"><input id="fBudget" inputmode="decimal" placeholder="–" value="${e.budget!=null?String(+e.budget).replace(".",","):""}"><span>€</span></div></div>
+      <div class="field paye"><label for="fBudget">Prix total <em>(facult.)</em></label><div class="in"><input id="fBudget" inputmode="decimal" placeholder="–" value="${e.budget!=null?String(+e.budget).replace(".",","):""}"><span>€</span></div></div>
     </div>
-    <div class="field"><label for="fTel">Téléphone <em>(facultatif)</em></label><input id="fTel" type="tel" inputmode="tel" autocomplete="off" placeholder="ex. 06 12 34 56 78" value="${esc(e.telephone||"")}"></div>
-    ${!isNew&&e.telephone?`<a class="call" href="tel:${esc(e.telephone.replace(/[^\d+]/g,""))}">📞 Appeler ${esc(e.client)}</a>`:""}
+    <div class="field paye"><label for="fTel">Téléphone <em>(facultatif)</em></label><input id="fTel" type="tel" inputmode="tel" autocomplete="off" placeholder="ex. 06 12 34 56 78" value="${esc(e.telephone||"")}"></div>
+    ${!isNew&&e.telephone&&PAYE(e)?`<a class="call" href="tel:${esc(e.telephone.replace(/[^\d+]/g,""))}">📞 Appeler ${esc(e.client)}</a>`:""}
     <div class="field" id="fLieuF"><label for="fLieu">Lieu de la prestation <em>(facultatif)</em></label><input id="fLieu" maxlength="200" placeholder="ex. Salle des fêtes de Faulquemont" value="${esc(e.lieu||"")}"></div>
     <div class="field"><label>Statut</label><div class="seg three">
       <button type="button" data-st="option" aria-pressed="${statut==="option"}"><span class="e">⏳</span>En option</button>
       <button type="button" data-st="confirme" aria-pressed="${statut==="confirme"}"><span class="e">✅</span>Confirmé</button>
       <button type="button" data-st="annule" aria-pressed="${statut==="annule"}"><span class="e">✖️</span>Annulé</button></div></div>
-    <div class="field"><label for="fAcompte">Acompte reçu <em>(facultatif)</em></label><div class="in"><input id="fAcompte" inputmode="decimal" placeholder="–" value="${e.acompte!=null?String(+e.acompte).replace(".",","):""}"><span>€</span></div></div>
+    <div class="field paye"><label for="fAcompte">Acompte reçu <em>(facultatif)</em></label><div class="in"><input id="fAcompte" inputmode="decimal" placeholder="–" value="${e.acompte!=null?String(+e.acompte).replace(".",","):""}"><span>€</span></div></div>
+    <label class="caisse paye"><input type="checkbox" id="fCaisse"${e.en_caisse?" checked":""}><span>💰 Entré dans la caisse du restaurant<small>${e.en_caisse&&e.en_caisse_par?`Coché par ${esc(NOMS[e.en_caisse_par]||e.en_caisse_par)}${e.en_caisse_le?" le "+esc(new Date(e.en_caisse_le).toLocaleDateString("fr-FR")):""}`:"À cocher seulement quand c'est tapé dans la caisse"}</small></span></label>
     <div class="field"><label for="fNotes">Notes <em>(menu choisi, allergies, déco…)</em></label><textarea id="fNotes" maxlength="2000">${esc(e.notes||"")}</textarea></div>
     <div class="acts">
       <button class="btn" type="button" id="fSave">${isNew?"Ajouter au calendrier":"Enregistrer"}</button>
-      ${isNew?"":`<button class="btn soft" type="button" id="fDevis">📄 Faire le devis</button>`}
+      ${isNew?"":`<button class="btn soft paye" type="button" id="fDevis">📄 Faire le devis</button>`}
       ${isNew?"":`<button class="btn danger" type="button" id="fDel">Supprimer l'événement</button>`}
       <button class="btn soft" type="button" id="fCancel">Annuler</button>
     </div></div>`;
   document.body.appendChild(m);
   const close=()=>m.remove();m.addEventListener("click",x=>{if(x.target===m)close()});$("#fCancel").onclick=close;
-  const showLieu=()=>{$("#fLieuF").hidden=type!=="traiteur"};showLieu();
+  // Soirée à thème : pas de client à appeler ni de prix (son chiffre = le soir de ce jour-là)
+  const showLieu=()=>{$("#fLieuF").hidden=type!=="traiteur";const th=type==="theme";
+    m.querySelectorAll(".paye").forEach(x=>x.hidden=th);$("#fThemeH").hidden=!th;
+    $("#fClientL").textContent=th?"Nom de la soirée":"Nom du client";$("#fClient").placeholder=th?"ex. Soirée grenouilles":"ex. Mme Dupont – anniversaire"};showLieu();
   m.querySelectorAll("[data-ty]").forEach(b=>b.onclick=()=>{type=b.dataset.ty;m.querySelectorAll("[data-ty]").forEach(x=>x.setAttribute("aria-pressed",x===b));showLieu()});
   m.querySelectorAll("[data-st]").forEach(b=>b.onclick=()=>{statut=b.dataset.st;m.querySelectorAll("[data-st]").forEach(x=>x.setAttribute("aria-pressed",x===b))});
   // prévenir s'il y a déjà quelque chose ce jour-là
@@ -406,12 +419,13 @@ function openForm(ev,day){
   if(isNew)setTimeout(()=>$("#fClient").focus(),200);
   $("#fSave").onclick=async()=>{
     const client=$("#fClient").value.trim(),jour=$("#fJour").value;
-    if(!client){toast("Mets au moins le nom du client");$("#fClient").focus();return}
+    if(!client){toast(type==="theme"?"Donne un nom à la soirée":"Mets au moins le nom du client");$("#fClient").focus();return}
     if(!jour){toast("Choisis une date");$("#fJour").focus();return}
     const pers=num($("#fPers").value),budget=num($("#fBudget").value),acompte=num($("#fAcompte").value);
     if(pers===null||budget===null||acompte===null){toast("Un chiffre n'est pas valable");return}
-    const champs={type,client,jour,heure:$("#fHeure").value,telephone:$("#fTel").value.trim(),personnes:pers===""?"":Math.round(pers),budget,acompte,
-      lieu:type==="traiteur"?$("#fLieu").value.trim():"",statut,notes:$("#fNotes").value.trim()};
+    const th=type==="theme";
+    const champs={type,client,jour,heure:$("#fHeure").value,telephone:th?"":$("#fTel").value.trim(),personnes:pers===""?"":Math.round(pers),budget:th?"":budget,acompte:th?"":acompte,
+      lieu:type==="traiteur"?$("#fLieu").value.trim():"",statut,notes:$("#fNotes").value.trim(),en_caisse:!th&&$("#fCaisse").checked};
     if(isNew)champs.cree_par=who();
     $("#fSave").disabled=true;
     try{await rpc("evenement_enregistrer",{p_id:isNew?null:e.id,p_champs:{...champs,par:who()}});close();

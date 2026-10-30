@@ -227,7 +227,7 @@
       ["🛒","Commande","Appuie sur « Commander » à côté de ce qui manque. Tout se retrouve dans « À commander ». En haut, choisis Cuisine ou Bar & Salle."],
       ["📄","Menus & devis","Colle un menu : il se met tout seul dans la belle trame. Les forfaits apéritifs et les devis sont prêts à envoyer."],
       ["📊","Chiffres","Chaque jour : clients sur place, à emporter et CA du midi et du soir. Les totaux se calculent tout seuls. Dans « Coût des plats », tu vois ce que coûte chaque plat."],
-      ["📅","Événements","Privatisations, traiteur et petites notes, dans un calendrier que toute l'équipe voit."],
+      ["📅","Événements","Privatisations, traiteur, soirées à thème et petites notes, dans un calendrier que toute l'équipe voit."],
       ["🛎️","La sonnette","En haut à droite : quand quelqu'un ajoute un événement, un petit chiffre rouge apparaît. Touche-la pour voir quoi."],
       ["✅","C'est parti !","Tout s'enregistre tout seul. Tu peux changer de profil à tout moment, tout en haut."]];
     let i=0;const m=document.createElement("div");m.className="tour";m.setAttribute("role","dialog");m.setAttribute("aria-label","Visite guidée");
@@ -284,7 +284,7 @@
     text(n){
       if(n.quoi==="temp")return {ic:"🌡️",t:`Températures du ${n.ev_type==="soir"?"soir":"matin"} pas encore relevées`,det:n.client==="vitrine"?"Vitrine salle":`Frigos et congélateurs : ${n.client} faits`};
       if(n.quoi==="nettoyage")return {ic:"🧽",t:"Nettoyage des frigos à faire cette semaine",det:n.client||""};
-      const T={privatisation:["🏠","privatisation"],traiteur:["🚚","traiteur"],note:["📌","pense-bête"]}[n.ev_type]||["📅","événement"];
+      const T={privatisation:["🏠","privatisation"],traiteur:["🚚","traiteur"],theme:["🎉","soirée à thème"],note:["📌","pense-bête"]}[n.ev_type]||["📅","événement"];
       const today=new Date();today.setHours(0,0,0,0);const d=n.jour?new Date(n.jour+"T00:00"):null;const diff=d?Math.round((d-today)/864e5):null;
       const quand=diff===0?"aujourd'hui":diff===1?"demain":d?d.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"}):"";
       const det=[quand&&quand.charAt(0).toUpperCase()+quand.slice(1),n.heure,n.personnes?n.personnes+" pers.":""].filter(Boolean).join(" · ");

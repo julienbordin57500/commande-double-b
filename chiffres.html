@@ -97,6 +97,35 @@ header.top{display:flex;align-items:center;gap:14px}
 .ch-t{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin:8px 2px 2px}
 .ch-t.m{color:var(--midi)} .ch-t.s{color:var(--soir)}
 .daytot small{font-weight:500}
+/* CA du mois en détail : midi, soir, soirées à thème, privatisations, traiteur ; puis chaque prestation avec sa case « En caisse » */
+:root{--theme:#7c3aed;--priv:#c2410c;--trait:#0e7490}
+@media (prefers-color-scheme:dark){:root{--theme:#c4a5f5;--priv:#fb923c;--trait:#67c6d9}}
+.rep{margin-top:10px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
+.rep h3{font-size:17px;font-weight:800;margin-bottom:4px}
+.rl{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:3px 10px;padding:5px 0;font-weight:700;font-size:15px}
+.rl .v{font-variant-numeric:tabular-nums;font-weight:800;white-space:nowrap}
+.rl .tr{grid-column:1/-1;height:8px;border-radius:4px;background:var(--sunken);overflow:hidden}
+.rl .tr i{display:block;height:100%;border-radius:4px;background:var(--c)}
+.rl.tot{border-top:2px solid var(--fg);margin-top:6px;padding-top:8px;font-size:17px}
+.rl.tot small{grid-column:1/-1;font-weight:600;color:var(--muted);font-size:13px}
+.prs{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.prs h4{margin:0;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.prs .vide{color:var(--muted);font-size:14px;margin:0}
+.pr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 10px;align-items:center;padding:10px 12px;border-radius:14px;background:var(--sunken);border:1px solid var(--line);border-left:5px solid var(--c)}
+.pr .n{font-weight:800;font-size:15px;min-width:0}
+.pr .n small{display:block;font-weight:600;color:var(--muted);font-size:13px;margin-top:2px}
+.pr .v{font-weight:800;font-size:17px;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pr .v a{color:var(--danger);font-size:14px}
+.pr .v small{font-size:13px;color:var(--muted);font-weight:600}
+.pr.fut{opacity:.65}
+.cai{grid-column:1/-1;display:flex;align-items:center;gap:10px;min-height:52px;padding:6px 10px;border-radius:12px;border:2px solid var(--line);background:var(--surface);font-weight:800;font-size:15px;cursor:pointer}
+.cai input{width:28px;height:28px;flex:none;margin:0;accent-color:var(--go)}
+.cai small{display:block;font-weight:600;font-size:12px;color:var(--muted)}
+.cai.no{border-color:var(--danger)}
+.cai:has(input:checked){border-color:var(--go);background:color-mix(in srgb,var(--go) 12%,var(--surface))}
+.prw{padding:10px 12px;border-radius:12px;background:#fdecea;color:#a1251b;font-weight:700;font-size:14px}
+@media (prefers-color-scheme:dark){.prw{background:#3a1d1b;color:#f6aea9}}
+td.pt{font-size:13px} td.pt.fut{color:var(--muted)} .compact i.p{color:var(--fg);font-weight:700}
 
 /* Saisie du jour */
 .day{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:14px}
@@ -181,7 +210,7 @@ tfoot td.d{background:var(--sunken)}
 .print .ph .k div{font-size:10px;color:#6f695d;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
 .print .ph .k b{display:block;font-family:var(--display);font-size:17px;color:#1d1b17;letter-spacing:0;text-transform:none}
 .print table{min-width:0;font-size:11px;flex:1}
-.print th,.print td{padding:0 6px;height:18px;border-bottom:1px solid #e6e1d5;color:#1d1b17}
+.print th,.print td{padding:0 6px;height:16px;border-bottom:1px solid #e6e1d5;color:#1d1b17}
 .print thead th{background:#f4f2ec;color:#6f695d;font-size:9.5px;height:20px}
 .print th.gm{background:#fdf1d6;color:#9a5c00} .print th.gs{background:#e4ecf8;color:#2f5d9e} .print th.ga{background:#f4e6f4;color:#8a4f8f}
 .print td.d,.print th.d{position:static;background:transparent}
@@ -189,6 +218,9 @@ tfoot td.d{background:var(--sunken)}
 .print tbody tr.we td{background:#faf8f3}
 .print td.e{color:#d8d2c4}
 .print tfoot td{background:#f4f2ec;border-top:1.5px solid #1d1b17;height:22px;font-size:11.5px}
+.print .rp{display:flex;gap:8px;margin-bottom:8px}
+.print .rp div{flex:1;border:1px solid #e6e1d5;border-left:4px solid var(--pc);border-radius:7px;padding:3px 8px;font-size:9px;color:#6f695d;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.print .rp b{display:block;font-size:14px;color:#1d1b17;text-transform:none;letter-spacing:0;font-family:var(--display)}
 .print .pn{font-size:10px;color:#6f695d;margin-top:8px}
 
 /* Passage d'un onglet à l'autre : fondu court, la barre du haut ne bouge pas */
@@ -304,6 +336,7 @@ html.vue-plats #vPlats{display:block} html.vue-plats #vMois{display:none}
   </div>
 
   <div class="kpis" id="kpis"></div>
+  <section class="rep" id="rep" aria-label="Le CA du mois en détail"></section>
   <button class="chartbtn" id="chartBtn" type="button" aria-expanded="false">📈 Graphique du CA jour par jour <span class="cv">▾</span></button>
   <div class="chartbox" id="chartBox" hidden>
     <div class="chopt"><label class="sw"><input type="checkbox" id="split" autocomplete="off"><span class="tg"></span>Séparer midi et soir</label><span class="lg" id="lg" hidden><span><i style="background:var(--midi)"></i>Midi</span><span><i style="background:var(--soir)"></i>Soir</span></span></div>
@@ -346,7 +379,8 @@ html.vue-plats #vPlats{display:block} html.vue-plats #vMois{display:none}
     </header>
     <div class="scroll"><table id="tbl"></table></div>
     <table class="compact" id="cmp"></table>
-    <p class="note">Touche une ligne pour la remplir. 🍽️ = sur place, 🥡 = à emporter, 🍔 = burgers du mois. Les totaux se calculent tout seuls. Refusés = clients qu'on n'a pas pu accueillir faute de place.</p>
+    <p class="note">Touche une ligne pour la remplir. 🍽️ = sur place, 🥡 = à emporter, 🍔 = burgers du mois. Les totaux se calculent tout seuls. Refusés = clients qu'on n'a pas pu accueillir faute de place.
+      Prestations = privatisations et traiteur (prix noté dans Événements), comptées en plus de la caisse. 🎉 = soir de soirée à thème.</p>
   </section>
   </div>
 </div>
@@ -384,7 +418,7 @@ const daysIn=(y,m)=>new Date(y,m+1,0).getDate();
 const wd=(y,m,d)=>new Date(y,m,d).toLocaleDateString("fr-FR",{weekday:"long"});
 const monthName=(y,m)=>new Date(y,m,1).toLocaleDateString("fr-FR",{month:"long",year:"numeric"});
 const now=new Date();
-const S={y:now.getFullYear(),m:now.getMonth(),d:now.getDate(),data:{},pending:0,loaded:null};
+const S={y:now.getFullYear(),m:now.getMonth(),d:now.getDate(),data:{},evs:[],pending:0,loaded:null};
 
 /* ---------- Nombres ---------- */
 // clients_midi / clients_soir : anciens totaux (saisis avant la séparation sur place / à emporter), comptés comme « sur place »
@@ -409,10 +443,25 @@ const r2=v=>Math.round(v*100)/100;
 function soirCalc(j,m,old){if(j==null)return old;if(m==null||j<m)return null;return r2(j-m)}
 const soirCA=r=>soirCalc(val(r,"ca_jour"),val(r,"ca_midi"),val(r,"ca_soir"));
 const jourCA=r=>val(r,"ca_jour")!=null?val(r,"ca_jour"):add(val(r,"ca_midi"),val(r,"ca_soir"));
+/* Prestations (onglet Événements)
+   Privatisation et traiteur : le prix noté sur l'événement, compté EN PLUS de la caisse (jamais dans le total journée tapé).
+   Soirée à thème : rien à taper, c'est le CA du soir de ce jour-là, sorti des soirs normaux.
+   Jamais comptés : les annulés et les jours pas encore arrivés. */
+const PRESTA={privatisation:{l:"Privatisation",p:"Privatisations",e:"🏠",a:"Privat.",c:"var(--priv)",pc:"#c2410c"},
+  traiteur:{l:"Traiteur extérieur",p:"Traiteur extérieur",e:"🚚",a:"Traiteur",c:"var(--trait)",pc:"#0e7490"},
+  theme:{l:"Soirée à thème",p:"Soirées à thème",e:"🎉",a:"Thème",c:"var(--theme)",pc:"#7c3aed"}};
+const NOMS={julien:"Julien",eric:"Eric",thierry:"Thierry",claire:"Claire"};
+const who=()=>{try{return localStorage.getItem("2b-profil")||""}catch{return ""}};
+const TODAY=key(now.getFullYear(),now.getMonth(),now.getDate());
+const evsOf=dk=>S.evs.filter(e=>e.jour===dk&&PRESTA[e.type]&&e.statut!=="annule");
+const paye=e=>e.type!=="theme";
+const prixEv=e=>e.budget==null?null:+e.budget;
+const isTheme=dk=>evsOf(dk).some(e=>e.type==="theme");
+const prestaCA=dk=>dk>TODAY?null:add(...evsOf(dk).filter(paye).map(prixEv));
 function totals(r){const cm=add(sp(r,"midi"),emp(r,"midi")),cs=add(sp(r,"soir"),emp(r,"soir"));
   return {cm,cs,clients:add(cm,cs),sp:add(sp(r,"midi"),sp(r,"soir")),emp:add(emp(r,"midi"),emp(r,"soir")),ca:jourCA(r),burgers:add(val(r,"burgers_midi"),val(r,"burgers_soir"))}}
 /* Comparaison : même période (jusqu'au même jour si le mois est en cours) */
-function periodCA(data,y,m,upto){let ca=null,cl=null;for(let d=1;d<=Math.min(upto,daysIn(y,m));d++){const r=data[key(y,m,d)];if(!r)continue;const t=totals(r);ca=add(ca,t.ca);cl=add(cl,t.clients)}return {ca,cl}}
+function periodCA(data,y,m,upto){let ca=null,cl=null;for(let d=1;d<=Math.min(upto,daysIn(y,m));d++){ca=add(ca,prestaCA(key(y,m,d)));const r=data[key(y,m,d)];if(!r)continue;const t=totals(r);ca=add(ca,t.ca);cl=add(cl,t.clients)}return {ca,cl}}
 function compare(){
   const cur=S.y===now.getFullYear()&&S.m===now.getMonth();const upto=cur?now.getDate():daysIn(S.y,S.m);
   const pm=new Date(S.y,S.m-1,1),ly=new Date(S.y-1,S.m,1);
@@ -424,11 +473,16 @@ function compare(){
           cl:[tag(pct(a.cl,b.cl),ml(pm))].filter(Boolean).join("")};
 }
 function monthSums(){
-  const s={midi_sp:null,midi_emp:null,soir_sp:null,soir_emp:null,ca_midi:null,ca_soir:null,burgers_midi:null,burgers_soir:null,refuses:null,clients:null,sp:null,emp:null,ca:null,burgers:null};
-  for(let d=1;d<=daysIn(S.y,S.m);d++){const r=S.data[key(S.y,S.m,d)];if(!r)continue;const t=totals(r);
+  const s={midi_sp:null,midi_emp:null,soir_sp:null,soir_emp:null,ca_midi:null,ca_soir:null,burgers_midi:null,burgers_soir:null,refuses:null,clients:null,sp:null,emp:null,ca:null,burgers:null,
+    soir_n:null,theme:null,priv:null,trait:null};
+  for(let d=1;d<=daysIn(S.y,S.m);d++){const dk=key(S.y,S.m,d);
+    if(dk<=TODAY)evsOf(dk).filter(paye).forEach(e=>{const k=e.type==="traiteur"?"trait":"priv";s[k]=add(s[k],prixEv(e))});
+    const r=S.data[dk];if(!r)continue;const t=totals(r);
+    if(isTheme(dk))s.theme=add(s.theme,soirCA(r));else s.soir_n=add(s.soir_n,soirCA(r));
     s.midi_sp=add(s.midi_sp,sp(r,"midi"));s.midi_emp=add(s.midi_emp,emp(r,"midi"));s.soir_sp=add(s.soir_sp,sp(r,"soir"));s.soir_emp=add(s.soir_emp,emp(r,"soir"));
     ["ca_midi","burgers_midi","burgers_soir","refuses"].forEach(k=>s[k]=add(s[k],val(r,k)));s.ca_soir=add(s.ca_soir,soirCA(r));
     ["clients","sp","emp","ca","burgers"].forEach(k=>s[k]=add(s[k],t[k]))}
+  s.presta=add(s.priv,s.trait);s.total=add(s.ca,s.presta);   // total du mois = caisse + prestations payées à part
   return s;
 }
 
@@ -436,14 +490,15 @@ function monthSums(){
    Une case en cours de saisie (ou pas encore envoyée) n'est JAMAIS réécrite par le rafraîchissement automatique. */
 const DIRTY=new Map();   // "jour|champ" → valeur saisie, en attente d'envoi
 const CC="chiffres2b-cache-";
-function fromCache(mk){try{const c=JSON.parse(localStorage.getItem(CC+mk)||"null");if(c&&!Object.keys(S.data).length){S.data=c.d||{};S.prev=c.p||{};S.ly=c.l||{};render()}}catch{}}
+function fromCache(mk){try{const c=JSON.parse(localStorage.getItem(CC+mk)||"null");if(c&&!Object.keys(S.data).length){S.data=c.d||{};S.prev=c.p||{};S.ly=c.l||{};S.evs=c.e||S.evs;render()}}catch{}}
 async function load(){
   const mk=key(S.y,S.m,1);fromCache(mk);   // dernières valeurs connues affichées tout de suite
   try{
     const pm=new Date(S.y,S.m-1,1),ly=new Date(S.y-1,S.m,1);
-    const [d,dp,dl]=await Promise.all([rpc("suivi_mois",{p_mois:mk}),rpc("suivi_mois",{p_mois:key(pm.getFullYear(),pm.getMonth(),1)}).catch(()=>({})),rpc("suivi_mois",{p_mois:key(ly.getFullYear(),ly.getMonth(),1)}).catch(()=>({}))]);
+    const evP=rpc("evenements_liste",{p_debut:key(ly.getFullYear(),ly.getMonth(),1),p_fin:key(S.y,S.m,daysIn(S.y,S.m))}).catch(()=>null);   // prestations : de l'an dernier à ce mois-ci (comparaisons)
+    const [d,dp,dl,ev]=await Promise.all([rpc("suivi_mois",{p_mois:mk}),rpc("suivi_mois",{p_mois:key(pm.getFullYear(),pm.getMonth(),1)}).catch(()=>({})),rpc("suivi_mois",{p_mois:key(ly.getFullYear(),ly.getMonth(),1)}).catch(()=>({})),evP]);
     if(mk!==key(S.y,S.m,1))return;
-    S.data=d||{};S.prev=dp||{};S.ly=dl||{};try{localStorage.setItem(CC+mk,JSON.stringify({d:S.data,p:S.prev,l:S.ly}))}catch{}
+    S.data=d||{};S.prev=dp||{};S.ly=dl||{};if(ev&&!CAI.size)S.evs=ev;try{localStorage.setItem(CC+mk,JSON.stringify({d:S.data,p:S.prev,l:S.ly,e:S.evs}))}catch{}
     DIRTY.forEach((v,id)=>{const [dk,k]=id.split("|");if(v!=="…"&&dk.slice(0,7)===mk.slice(0,7)){S.data[dk]={...(S.data[dk]||{})};if(v==null)delete S.data[dk][k];else S.data[dk][k]=v}});
     S.loaded=mk;if(!S.pending)setSync("À jour","ok");render();
   }catch(e){if(lost(e))return;setSync("Hors ligne","err");render()}
@@ -487,13 +542,46 @@ function renderSoir(){
 ["#ca_midi","#ca_jour"].forEach(id=>$(id).addEventListener("input",renderSoir));
 function renderTotals(){
   renderSoir();const row=S.data[key(S.y,S.m,S.d)]||{};const t=totals(row);
-  $("#dayTot").innerHTML=`<span>Clients <b class="num">${t.clients==null?"–":int(t.clients)}</b>${t.emp?` <small>(dont ${int(t.emp)} à emporter)</small>`:""}</span><span>CA de la journée <b class="num">${t.ca==null?"–":eur(t.ca)}</b></span><span>Burgers du mois <b class="num">${t.burgers==null?"–":int(t.burgers)}</b></span>`;
+  const pj=evsOf(key(S.y,S.m,S.d)).map(e=>`<span>${PRESTA[e.type].e} ${esc(PRESTA[e.type].l)} <b>${esc(e.client)}</b>${paye(e)&&prixEv(e)!=null?` : <b class="num">${eur(prixEv(e))}</b> <small>(à part de la caisse)</small>`:""}</span>`).join("");
+  $("#dayTot").innerHTML=pj+`<span>Clients <b class="num">${t.clients==null?"–":int(t.clients)}</b>${t.emp?` <small>(dont ${int(t.emp)} à emporter)</small>`:""}</span><span>CA de la journée <b class="num">${t.ca==null?"–":eur(t.ca)}</b></span><span>Burgers du mois <b class="num">${t.burgers==null?"–":int(t.burgers)}</b></span>`;
   const s=monthSums();
   const cp=compare();
-  const kp=[["CA du mois",s.ca==null?"–":eur(s.ca),cp.ca],["Clients du mois",s.clients==null?"–":int(s.clients),[s.emp?`dont ${int(s.emp)} à emporter`:"",cp.cl].filter(Boolean).join("<br>")],["Ticket moyen",s.ca&&s.clients?eur(Math.round(s.ca/s.clients*100)/100):"–",""],["Burgers du mois",s.burgers==null?"–":int(s.burgers),""]];
+  const kp=[["CA du mois",s.total==null?"–":eur(s.total),[s.presta?`dont ${eur(s.presta)} de prestations`:"",cp.ca].filter(Boolean).join("<br>")],["Clients du mois",s.clients==null?"–":int(s.clients),[s.emp?`dont ${int(s.emp)} à emporter`:"",cp.cl].filter(Boolean).join("<br>")],["Ticket moyen",s.ca&&s.clients?eur(Math.round(s.ca/s.clients*100)/100):"–",""],["Burgers du mois",s.burgers==null?"–":int(s.burgers),""]];
   $("#kpis").innerHTML=kp.map(([a,b,c])=>`<div class="kpi"><small>${a}</small><b class="num">${b}</b>${c?`<em>${c}</em>`:""}</div>`).join("");
-  $("#tbl").innerHTML=tableHTML(true);$("#cmp").innerHTML=compactHTML();if(!$("#chartBox").hidden)drawChart();
+  $("#tbl").innerHTML=tableHTML(true);$("#cmp").innerHTML=compactHTML();if(!$("#chartBox").hidden)drawChart();renderRep();
 }
+/* Le CA du mois en détail + la liste des prestations (case « En caisse » pour ne pas oublier de les taper dans la caisse) */
+function prestaItem(e){
+  const t=PRESTA[e.type],dk=e.jour,d=+dk.slice(8),fut=dk>TODAY;
+  const v=e.type==="theme"?(soirCA(S.data[dk]||{})!=null?eur(soirCA(S.data[dk])):`<small>soir pas saisi</small>`)
+    :prixEv(e)!=null?eur(prixEv(e)):`<a href="evenements.html#ev=${encodeURIComponent(e.id)}&j=${dk}">Noter le prix</a>`;
+  const sub=[t.l,e.statut==="option"?"en option":"",fut?"à venir, pas encore compté":"",e.type==="theme"?"c'est le CA du soir":""].filter(Boolean).join(" · ");
+  const par=e.en_caisse_par?`Coché par ${esc(NOMS[e.en_caisse_par]||e.en_caisse_par)}${e.en_caisse_le?" le "+new Date(e.en_caisse_le).toLocaleDateString("fr-FR"):""}`:"C'est fait";
+  const cai=paye(e)?`<label class="cai${!e.en_caisse&&!fut?" no":""}"><input type="checkbox" data-cai="${esc(e.id)}"${e.en_caisse?" checked":""}><span>💰 Entré dans la caisse<small>${e.en_caisse?par:"À cocher seulement quand c'est tapé dans la caisse"}</small></span></label>`:"";
+  return `<div class="pr${fut?" fut":""}" style="--c:${t.c}"><div class="n">${esc(cap(wd(S.y,S.m,d)))} ${d} · ${t.e} ${esc(e.client)}<small>${esc(sub)}</small></div><div class="v">${v}</div>${cai}</div>`;
+}
+function renderRep(){
+  const s=monthSums();const list=[];for(let d=1;d<=daysIn(S.y,S.m);d++)list.push(...evsOf(key(S.y,S.m,d)));
+  const has=k=>list.some(e=>e.type===k);
+  const rows=[["☀️ Midi",s.ca_midi,"var(--midi)",1],["🌙 Soir",s.soir_n,"var(--soir)",1],["🎉 Soirées à thème",s.theme,"var(--theme)",has("theme")],["🏠 Privatisations",s.priv,"var(--priv)",has("privatisation")],["🚚 Traiteur extérieur",s.trait,"var(--trait)",has("traiteur")]].filter(r=>r[3]||r[1]!=null);
+  const mx=Math.max(1,...rows.map(r=>r[1]||0));
+  const oubli=list.filter(e=>paye(e)&&!e.en_caisse&&e.jour<=TODAY).length;
+  $("#rep").innerHTML=`<h3>Le CA du mois en détail</h3>
+    ${rows.map(([l,v,c])=>`<div class="rl" style="--c:${c}"><span>${l}</span><span class="v">${v==null?"–":eur(v)}</span><span class="tr"><i style="width:${v?Math.max(1,v/mx*100):0}%"></i></span></div>`).join("")}
+    <div class="rl tot"><span>Total du mois</span><span class="v">${s.total==null?"–":eur(s.total)}</span>${s.presta?`<small>Caisse ${s.ca==null?"–":eur(s.ca)} + prestations payées à part ${eur(s.presta)}</small>`:""}</div>
+    <div class="prs"><h4>Privatisations, traiteur et soirées</h4>
+    ${oubli?`<div class="prw">⚠️ ${oubli} prestation${oubli>1?"s":""} pas encore entrée${oubli>1?"s":""} dans la caisse</div>`:""}
+    ${list.length?list.map(prestaItem).join(""):`<p class="vide">Rien ce mois-ci. On les ajoute dans l'onglet Événements.</p>`}</div>`;
+}
+const CAI=new Set();   // cases « En caisse » en cours d'envoi : le rafraîchissement ne les écrase pas
+$("#rep").addEventListener("change",async e=>{
+  const cb=e.target.closest("input[data-cai]");if(!cb)return;const ev=S.evs.find(x=>x.id===cb.dataset.cai);if(!ev)return;
+  const v=cb.checked,old={en_caisse:ev.en_caisse,en_caisse_par:ev.en_caisse_par,en_caisse_le:ev.en_caisse_le};
+  Object.assign(ev,{en_caisse:v,en_caisse_par:v?who():null,en_caisse_le:v?new Date().toISOString():null});CAI.add(ev.id);renderRep();
+  try{await rpc("evenement_enregistrer",{p_id:ev.id,p_champs:{en_caisse:v,par:who()}});toast(v?"Noté : entré dans la caisse ✓":"Case décochée")}
+  catch(err){if(lost(err))return;Object.assign(ev,old);renderRep();toast("Pas enregistré : vérifie la connexion")}
+  finally{CAI.delete(ev.id)}
+});
 function render(){
   $("#mName").textContent=monthName(S.y,S.m);
   const isToday=S.y===now.getFullYear()&&S.m===now.getMonth()&&S.d===now.getDate();
@@ -501,42 +589,44 @@ function render(){
   $("#tTitle").textContent="Tableau de "+monthName(S.y,S.m);
   fillInputs();renderTotals();
 }
+const prestaTxt=(dk,live)=>evsOf(dk).filter(paye).map(e=>`${live?PRESTA[e.type].e:PRESTA[e.type].a} ${prixEv(e)==null?"?":eur(prixEv(e))}`).join(" + ");
+function prestaTd(dk,live){const x=prestaTxt(dk,live);return x?`<td class="pt${dk>TODAY?" fut":""}">${esc(x)}</td>`:`<td class="e">–</td>`}
 function cell(k,v){return v==null?`<td class="e">–</td>`:`<td>${esc(fmt(k,v))}</td>`}
 function tableHTML(live){
   const n=daysIn(S.y,S.m);let body="";
   for(let d=1;d<=n;d++){
-    const r=S.data[key(S.y,S.m,d)]||{};const t=totals(r);const w=new Date(S.y,S.m,d).getDay();
+    const dk=key(S.y,S.m,d),r=S.data[dk]||{};const t=totals(r);const w=new Date(S.y,S.m,d).getDay();
     const cls=[w===0||w===6?"we":"",live&&d===S.d?"sel":"",live&&S.y===now.getFullYear()&&S.m===now.getMonth()&&d===now.getDate()?"today":""].join(" ").trim();
     body+=`<tr data-day="${d}" class="${cls}"><td class="d">${pad(d)}/${pad(S.m+1)}<small>${esc(wd(S.y,S.m,d))}</small></td>
       ${cell("x",sp(r,"midi"))}${cell("x",emp(r,"midi"))}${cell("ca_midi",val(r,"ca_midi"))}${cell("x",val(r,"burgers_midi"))}
-      ${cell("x",sp(r,"soir"))}${cell("x",emp(r,"soir"))}${cell("ca_soir",soirCA(r))}${cell("x",val(r,"burgers_soir"))}
+      ${cell("x",sp(r,"soir"))}${cell("x",emp(r,"soir"))}${isTheme(dk)?`<td>${live?"🎉":"Thème"} ${esc(soirCA(r)==null?"–":eur(soirCA(r)))}</td>`:cell("ca_soir",soirCA(r))}${cell("x",val(r,"burgers_soir"))}
       ${t.clients==null?`<td class="e">–</td>`:`<td class="tot">${int(t.clients)}</td>`}${t.ca==null?`<td class="e">–</td>`:`<td class="tot">${eur(t.ca)}</td>`}
-      ${cell("x",val(r,"refuses"))}</tr>`;
+      ${prestaTd(dk,live)}${cell("x",val(r,"refuses"))}</tr>`;
   }
   const s=monthSums();const f=(k,v)=>`<td>${v==null?"":esc(fmt(k,v))}</td>`;
-  return `<thead><tr class="g"><th class="d" rowspan="2">Date</th><th class="gm" colspan="4">Midi</th><th class="gs" colspan="4">Soir</th><th colspan="2">Journée</th><th rowspan="2">Refusés</th></tr>
+  return `<thead><tr class="g"><th class="d" rowspan="2">Date</th><th class="gm" colspan="4">Midi</th><th class="gs" colspan="4">Soir</th><th colspan="2">Journée</th><th rowspan="2">Prestations</th><th rowspan="2">Refusés</th></tr>
     <tr><th class="gm">Sur place</th><th class="gm">Emporter</th><th class="gm">CA</th><th class="gm">Burger</th><th class="gs">Sur place</th><th class="gs">Emporter</th><th class="gs">CA</th><th class="gs">Burger</th><th>Clients</th><th>CA total</th></tr></thead>
     <tbody>${body}</tbody>
-    <tfoot><tr><td class="d">TOTAL</td>${f("x",s.midi_sp)}${f("x",s.midi_emp)}${f("ca_midi",s.ca_midi)}${f("x",s.burgers_midi)}${f("x",s.soir_sp)}${f("x",s.soir_emp)}${f("ca_soir",s.ca_soir)}${f("x",s.burgers_soir)}${f("x",s.clients)}${f("ca_midi",s.ca)}${f("x",s.refuses)}</tr></tfoot>`;
+    <tfoot><tr><td class="d">TOTAL</td>${f("x",s.midi_sp)}${f("x",s.midi_emp)}${f("ca_midi",s.ca_midi)}${f("x",s.burgers_midi)}${f("x",s.soir_sp)}${f("x",s.soir_emp)}${f("ca_soir",s.ca_soir)}${f("x",s.burgers_soir)}${f("x",s.clients)}${f("ca_midi",s.ca)}${f("ca_midi",s.presta)}${f("x",s.refuses)}</tr></tfoot>`;
 }
 
 /* Tableau compact pour téléphone : 4 colonnes, sans défilement de côté */
 const e0=v=>new Intl.NumberFormat("fr-FR",{maximumFractionDigits:0}).format(Math.round(v))+" €";
-function svc(ca,s1,s2,bg){if(ca==null&&s1==null&&s2==null&&bg==null)return `<td class="e">–</td>`;
+function svc(ca,s1,s2,bg,tag){if(ca==null&&s1==null&&s2==null&&bg==null)return tag?`<td><b>${tag}</b></td>`:`<td class="e">–</td>`;
   const sub=[s1!=null?int(s1)+" 🍽️":"",s2?int(s2)+" 🥡":"",bg?int(bg)+" 🍔":""].filter(Boolean).join(" ");
-  return `<td><b>${ca==null?"–":e0(ca)}</b>${sub?`<i>${sub}</i>`:""}</td>`}
-function dayCell(t,ref){if(t.ca==null&&t.clients==null&&ref==null)return `<td class="e">–</td>`;
-  return `<td><b>${t.ca==null?"–":e0(t.ca)}</b>${t.clients!=null?`<i>${int(t.clients)} clients</i>`:""}${ref?`<i class="x">${int(ref)} refusé${ref>1?"s":""}</i>`:""}</td>`}
+  return `<td><b>${tag?tag+" ":""}${ca==null?"–":e0(ca)}</b>${sub?`<i>${sub}</i>`:""}</td>`}
+function dayCell(t,ref,pr){if(t.ca==null&&t.clients==null&&ref==null&&!pr)return `<td class="e">–</td>`;
+  return `<td><b>${t.ca==null?"–":e0(t.ca)}</b>${t.clients!=null?`<i>${int(t.clients)} clients</i>`:""}${ref?`<i class="x">${int(ref)} refusé${ref>1?"s":""}</i>`:""}${pr?`<i class="p">${esc(pr)}</i>`:""}</td>`}
 function compactHTML(){
   const n=daysIn(S.y,S.m);let body="";
-  for(let d=1;d<=n;d++){const r=S.data[key(S.y,S.m,d)]||{};const t=totals(r);const w=new Date(S.y,S.m,d).getDay();
+  for(let d=1;d<=n;d++){const dk=key(S.y,S.m,d),r=S.data[dk]||{};const t=totals(r);const w=new Date(S.y,S.m,d).getDay();
     const cls=[w===0||w===6?"we":"",d===S.d?"sel":"",S.y===now.getFullYear()&&S.m===now.getMonth()&&d===now.getDate()?"today-c":""].join(" ").trim();
     body+=`<tr data-day="${d}" class="${cls}"><td class="d">${pad(d)}<small>${esc(wd(S.y,S.m,d).slice(0,3))}.</small></td>
-      ${svc(val(r,"ca_midi"),sp(r,"midi"),emp(r,"midi"),val(r,"burgers_midi"))}${svc(soirCA(r),sp(r,"soir"),emp(r,"soir"),val(r,"burgers_soir"))}${dayCell(t,val(r,"refuses"))}</tr>`}
+      ${svc(val(r,"ca_midi"),sp(r,"midi"),emp(r,"midi"),val(r,"burgers_midi"))}${svc(soirCA(r),sp(r,"soir"),emp(r,"soir"),val(r,"burgers_soir"),isTheme(dk)?"🎉":"")}${dayCell(t,val(r,"refuses"),prestaTxt(dk,true))}</tr>`}
   const s=monthSums();
   return `<colgroup><col class="c0"><col><col><col></colgroup>
     <thead><tr><th class="d">Jour</th><th class="gm">Midi</th><th class="gs">Soir</th><th>Journée</th></tr></thead><tbody>${body}</tbody>
-    <tfoot><tr><td class="d">Total</td>${svc(s.ca_midi,s.midi_sp,s.midi_emp,s.burgers_midi)}${svc(s.ca_soir,s.soir_sp,s.soir_emp,s.burgers_soir)}${dayCell(s,s.refuses)}</tr></tfoot>`;
+    <tfoot><tr><td class="d">Total</td>${svc(s.ca_midi,s.midi_sp,s.midi_emp,s.burgers_midi)}${svc(s.ca_soir,s.soir_sp,s.soir_emp,s.burgers_soir)}${dayCell(s,s.refuses,s.presta?"+ "+eur(s.presta)+" presta.":"")}</tr></tfoot>`;
 }
 
 /* Graphique : CA de chaque jour, côte à côte. « Séparer midi et soir » (décoché au départ) donne deux graphiques
@@ -643,11 +733,16 @@ async function offer(blob,name){
   }
   saveLink(blob,name);toast("Fichier téléchargé");
 }
+function prestaLignes(){const out=[];for(let d=1;d<=daysIn(S.y,S.m);d++)evsOf(key(S.y,S.m,d)).forEach(e=>{
+  const v=paye(e)?(prixEv(e)==null?"prix non noté":eur(prixEv(e))):(soirCA(S.data[e.jour]||{})==null?"soir non saisi":eur(soirCA(S.data[e.jour])));
+  out.push(`${pad(d)}/${pad(S.m+1)} ${PRESTA[e.type].l} ${e.client} : ${v}${paye(e)?(e.en_caisse?" (en caisse)":" (pas en caisse)"):""}${e.jour>TODAY?" (à venir)":""}`)});return out}
 function printHTML(){
   const s=monthSums();
   return `<div class="ph"><img src="logo-hd.png" alt=""><h1>Suivi d'activité — ${esc(cap(monthName(S.y,S.m)))}<small>Double B · 59 avenue Foch, Folschviller</small></h1>
-    <div class="k"><div>CA du mois<b>${s.ca==null?"–":eur(s.ca)}</b></div><div>Clients<b>${s.clients==null?"–":int(s.clients)}</b></div><div>Ticket moyen<b>${s.ca&&s.clients?eur(Math.round(s.ca/s.clients*100)/100):"–"}</b></div><div>Burgers du mois<b>${s.burgers==null?"–":int(s.burgers)}</b></div></div></div>
-    <table>${tableHTML(false)}</table><p class="pn">Refusés = clients qu'on n'a pas pu accueillir faute de place ou de capacité.</p>`;
+    <div class="k"><div>CA du mois<b>${s.total==null?"–":eur(s.total)}</b></div><div>Clients<b>${s.clients==null?"–":int(s.clients)}</b></div><div>Ticket moyen<b>${s.ca&&s.clients?eur(Math.round(s.ca/s.clients*100)/100):"–"}</b></div><div>Burgers du mois<b>${s.burgers==null?"–":int(s.burgers)}</b></div></div></div>
+    <div class="rp">${[["Midi",s.ca_midi,"#b86e00"],["Soir",s.soir_n,"#2f5d9e"],["Soirées à thème",s.theme,PRESTA.theme.pc],["Privatisations",s.priv,PRESTA.privatisation.pc],["Traiteur extérieur",s.trait,PRESTA.traiteur.pc]]
+      .map(([l,v,c])=>`<div style="--pc:${c}">${l}<b>${v==null?"–":eur(v)}</b></div>`).join("")}</div>
+    <table>${tableHTML(false)}</table><p class="pn">${prestaLignes().map(esc).join(" · ")||"Aucune prestation ce mois-ci."}<br>Prestations (privatisations, traiteur) comptées en plus de la caisse. Thème = soir de soirée à thème. Refusés = clients qu'on n'a pas pu accueillir faute de place.</p>`;
 }
 $("#pdf").onclick=async e=>{
   const b=e.currentTarget,old=b.textContent;b.disabled=true;b.innerHTML="Préparation…";
@@ -665,11 +760,14 @@ $("#pdf").onclick=async e=>{
 };
 $("#csv").onclick=()=>{
   const n=daysIn(S.y,S.m);const c=v=>v==null?"":String(v).replace(".",",");
-  const lines=[["Date","Jour","Midi sur place","Midi à emporter","CA midi (€)","Burger du mois midi","Soir sur place","Soir à emporter","CA soir (€)","Burger du mois soir","Total clients","CA total journée (€)","Refusés"].join(";")];
-  for(let d=1;d<=n;d++){const r=S.data[key(S.y,S.m,d)]||{};const t=totals(r);
-    lines.push([`${pad(d)}/${pad(S.m+1)}/${S.y}`,wd(S.y,S.m,d),c(sp(r,"midi")),c(emp(r,"midi")),c(val(r,"ca_midi")),c(val(r,"burgers_midi")),c(sp(r,"soir")),c(emp(r,"soir")),c(soirCA(r)),c(val(r,"burgers_soir")),c(t.clients),c(t.ca),c(val(r,"refuses"))].join(";"))}
+  const lines=[["Date","Jour","Midi sur place","Midi à emporter","CA midi (€)","Burger du mois midi","Soir sur place","Soir à emporter","CA soir (€)","Burger du mois soir","Total clients","CA total journée (€)","Soirée à thème","Prestations","CA prestations (€)","Entré en caisse","Refusés"].join(";")];
+  const q=v=>/[;"\n]/.test(v)?`"${v.replace(/"/g,'""')}"`:v;
+  for(let d=1;d<=n;d++){const dk=key(S.y,S.m,d),r=S.data[dk]||{};const t=totals(r);const ev=evsOf(dk),pe=ev.filter(paye);
+    lines.push([`${pad(d)}/${pad(S.m+1)}/${S.y}`,wd(S.y,S.m,d),c(sp(r,"midi")),c(emp(r,"midi")),c(val(r,"ca_midi")),c(val(r,"burgers_midi")),c(sp(r,"soir")),c(emp(r,"soir")),c(soirCA(r)),c(val(r,"burgers_soir")),c(t.clients),c(t.ca),
+      q(ev.filter(e=>!paye(e)).map(e=>e.client).join(" + ")),q(pe.map(e=>PRESTA[e.type].l+" : "+e.client).join(" + ")),c(prestaCA(dk)),pe.map(e=>e.en_caisse?"oui":"non").join(" + "),c(val(r,"refuses"))].join(";"))}
   const s=monthSums();
-  lines.push(["TOTAL","",c(s.midi_sp),c(s.midi_emp),c(s.ca_midi),c(s.burgers_midi),c(s.soir_sp),c(s.soir_emp),c(s.ca_soir),c(s.burgers_soir),c(s.clients),c(s.ca),c(s.refuses)].join(";"));
+  lines.push(["TOTAL","",c(s.midi_sp),c(s.midi_emp),c(s.ca_midi),c(s.burgers_midi),c(s.soir_sp),c(s.soir_emp),c(s.ca_soir),c(s.burgers_soir),c(s.clients),c(s.ca),"","",c(s.presta),"",c(s.refuses)].join(";"));
+  lines.push("","CA DU MOIS EN DÉTAIL",...[["Midi",s.ca_midi],["Soir (hors soirées à thème)",s.soir_n],["Soirées à thème",s.theme],["Privatisations",s.priv],["Traiteur extérieur",s.trait],["Total caisse",s.ca],["Total du mois (caisse + prestations)",s.total]].map(([l,v])=>l+";"+c(v)));
   offer(new Blob(["﻿"+lines.join("\r\n")],{type:"text/csv"}),fileBase()+".csv");
 };
 
