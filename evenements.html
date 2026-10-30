@@ -273,7 +273,7 @@ function card(e,withDate){
     <b>📌 ${esc(e.client)}</b>${e.cree_par?`<span class="who">Noté par ${esc(NOMS[e.cree_par]||e.cree_par)}</span>`:""}</span></button>`;
   if(e.heure)meta.push(`🕒 ${esc(e.heure)}`);
   if(e.personnes!=null)meta.push(`👥 ${e.personnes} pers.`);
-  if(e.budget!=null)meta.push(`💶 ${eur(+e.budget)}`);
+  if(e.budget!=null)meta.push(`💶 ${eur(+e.budget)}${e.type==="theme"?" / pers.":""}`);
   if(e.acompte!=null)meta.push(`✅ Acompte ${eur(+e.acompte)}`);
   if(PAYE(e)&&e.statut!=="annule")meta.push(e.en_caisse?`<span class="ok">💰 En caisse</span>`:e.jour<=TODAY?`<span class="nc">⚠️ Pas encore en caisse</span>`:"");
   if(e.type==="traiteur"&&e.lieu)meta.push(`📍 ${esc(e.lieu)}`);
@@ -372,7 +372,7 @@ function openForm(ev,day){
       <button type="button" data-ty="traiteur" aria-pressed="${type==="traiteur"}"><span class="e">🚚</span>Traiteur extérieur</button>
       <button type="button" data-ty="theme" aria-pressed="${type==="theme"}"><span class="e">🎉</span>Soirée à thème</button></div></div>
     <div class="field"><label for="fClient" id="fClientL">Nom du client</label><input id="fClient" maxlength="120" autocomplete="off" placeholder="ex. Mme Dupont – anniversaire" value="${esc(e.client||"")}"></div>
-    <div class="hint" id="fThemeH">Le chiffre de cette soirée, c'est le CA du soir de ce jour-là : il sera compté à part dans Chiffres.</div>
+    <div class="hint" id="fThemeH">Le soir, dans Chiffres, on tape combien de personnes sont venues pour la soirée : l'appli calcule son chiffre, et le reste du soir compte comme « à la carte ».</div>
     <div class="row2">
       <div class="field"><label for="fJour">Date</label><input id="fJour" type="date" value="${esc(e.jour)}"></div>
       <div class="field"><label for="fHeure">Heure <em>(facultatif)</em></label><input id="fHeure" type="time" value="${esc(e.heure||"")}"></div>
@@ -380,7 +380,7 @@ function openForm(ev,day){
     <div class="warn" id="fWarn" hidden></div>
     <div class="row2">
       <div class="field"><label for="fPers">Personnes <em>(facult.)</em></label><input id="fPers" inputmode="numeric" placeholder="–" value="${e.personnes??""}"></div>
-      <div class="field paye"><label for="fBudget">Prix total <em>(facult.)</em></label><div class="in"><input id="fBudget" inputmode="decimal" placeholder="–" value="${e.budget!=null?String(+e.budget).replace(".",","):""}"><span>€</span></div></div>
+      <div class="field"><label for="fBudget" id="fBudgetL">Prix total <em>(facult.)</em></label><div class="in"><input id="fBudget" inputmode="decimal" placeholder="–" value="${e.budget!=null?String(+e.budget).replace(".",","):""}"><span>€</span></div></div>
     </div>
     <div class="field paye"><label for="fTel">Téléphone <em>(facultatif)</em></label><input id="fTel" type="tel" inputmode="tel" autocomplete="off" placeholder="ex. 06 12 34 56 78" value="${esc(e.telephone||"")}"></div>
     ${!isNew&&e.telephone&&PAYE(e)?`<a class="call" href="tel:${esc(e.telephone.replace(/[^\d+]/g,""))}">📞 Appeler ${esc(e.client)}</a>`:""}
@@ -403,6 +403,7 @@ function openForm(ev,day){
   // Soirée à thème : pas de client à appeler ni de prix (son chiffre = le soir de ce jour-là)
   const showLieu=()=>{$("#fLieuF").hidden=type!=="traiteur";const th=type==="theme";
     m.querySelectorAll(".paye").forEach(x=>x.hidden=th);$("#fThemeH").hidden=!th;
+    $("#fBudgetL").innerHTML=th?"Prix par personne <em>(facult.)</em>":"Prix total <em>(facult.)</em>";   // soirée à thème : le prix du menu de la soirée
     $("#fClientL").textContent=th?"Nom de la soirée":"Nom du client";$("#fClient").placeholder=th?"ex. Soirée grenouilles":"ex. Mme Dupont – anniversaire"};showLieu();
   m.querySelectorAll("[data-ty]").forEach(b=>b.onclick=()=>{type=b.dataset.ty;m.querySelectorAll("[data-ty]").forEach(x=>x.setAttribute("aria-pressed",x===b));showLieu()});
   m.querySelectorAll("[data-st]").forEach(b=>b.onclick=()=>{statut=b.dataset.st;m.querySelectorAll("[data-st]").forEach(x=>x.setAttribute("aria-pressed",x===b))});
@@ -424,7 +425,7 @@ function openForm(ev,day){
     const pers=num($("#fPers").value),budget=num($("#fBudget").value),acompte=num($("#fAcompte").value);
     if(pers===null||budget===null||acompte===null){toast("Un chiffre n'est pas valable");return}
     const th=type==="theme";
-    const champs={type,client,jour,heure:$("#fHeure").value,telephone:th?"":$("#fTel").value.trim(),personnes:pers===""?"":Math.round(pers),budget:th?"":budget,acompte:th?"":acompte,
+    const champs={type,client,jour,heure:$("#fHeure").value,telephone:th?"":$("#fTel").value.trim(),personnes:pers===""?"":Math.round(pers),budget,acompte:th?"":acompte,
       lieu:type==="traiteur"?$("#fLieu").value.trim():"",statut,notes:$("#fNotes").value.trim(),en_caisse:!th&&$("#fCaisse").checked};
     if(isNew)champs.cree_par=who();
     $("#fSave").disabled=true;
