@@ -151,6 +151,18 @@ td.pt{font-size:13px} td.pt.fut{color:var(--muted)} .compact i.p{color:var(--fg)
 .grp.midi{--c:var(--midi);--soft:var(--midi-soft)} .grp.soir{--c:var(--soir);--soft:var(--soir-soft)} .grp.autre{--c:var(--mamie);--soft:var(--mamie-soft)}
 .fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .fields.one{grid-template-columns:1fr}
+/* Burgers par type : 4 cases côte à côte ; le burger du mois juste dessous */
+.grp .fields+.bgs,.grp .bgs+.fields{margin-top:8px}
+.bgt{display:block;font-size:13px;font-weight:800;color:var(--c);margin:0 0 4px}
+.fields.four{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.fields.four label{justify-content:center;text-align:center;font-size:12px;min-height:30px}
+.fields.four input{font-size:17px;padding:0 2px}
+.hbtn{display:block;margin:10px auto 0;min-height:44px;padding:0 16px;border-radius:12px;border:1px solid var(--line);background:var(--sunken);font-weight:700;font-size:14px;color:var(--fg)}
+.hl{display:flex;flex-direction:column;gap:10px;max-height:60vh;overflow:auto}
+.hl div{padding:10px 12px;border-radius:12px;background:var(--sunken);border:1px solid var(--line)}
+.hl b{display:block;font-size:15px;margin-bottom:4px}
+.hl span{display:block;font-size:14px;color:var(--muted)} .hl span.now{color:var(--fg);font-weight:700}
+.hl s{color:var(--muted)}
 .f{display:flex;flex-direction:column;gap:4px;min-width:0}
 .f label{font-size:13px;font-weight:700;color:var(--muted);line-height:1.15;min-height:18px;display:flex;align-items:flex-end}
 .f .in{position:relative}
@@ -220,9 +232,9 @@ tfoot td.d{background:var(--sunken)}
 .print .ph .k{display:flex;gap:18px;text-align:right}
 .print .ph .k div{font-size:10px;color:#6f695d;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
 .print .ph .k b{display:block;font-family:var(--display);font-size:17px;color:#1d1b17;letter-spacing:0;text-transform:none}
-.print table{min-width:0;font-size:11px;flex:1}
-.print th,.print td{padding:0 6px;height:16px;border-bottom:1px solid #e6e1d5;color:#1d1b17}
-.print thead th{background:#f4f2ec;color:#6f695d;font-size:9.5px;height:20px}
+.print table{min-width:0;font-size:10px;flex:1}
+.print th,.print td{padding:0 3px;height:15px;border-bottom:1px solid #e6e1d5;color:#1d1b17}
+.print thead th{background:#f4f2ec;color:#6f695d;font-size:8.5px;letter-spacing:0;height:20px}
 .print th.gm{background:#fdf1d6;color:#9a5c00} .print th.gs{background:#e4ecf8;color:#2f5d9e} .print th.ga{background:#f4e6f4;color:#8a4f8f}
 .print td.d,.print th.d{position:static;background:transparent}
 .print thead th.d{background:#f4f2ec}
@@ -348,6 +360,7 @@ html.vue-plats #vPlats{display:block} html.vue-plats #vMois{display:none}
 
   <div class="kpis" id="kpis"></div>
   <section class="rep" id="rep" aria-label="Le CA du mois en détail"></section>
+  <section class="rep" id="ventes" aria-label="Burgers et plats du jour du mois"></section>
   <button class="chartbtn" id="chartBtn" type="button" aria-expanded="false">📈 Graphique du CA jour par jour <span class="cv">▾</span></button>
   <div class="chartbox" id="chartBox" hidden>
     <div class="chopt"><label class="sw"><input type="checkbox" id="split" autocomplete="off"><span class="tg"></span>Séparer midi et soir</label><span class="lg" id="lg" hidden><span><i style="background:var(--midi)"></i>Midi</span><span><i style="background:var(--soir)"></i>Soir</span></span></div>
@@ -366,15 +379,19 @@ html.vue-plats #vPlats{display:block} html.vue-plats #vMois{display:none}
           <div class="f"><label for="clients_midi_sp">🍽️ Sur place</label><div class="in"><input id="clients_midi_sp" data-k="clients_midi_sp" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
           <div class="f"><label for="clients_midi_emp">🥡 À emporter</label><div class="in"><input id="clients_midi_emp" data-k="clients_midi_emp" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
           <div class="f"><label for="ca_midi">CA</label><div class="in"><input id="ca_midi" class="eur" data-k="ca_midi" inputmode="decimal" autocomplete="off" placeholder="–"><span>€</span></div></div>
-          <div class="f"><label for="burgers_midi">🍔 Burger du mois</label><div class="in"><input id="burgers_midi" data-k="burgers_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
-        </div></div>
+          <div class="f"><label for="plats_midi">🍲 Plats du jour</label><div class="in"><input id="plats_midi" data-k="plats_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
+        </div>
+        <div class="bgs"><span class="bgt">🍔 Burgers vendus</span><div class="fields four"><div class="f"><label for="bb_boeuf_midi">Bœuf</label><div class="in"><input id="bb_boeuf_midi" data-k="bb_boeuf_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div></div><div class="f"><label for="bb_poulet_midi">Poulet</label><div class="in"><input id="bb_poulet_midi" data-k="bb_poulet_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div></div><div class="f"><label for="bb_vege_midi">Végé</label><div class="in"><input id="bb_vege_midi" data-k="bb_vege_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div></div><div class="f"><label for="bb_pulled_midi">Pulled pork</label><div class="in"><input id="bb_pulled_midi" data-k="bb_pulled_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div></div></div></div>
+        <div class="fields"><div class="f"><label for="burgers_midi">⭐ Burger du mois</label><div class="in"><input id="burgers_midi" data-k="burgers_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div></div></div></div>
       <div class="grp soir"><h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>Soir</h4>
         <div class="fields">
           <div class="f"><label for="clients_soir_sp">🍽️ Sur place</label><div class="in"><input id="clients_soir_sp" data-k="clients_soir_sp" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
           <div class="f"><label for="clients_soir_emp">🥡 À emporter</label><div class="in"><input id="clients_soir_emp" data-k="clients_soir_emp" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
           <div class="f"><label for="ca_jour">🧾 Total journée</label><div class="in"><input id="ca_jour" class="eur" data-k="ca_jour" inputmode="decimal" autocomplete="off" placeholder="–"><span>€</span></div></div>
-          <div class="f"><label for="burgers_soir">🍔 Burger du mois</label><div class="in"><input id="burgers_soir" data-k="burgers_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
-        </div><div class="soirc" id="soirCalc" aria-live="polite"></div>
+          <div class="f"><label for="plats_soir">🍲 Plats du jour</label><div class="in"><input id="plats_soir" data-k="plats_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
+        </div>
+        <div class="bgs"><span class="bgt">🍔 Burgers vendus</span><div class="fields four"><div class="f"><label for="bb_boeuf_soir">Bœuf</label><div class="in"><input id="bb_boeuf_soir" data-k="bb_boeuf_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div></div><div class="f"><label for="bb_poulet_soir">Poulet</label><div class="in"><input id="bb_poulet_soir" data-k="bb_poulet_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div></div><div class="f"><label for="bb_vege_soir">Végé</label><div class="in"><input id="bb_vege_soir" data-k="bb_vege_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div></div><div class="f"><label for="bb_pulled_soir">Pulled pork</label><div class="in"><input id="bb_pulled_soir" data-k="bb_pulled_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div></div></div></div>
+        <div class="fields"><div class="f"><label for="burgers_soir">⭐ Burger du mois</label><div class="in"><input id="burgers_soir" data-k="burgers_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div></div></div><div class="soirc" id="soirCalc" aria-live="polite"></div>
         <div class="themeb" id="themeBox" hidden><h5 id="thName"></h5>
           <div class="f" id="thPersF"><label for="theme_pers">Personnes venues pour la soirée</label><div class="thrw"><div class="in"><input id="theme_pers" data-k="theme_pers" inputmode="numeric" autocomplete="off" placeholder="–"></div><span class="px" id="thPx"></span></div></div>
           <div class="f" id="thCaF"><label for="ca_theme">Chiffre de la soirée</label><div class="in"><input id="ca_theme" class="eur" data-k="ca_theme" inputmode="decimal" autocomplete="off" placeholder="–"><span>€</span></div></div>
@@ -385,6 +402,7 @@ html.vue-plats #vPlats{display:block} html.vue-plats #vMois{display:none}
         </div></div>
     </div>
     <div class="daytot" id="dayTot"></div>
+    <button class="hbtn" id="hBtn" type="button" hidden></button>
   </section>
 
   <section class="tblcard">
@@ -394,7 +412,7 @@ html.vue-plats #vPlats{display:block} html.vue-plats #vMois{display:none}
     </header>
     <div class="scroll"><table id="tbl"></table></div>
     <table class="compact" id="cmp"></table>
-    <p class="note">Touche une ligne pour la remplir. 🍽️ = sur place, 🥡 = à emporter, 🍔 = burgers du mois. Les totaux se calculent tout seuls. Refusés = clients qu'on n'a pas pu accueillir faute de place.
+    <p class="note">Touche une ligne pour la remplir. 🍽️ = sur place, 🥡 = à emporter, 🍲 = plats du jour, 🍔 = burgers (tous, burger du mois compris). Les totaux se calculent tout seuls. Refusés = clients qu'on n'a pas pu accueillir faute de place.
       Prestations = privatisations et traiteur (prix noté dans Événements), comptées en plus de la caisse. 🎉 = soir de soirée à thème.</p>
   </section>
   </div>
@@ -437,7 +455,9 @@ const S={y:now.getFullYear(),m:now.getMonth(),d:now.getDate(),data:{},evs:[],pen
 
 /* ---------- Nombres ---------- */
 // clients_midi / clients_soir : anciens totaux (saisis avant la séparation sur place / à emporter), comptés comme « sur place »
-const FIELDS=["clients_midi_sp","clients_midi_emp","ca_midi","burgers_midi","clients_soir_sp","clients_soir_emp","ca_jour","burgers_soir","theme_pers","ca_theme","refuses"];
+/* Burgers par type (midi et soir) : bb_<type>_<service> ; le burger du mois reste burgers_<service> */
+const BG=[["boeuf","Bœuf"],["poulet","Poulet"],["vege","Végétarien"],["pulled","Pulled pork"]];
+const FIELDS=["clients_midi_sp","clients_midi_emp","ca_midi","plats_midi",...BG.map(([b])=>"bb_"+b+"_midi"),"burgers_midi","clients_soir_sp","clients_soir_emp","ca_jour","plats_soir",...BG.map(([b])=>"bb_"+b+"_soir"),"burgers_soir","theme_pers","ca_theme","refuses"];
 const EUR=new Set(["ca_midi","ca_soir","ca_jour","ca_theme"]);
 const nf0=new Intl.NumberFormat("fr-FR",{maximumFractionDigits:0});
 const nf2=new Intl.NumberFormat("fr-FR",{minimumFractionDigits:0,maximumFractionDigits:2});
@@ -485,8 +505,11 @@ function themeSplit(dk,r,soir){
   return {ev,p,n,x,soiree:x,carte:r2(soir-x)};
 }
 const prestaCA=dk=>dk>TODAY?null:add(...evsOf(dk).filter(paye).map(prixEv));
+const bgs=(r,sv)=>add(...BG.map(([b])=>val(r,"bb_"+b+"_"+sv)));            // les 4 types
+const bgAll=(r,sv)=>add(bgs(r,sv),val(r,"burgers_"+sv));                         // + burger du mois
 function totals(r){const cm=add(sp(r,"midi"),emp(r,"midi")),cs=add(sp(r,"soir"),emp(r,"soir"));
-  return {cm,cs,clients:add(cm,cs),sp:add(sp(r,"midi"),sp(r,"soir")),emp:add(emp(r,"midi"),emp(r,"soir")),ca:jourCA(r),burgers:add(val(r,"burgers_midi"),val(r,"burgers_soir"))}}
+  return {cm,cs,clients:add(cm,cs),sp:add(sp(r,"midi"),sp(r,"soir")),emp:add(emp(r,"midi"),emp(r,"soir")),ca:jourCA(r),burgers:add(val(r,"burgers_midi"),val(r,"burgers_soir")),
+  plats:add(val(r,"plats_midi"),val(r,"plats_soir")),bg:add(bgAll(r,"midi"),bgAll(r,"soir"))}}
 /* Comparaison : même période (jusqu'au même jour si le mois est en cours) */
 function periodCA(data,y,m,upto){let ca=null,cl=null;for(let d=1;d<=Math.min(upto,daysIn(y,m));d++){ca=add(ca,prestaCA(key(y,m,d)));const r=data[key(y,m,d)];if(!r)continue;const t=totals(r);ca=add(ca,t.ca);cl=add(cl,t.clients)}return {ca,cl}}
 function compare(){
@@ -501,14 +524,16 @@ function compare(){
 }
 function monthSums(){
   const s={midi_sp:null,midi_emp:null,soir_sp:null,soir_emp:null,ca_midi:null,ca_soir:null,burgers_midi:null,burgers_soir:null,refuses:null,clients:null,sp:null,emp:null,ca:null,burgers:null,
-    soir_n:null,theme:null,priv:null,trait:null};
+    soir_n:null,theme:null,priv:null,trait:null,plats:null,bg:null,bg_midi:null,bg_soir:null};
+  const NK=["plats_midi","plats_soir",...["midi","soir"].flatMap(sv=>BG.map(([b])=>"bb_"+b+"_"+sv))];NK.forEach(k=>s[k]=null);
   for(let d=1;d<=daysIn(S.y,S.m);d++){const dk=key(S.y,S.m,d);
     if(dk<=TODAY)evsOf(dk).filter(paye).forEach(e=>{const k=e.type==="traiteur"?"trait":"priv";s[k]=add(s[k],prixEv(e))});
     const r=S.data[dk];if(!r)continue;const t=totals(r);
     const ts=themeSplit(dk,r);if(ts){s.theme=add(s.theme,ts.soiree);s.soir_n=add(s.soir_n,ts.carte)}else s.soir_n=add(s.soir_n,soirCA(r));
     s.midi_sp=add(s.midi_sp,sp(r,"midi"));s.midi_emp=add(s.midi_emp,emp(r,"midi"));s.soir_sp=add(s.soir_sp,sp(r,"soir"));s.soir_emp=add(s.soir_emp,emp(r,"soir"));
     ["ca_midi","burgers_midi","burgers_soir","refuses"].forEach(k=>s[k]=add(s[k],val(r,k)));s.ca_soir=add(s.ca_soir,soirCA(r));
-    ["clients","sp","emp","ca","burgers"].forEach(k=>s[k]=add(s[k],t[k]))}
+    ["clients","sp","emp","ca","burgers","plats","bg"].forEach(k=>s[k]=add(s[k],t[k]));
+    NK.forEach(k=>s[k]=add(s[k],val(r,k)));s.bg_midi=add(s.bg_midi,bgAll(r,"midi"));s.bg_soir=add(s.bg_soir,bgAll(r,"soir"))}
   s.presta=add(s.priv,s.trait);s.total=add(s.ca,s.presta);   // total du mois = caisse + prestations payées à part
   return s;
 }
@@ -527,9 +552,26 @@ async function load(){
     if(mk!==key(S.y,S.m,1))return;
     S.data=d||{};S.prev=dp||{};S.ly=dl||{};if(ev&&!CAI.size)S.evs=ev;try{localStorage.setItem(CC+mk,JSON.stringify({d:S.data,p:S.prev,l:S.ly,e:S.evs}))}catch{}
     DIRTY.forEach((v,id)=>{const [dk,k]=id.split("|");if(v!=="…"&&dk.slice(0,7)===mk.slice(0,7)){S.data[dk]={...(S.data[dk]||{})};if(v==null)delete S.data[dk][k];else S.data[dk][k]=v}});
-    S.loaded=mk;if(!S.pending)setSync("À jour","ok");render();
+    S.loaded=mk;if(!S.pending)setSync("À jour","ok");render();loadCorr(mk);
   }catch(e){if(lost(e))return;setSync("Hors ligne","err");render()}
 }
+/* Historique des corrections : chaque valeur notée est gardée dans la base, une correction n'efface jamais l'original */
+const FL={clients_midi:"Clients midi",clients_midi_sp:"Midi · sur place",clients_midi_emp:"Midi · à emporter",ca_midi:"CA midi",burgers_midi:"Midi · burger du mois",plats_midi:"Midi · plats du jour",
+  clients_soir:"Clients soir",clients_soir_sp:"Soir · sur place",clients_soir_emp:"Soir · à emporter",ca_soir:"CA soir (ancienne saisie)",ca_jour:"Total journée",burgers_soir:"Soir · burger du mois",plats_soir:"Soir · plats du jour",
+  refuses:"Clients refusés",theme_pers:"Personnes venues à la soirée",ca_theme:"Chiffre de la soirée",mamie:"Mamie"};
+BG.forEach(([b,l])=>{FL["bb_"+b+"_midi"]="Midi · burger "+l.toLowerCase();FL["bb_"+b+"_soir"]="Soir · burger "+l.toLowerCase()});
+async function loadCorr(mk){try{const c=await rpc("suivi_corrections",{p_mois:mk});if(mk===key(S.y,S.m,1)){S.corr=c||{};renderTotals()}}catch{}}
+$("#hBtn").onclick=async()=>{
+  const dk=key(S.y,S.m,S.d);let list;try{list=await rpc("suivi_historique_jour",{p_jour:dk})||[]}catch(e){if(!lost(e))toast("Pas de connexion");return}
+  const by={};list.forEach(h=>(by[h.champ]=by[h.champ]||[]).push(h));
+  const fv=(k,v)=>v==null?"effacé":EUR.has(k)?eur(+v):int(+v);
+  const qui=h=>[h.par?NOMS[h.par]||h.par:"",new Date(h.le).toLocaleString("fr-FR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})].filter(Boolean).join(", le ");
+  const m=document.createElement("div");m.className="modal";
+  m.innerHTML=`<div class="box"><b style="font-size:18px">🕘 Historique du ${esc(cap(wd(S.y,S.m,S.d)))} ${S.d}</b>
+    <div class="hl">${Object.entries(by).map(([k,hs])=>`<div><b>${esc(FL[k]||k)}</b>${hs.map((h,i)=>`<span class="${i===hs.length-1?"now":""}">${i===0?"Noté":"Corrigé"} : ${i<hs.length-1?`<s>${esc(fv(k,h.valeur))}</s>`:esc(fv(k,h.valeur))} · ${esc(qui(h))}</span>`).join("")}</div>`).join("")||"<span>Aucune correction.</span>"}</div>
+    <button class="btn soft" type="button" data-c>Fermer</button></div>`;
+  m.querySelector("[data-c]").onclick=()=>m.remove();m.addEventListener("click",e=>{if(e.target===m)m.remove()});document.body.appendChild(m);
+};
 /* Hors connexion : les chiffres non envoyés sont gardés sur le téléphone et renvoyés au retour du réseau */
 const FK="chiffres2b-file";
 const fileGet=()=>{try{return JSON.parse(localStorage.getItem(FK)||"{}")}catch{return {}}};
@@ -540,7 +582,7 @@ async function save(dk,k,v){
   const id=dk+"|"+k;DIRTY.set(id,v);{const f=fileGet();f[id]=v;fileSet(f)}
   S.data[dk]={...(S.data[dk]||{})};if(v==null)delete S.data[dk][k];else S.data[dk][k]=v;
   renderTotals();S.pending++;setSync("Enregistrement…");
-  try{await rpc("suivi_maj",{p_jour:dk,p_champs:{[k]:v}});if(DIRTY.get(id)===v){DIRTY.delete(id);const f=fileGet();if(f[id]===v){delete f[id];fileSet(f)}}S.pending--;if(!S.pending)setSync("Enregistré","ok")}
+  try{await rpc("suivi_maj",{p_jour:dk,p_champs:{[k]:v},p_par:who()});if(DIRTY.get(id)===v){DIRTY.delete(id);const f=fileGet();if(f[id]===v){delete f[id];fileSet(f)}}S.pending--;if(!S.pending)setSync("Enregistré","ok")}
   catch(e){S.pending--;if(lost(e))return;setSync("Pas de réseau : gardé sur le téléphone","err");setTimeout(()=>{if(DIRTY.has(id))save(dk,k,DIRTY.get(id))},8000)}
 }
 setInterval(()=>{if(document.visibilityState==="visible")load()},15000);
@@ -585,10 +627,11 @@ function renderTheme(){
 function renderTotals(){
   renderSoir();renderTheme();const row=S.data[key(S.y,S.m,S.d)]||{};const t=totals(row);
   const pj=evsOf(key(S.y,S.m,S.d)).map(e=>`<span>${PRESTA[e.type].e} ${esc(PRESTA[e.type].l)} <b>${esc(e.client)}</b>${paye(e)&&prixEv(e)!=null?` : <b class="num">${eur(prixEv(e))}</b> <small>(à part de la caisse)</small>`:""}</span>`).join("");
-  $("#dayTot").innerHTML=pj+`<span>Clients <b class="num">${t.clients==null?"–":int(t.clients)}</b>${t.emp?` <small>(dont ${int(t.emp)} à emporter)</small>`:""}</span><span>CA de la journée <b class="num">${t.ca==null?"–":eur(t.ca)}</b></span><span>Burgers du mois <b class="num">${t.burgers==null?"–":int(t.burgers)}</b></span>`;
+  $("#dayTot").innerHTML=pj+`<span>Clients <b class="num">${t.clients==null?"–":int(t.clients)}</b>${t.emp?` <small>(dont ${int(t.emp)} à emporter)</small>`:""}</span><span>CA de la journée <b class="num">${t.ca==null?"–":eur(t.ca)}</b></span><span>Plats du jour <b class="num">${t.plats==null?"–":int(t.plats)}</b></span><span>Burgers <b class="num">${t.bg==null?"–":int(t.bg)}</b>${t.burgers?` <small>(dont ${int(t.burgers)} du mois)</small>`:""}</span>`;
+  const nc=(S.corr||{})[key(S.y,S.m,S.d)];$("#hBtn").hidden=!nc;$("#hBtn").textContent=`🕘 ${nc} correction${nc>1?"s":""} ce jour-là : voir l'historique`;
   const s=monthSums();
   const cp=compare();
-  const kp=[["CA du mois",s.total==null?"–":eur(s.total),[s.presta?`dont ${eur(s.presta)} de prestations`:"",cp.ca].filter(Boolean).join("<br>")],["Clients du mois",s.clients==null?"–":int(s.clients),[s.emp?`dont ${int(s.emp)} à emporter`:"",cp.cl].filter(Boolean).join("<br>")],["Ticket moyen",s.ca&&s.clients?eur(Math.round(s.ca/s.clients*100)/100):"–",""],["Burgers du mois",s.burgers==null?"–":int(s.burgers),""]];
+  const kp=[["CA du mois",s.total==null?"–":eur(s.total),[s.presta?`dont ${eur(s.presta)} de prestations`:"",cp.ca].filter(Boolean).join("<br>")],["Clients du mois",s.clients==null?"–":int(s.clients),[s.emp?`dont ${int(s.emp)} à emporter`:"",cp.cl].filter(Boolean).join("<br>")],["Ticket moyen",s.ca&&s.clients?eur(Math.round(s.ca/s.clients*100)/100):"–",""],["Burgers vendus",s.bg==null?"–":int(s.bg),s.burgers?`dont ${int(s.burgers)} burger du mois`:""]];
   $("#kpis").innerHTML=kp.map(([a,b,c])=>`<div class="kpi"><small>${a}</small><b class="num">${b}</b>${c?`<em>${c}</em>`:""}</div>`).join("");
   $("#tbl").innerHTML=tableHTML(true);$("#cmp").innerHTML=compactHTML();if(!$("#chartBox").hidden)drawChart();renderRep();
 }
@@ -603,7 +646,16 @@ function prestaItem(e){
   const cai=paye(e)?`<label class="cai${!e.en_caisse&&!fut?" no":""}"><input type="checkbox" data-cai="${esc(e.id)}"${e.en_caisse?" checked":""}><span>💰 Entré dans la caisse<small>${e.en_caisse?par:"À cocher seulement quand c'est tapé dans la caisse"}</small></span></label>`:"";
   return `<div class="pr${fut?" fut":""}" style="--c:${t.c}"><div class="n">${esc(cap(wd(S.y,S.m,d)))} ${d} · ${t.e} ${esc(e.client)}<small>${esc(sub)}</small></div><div class="v">${v}</div>${cai}</div>`;
 }
-function renderRep(){
+/* Burgers et plats du jour du mois : total par type et part de chaque type dans les burgers vendus */
+function renderVentes(){
+  const s=monthSums();const rows=[...BG.map(([b,l])=>[l,add(s["bb_"+b+"_midi"],s["bb_"+b+"_soir"])]),["⭐ Burger du mois",s.burgers]];
+  const mx=Math.max(1,...rows.map(r=>r[1]||0)),tot=s.bg;
+  $("#ventes").innerHTML=`<h3>🍔 Burgers et plats du jour</h3>
+    ${rows.map(([l,v])=>`<div class="rl" style="--c:var(--accent)"><span>${l}</span><span class="v">${v==null?"–":int(v)}${v&&tot?` <small style="color:var(--muted);font-weight:700">· ${Math.round(v/tot*100)} %</small>`:""}</span><span class="tr"><i style="width:${v?Math.max(1,v/mx*100):0}%"></i></span></div>`).join("")}
+    <div class="rl tot"><span>Burgers vendus</span><span class="v">${tot==null?"–":int(tot)}</span>${tot?`<small>Midi ${int(s.bg_midi||0)} · Soir ${int(s.bg_soir||0)}</small>`:""}</div>
+    <div class="rl tot" style="border-top-width:1px"><span>🍲 Plats du jour</span><span class="v">${s.plats==null?"–":int(s.plats)}</span>${s.plats?`<small>Midi ${int(s.plats_midi||0)} · Soir ${int(s.plats_soir||0)}</small>`:""}</div>`;
+}
+function renderRep(){renderVentes();
   const s=monthSums();const list=[];for(let d=1;d<=daysIn(S.y,S.m);d++)list.push(...evsOf(key(S.y,S.m,d)));
   const has=k=>list.some(e=>e.type===k);
   const rows=[["☀️ Midi",s.ca_midi,"var(--midi)",1],[has("theme")?"🌙 Soir à la carte":"🌙 Soir",s.soir_n,"var(--soir)",1],["🎉 Soirées à thème",s.theme,"var(--theme)",has("theme")],["🏠 Privatisations",s.priv,"var(--priv)",has("privatisation")],["🚚 Traiteur extérieur",s.trait,"var(--trait)",has("traiteur")]].filter(r=>r[3]||r[1]!=null);
@@ -643,22 +695,22 @@ function tableHTML(live){
     const dk=key(S.y,S.m,d),r=S.data[dk]||{};const t=totals(r);const w=new Date(S.y,S.m,d).getDay();
     const cls=[w===0||w===6?"we":"",live&&d===S.d?"sel":"",live&&S.y===now.getFullYear()&&S.m===now.getMonth()&&d===now.getDate()?"today":""].join(" ").trim();
     body+=`<tr data-day="${d}" class="${cls}"><td class="d">${pad(d)}/${pad(S.m+1)}<small>${esc(wd(S.y,S.m,d))}</small></td>
-      ${cell("x",sp(r,"midi"))}${cell("x",emp(r,"midi"))}${cell("ca_midi",val(r,"ca_midi"))}${cell("x",val(r,"burgers_midi"))}
-      ${cell("x",sp(r,"soir"))}${cell("x",emp(r,"soir"))}${isTheme(dk)?themeTd(dk,r,live):cell("ca_soir",soirCA(r))}${cell("x",val(r,"burgers_soir"))}
+      ${cell("x",sp(r,"midi"))}${cell("x",emp(r,"midi"))}${cell("ca_midi",val(r,"ca_midi"))}${cell("x",val(r,"plats_midi"))}${cell("x",bgs(r,"midi"))}${cell("x",val(r,"burgers_midi"))}
+      ${cell("x",sp(r,"soir"))}${cell("x",emp(r,"soir"))}${isTheme(dk)?themeTd(dk,r,live):cell("ca_soir",soirCA(r))}${cell("x",val(r,"plats_soir"))}${cell("x",bgs(r,"soir"))}${cell("x",val(r,"burgers_soir"))}
       ${t.clients==null?`<td class="e">–</td>`:`<td class="tot">${int(t.clients)}</td>`}${t.ca==null?`<td class="e">–</td>`:`<td class="tot">${eur(t.ca)}</td>`}
       ${prestaTd(dk,live)}${cell("x",val(r,"refuses"))}</tr>`;
   }
   const s=monthSums();const f=(k,v)=>`<td>${v==null?"":esc(fmt(k,v))}</td>`;
-  return `<thead><tr class="g"><th class="d" rowspan="2">Date</th><th class="gm" colspan="4">Midi</th><th class="gs" colspan="4">Soir</th><th colspan="2">Journée</th><th rowspan="2">Prestations</th><th rowspan="2">Refusés</th></tr>
-    <tr><th class="gm">Sur place</th><th class="gm">Emporter</th><th class="gm">CA</th><th class="gm">Burger</th><th class="gs">Sur place</th><th class="gs">Emporter</th><th class="gs">CA</th><th class="gs">Burger</th><th>Clients</th><th>CA total</th></tr></thead>
+  return `<thead><tr class="g"><th class="d" rowspan="2">Date</th><th class="gm" colspan="6">Midi</th><th class="gs" colspan="6">Soir</th><th colspan="2">Journée</th><th rowspan="2">Prestations</th><th rowspan="2">Refusés</th></tr>
+    <tr><th class="gm">Sur place</th><th class="gm">Emporter</th><th class="gm">CA</th><th class="gm">Plats</th><th class="gm">Burgers</th><th class="gm">B. mois</th><th class="gs">Sur place</th><th class="gs">Emporter</th><th class="gs">CA</th><th class="gs">Plats</th><th class="gs">Burgers</th><th class="gs">B. mois</th><th>Clients</th><th>CA total</th></tr></thead>
     <tbody>${body}</tbody>
-    <tfoot><tr><td class="d">TOTAL</td>${f("x",s.midi_sp)}${f("x",s.midi_emp)}${f("ca_midi",s.ca_midi)}${f("x",s.burgers_midi)}${f("x",s.soir_sp)}${f("x",s.soir_emp)}${f("ca_soir",s.ca_soir)}${f("x",s.burgers_soir)}${f("x",s.clients)}${f("ca_midi",s.ca)}${f("ca_midi",s.presta)}${f("x",s.refuses)}</tr></tfoot>`;
+    <tfoot><tr><td class="d">TOTAL</td>${f("x",s.midi_sp)}${f("x",s.midi_emp)}${f("ca_midi",s.ca_midi)}${f("x",s.plats_midi)}${f("x",add(...BG.map(([b])=>s["bb_"+b+"_midi"])))}${f("x",s.burgers_midi)}${f("x",s.soir_sp)}${f("x",s.soir_emp)}${f("ca_soir",s.ca_soir)}${f("x",s.plats_soir)}${f("x",add(...BG.map(([b])=>s["bb_"+b+"_soir"])))}${f("x",s.burgers_soir)}${f("x",s.clients)}${f("ca_midi",s.ca)}${f("ca_midi",s.presta)}${f("x",s.refuses)}</tr></tfoot>`;
 }
 
 /* Tableau compact pour téléphone : 4 colonnes, sans défilement de côté */
 const e0=v=>new Intl.NumberFormat("fr-FR",{maximumFractionDigits:0}).format(Math.round(v))+" €";
-function svc(ca,s1,s2,bg,tag,extra){if(ca==null&&s1==null&&s2==null&&bg==null)return tag?`<td><b>${tag}</b></td>`:`<td class="e">–</td>`;
-  const sub=[s1!=null?int(s1)+" 🍽️":"",s2?int(s2)+" 🥡":"",bg?int(bg)+" 🍔":""].filter(Boolean).join(" ");
+function svc(ca,s1,s2,bg,tag,extra,pl){if(ca==null&&s1==null&&s2==null&&bg==null&&pl==null)return tag?`<td><b>${tag}</b></td>`:`<td class="e">–</td>`;
+  const sub=[s1!=null?int(s1)+" 🍽️":"",s2?int(s2)+" 🥡":"",pl?int(pl)+" 🍲":"",bg?int(bg)+" 🍔":""].filter(Boolean).join(" ");
   return `<td><b>${tag?tag+" ":""}${ca==null?"–":e0(ca)}</b>${extra?`<i>${extra}</i>`:""}${sub?`<i>${sub}</i>`:""}</td>`}
 function dayCell(t,ref,pr){if(t.ca==null&&t.clients==null&&ref==null&&!pr)return `<td class="e">–</td>`;
   return `<td><b>${t.ca==null?"–":e0(t.ca)}</b>${t.clients!=null?`<i>${int(t.clients)} clients</i>`:""}${ref?`<i class="x">${int(ref)} refusé${ref>1?"s":""}</i>`:""}${pr?`<i class="p">${esc(pr)}</i>`:""}</td>`}
@@ -667,11 +719,11 @@ function compactHTML(){
   for(let d=1;d<=n;d++){const dk=key(S.y,S.m,d),r=S.data[dk]||{};const t=totals(r);const w=new Date(S.y,S.m,d).getDay();
     const cls=[w===0||w===6?"we":"",d===S.d?"sel":"",S.y===now.getFullYear()&&S.m===now.getMonth()&&d===now.getDate()?"today-c":""].join(" ").trim();
     body+=`<tr data-day="${d}" class="${cls}"><td class="d">${pad(d)}<small>${esc(wd(S.y,S.m,d).slice(0,3))}.</small></td>
-      ${svc(val(r,"ca_midi"),sp(r,"midi"),emp(r,"midi"),val(r,"burgers_midi"))}${svc(soirCA(r),sp(r,"soir"),emp(r,"soir"),val(r,"burgers_soir"),isTheme(dk)?"🎉":"",(ts=>ts&&!ts.prec&&ts.soiree!=null?"dont soirée "+e0(ts.soiree):"")(themeSplit(dk,r)))}${dayCell(t,val(r,"refuses"),prestaTxt(dk,true))}</tr>`}
+      ${svc(val(r,"ca_midi"),sp(r,"midi"),emp(r,"midi"),bgAll(r,"midi"),"","",val(r,"plats_midi"))}${svc(soirCA(r),sp(r,"soir"),emp(r,"soir"),bgAll(r,"soir"),isTheme(dk)?"🎉":"",(ts=>ts&&!ts.prec&&ts.soiree!=null?"dont soirée "+e0(ts.soiree):"")(themeSplit(dk,r)),val(r,"plats_soir"))}${dayCell(t,val(r,"refuses"),prestaTxt(dk,true))}</tr>`}
   const s=monthSums();
   return `<colgroup><col class="c0"><col><col><col></colgroup>
     <thead><tr><th class="d">Jour</th><th class="gm">Midi</th><th class="gs">Soir</th><th>Journée</th></tr></thead><tbody>${body}</tbody>
-    <tfoot><tr><td class="d">Total</td>${svc(s.ca_midi,s.midi_sp,s.midi_emp,s.burgers_midi)}${svc(s.ca_soir,s.soir_sp,s.soir_emp,s.burgers_soir)}${dayCell(s,s.refuses,s.presta?"+ "+eur(s.presta)+" presta.":"")}</tr></tfoot>`;
+    <tfoot><tr><td class="d">Total</td>${svc(s.ca_midi,s.midi_sp,s.midi_emp,s.bg_midi,"","",s.plats_midi)}${svc(s.ca_soir,s.soir_sp,s.soir_emp,s.bg_soir,"","",s.plats_soir)}${dayCell(s,s.refuses,s.presta?"+ "+eur(s.presta)+" presta.":"")}</tr></tfoot>`;
 }
 
 /* Graphique : CA de chaque jour, côte à côte. « Séparer midi et soir » (décoché au départ) donne deux graphiques
@@ -785,10 +837,10 @@ function prestaLignes(){const out=[];for(let d=1;d<=daysIn(S.y,S.m);d++)evsOf(ke
 function printHTML(){
   const s=monthSums();
   return `<div class="ph"><img src="logo-hd.png" alt=""><h1>Suivi d'activité — ${esc(cap(monthName(S.y,S.m)))}<small>Double B · 59 avenue Foch, Folschviller</small></h1>
-    <div class="k"><div>CA du mois<b>${s.total==null?"–":eur(s.total)}</b></div><div>Clients<b>${s.clients==null?"–":int(s.clients)}</b></div><div>Ticket moyen<b>${s.ca&&s.clients?eur(Math.round(s.ca/s.clients*100)/100):"–"}</b></div><div>Burgers du mois<b>${s.burgers==null?"–":int(s.burgers)}</b></div></div></div>
+    <div class="k"><div>CA du mois<b>${s.total==null?"–":eur(s.total)}</b></div><div>Clients<b>${s.clients==null?"–":int(s.clients)}</b></div><div>Ticket moyen<b>${s.ca&&s.clients?eur(Math.round(s.ca/s.clients*100)/100):"–"}</b></div><div>Burgers<b>${s.bg==null?"–":int(s.bg)}</b></div><div>Plats du jour<b>${s.plats==null?"–":int(s.plats)}</b></div></div></div>
     <div class="rp">${[["Midi",s.ca_midi,"#b86e00"],["Soir",s.soir_n,"#2f5d9e"],["Soirées à thème",s.theme,PRESTA.theme.pc],["Privatisations",s.priv,PRESTA.privatisation.pc],["Traiteur extérieur",s.trait,PRESTA.traiteur.pc]]
       .map(([l,v,c])=>`<div style="--pc:${c}">${l}<b>${v==null?"–":eur(v)}</b></div>`).join("")}</div>
-    <table>${tableHTML(false)}</table><p class="pn">${prestaLignes().map(esc).join(" · ")||"Aucune prestation ce mois-ci."}<br>Prestations (privatisations, traiteur) comptées en plus de la caisse. Thème = soir de soirée à thème. Refusés = clients qu'on n'a pas pu accueillir faute de place.</p>`;
+    <table>${tableHTML(false)}</table><p class="pn">${s.bg?"Burgers : "+[...BG.map(([b,l])=>[l,add(s["bb_"+b+"_midi"],s["bb_"+b+"_soir"])]),["Burger du mois",s.burgers]].filter(x=>x[1]).map(([l,v])=>`${l} ${int(v)} (${Math.round(v/s.bg*100)} %)`).join(" · ")+"<br>":""}${prestaLignes().map(esc).join(" · ")||"Aucune prestation ce mois-ci."}<br>Prestations (privatisations, traiteur) comptées en plus de la caisse. Thème = soir de soirée à thème. Refusés = clients qu'on n'a pas pu accueillir faute de place.</p>`;
 }
 $("#pdf").onclick=async e=>{
   const b=e.currentTarget,old=b.textContent;b.disabled=true;b.innerHTML="Préparation…";
@@ -806,14 +858,16 @@ $("#pdf").onclick=async e=>{
 };
 $("#csv").onclick=()=>{
   const n=daysIn(S.y,S.m);const c=v=>v==null?"":String(v).replace(".",",");
-  const lines=[["Date","Jour","Midi sur place","Midi à emporter","CA midi (€)","Burger du mois midi","Soir sur place","Soir à emporter","CA soir (€)","Burger du mois soir","Total clients","CA total journée (€)","Soirée à thème","CA soirée à thème (€)","Prestations","CA prestations (€)","Entré en caisse","Refusés"].join(";")];
+  const lines=[["Date","Jour","Midi sur place","Midi à emporter","CA midi (€)","Plats du jour midi",...BG.map(([,l])=>"Burger "+l.toLowerCase()+" midi"),"Burger du mois midi","Soir sur place","Soir à emporter","CA soir (€)","Plats du jour soir",...BG.map(([,l])=>"Burger "+l.toLowerCase()+" soir"),"Burger du mois soir","Total clients","CA total journée (€)","Soirée à thème","CA soirée à thème (€)","Prestations","CA prestations (€)","Entré en caisse","Refusés"].join(";")];
   const q=v=>/[;"\n]/.test(v)?`"${v.replace(/"/g,'""')}"`:v;
   for(let d=1;d<=n;d++){const dk=key(S.y,S.m,d),r=S.data[dk]||{};const t=totals(r);const ev=evsOf(dk),pe=ev.filter(paye);
-    lines.push([`${pad(d)}/${pad(S.m+1)}/${S.y}`,wd(S.y,S.m,d),c(sp(r,"midi")),c(emp(r,"midi")),c(val(r,"ca_midi")),c(val(r,"burgers_midi")),c(sp(r,"soir")),c(emp(r,"soir")),c(soirCA(r)),c(val(r,"burgers_soir")),c(t.clients),c(t.ca),
+    lines.push([`${pad(d)}/${pad(S.m+1)}/${S.y}`,wd(S.y,S.m,d),c(sp(r,"midi")),c(emp(r,"midi")),c(val(r,"ca_midi")),c(val(r,"plats_midi")),...BG.map(([b])=>c(val(r,"bb_"+b+"_midi"))),c(val(r,"burgers_midi")),c(sp(r,"soir")),c(emp(r,"soir")),c(soirCA(r)),c(val(r,"plats_soir")),...BG.map(([b])=>c(val(r,"bb_"+b+"_soir"))),c(val(r,"burgers_soir")),c(t.clients),c(t.ca),
       q(ev.filter(e=>!paye(e)).map(e=>e.client).join(" + ")),c((themeSplit(dk,r)||{}).soiree),q(pe.map(e=>PRESTA[e.type].l+" : "+e.client).join(" + ")),c(prestaCA(dk)),pe.map(e=>e.en_caisse?"oui":"non").join(" + "),c(val(r,"refuses"))].join(";"))}
   const s=monthSums();
-  lines.push(["TOTAL","",c(s.midi_sp),c(s.midi_emp),c(s.ca_midi),c(s.burgers_midi),c(s.soir_sp),c(s.soir_emp),c(s.ca_soir),c(s.burgers_soir),c(s.clients),c(s.ca),"",c(s.theme),"",c(s.presta),"",c(s.refuses)].join(";"));
-  lines.push("","CA DU MOIS EN DÉTAIL",...[["Midi",s.ca_midi],["Soir à la carte (hors soirées à thème)",s.soir_n],["Soirées à thème",s.theme],["Privatisations",s.priv],["Traiteur extérieur",s.trait],["Total caisse",s.ca],["Total du mois (caisse + prestations)",s.total]].map(([l,v])=>l+";"+c(v)));
+  lines.push(["TOTAL","",c(s.midi_sp),c(s.midi_emp),c(s.ca_midi),c(s.plats_midi),...BG.map(([b])=>c(s["bb_"+b+"_midi"])),c(s.burgers_midi),c(s.soir_sp),c(s.soir_emp),c(s.ca_soir),c(s.plats_soir),...BG.map(([b])=>c(s["bb_"+b+"_soir"])),c(s.burgers_soir),c(s.clients),c(s.ca),"",c(s.theme),"",c(s.presta),"",c(s.refuses)].join(";"));
+  lines.push("","CA DU MOIS EN DÉTAIL",...[["Midi",s.ca_midi],["Soir à la carte (hors soirées à thème)",s.soir_n],["Soirées à thème",s.theme],["Privatisations",s.priv],["Traiteur extérieur",s.trait],["Total caisse",s.ca],["Total du mois (caisse + prestations)",s.total]].map(([l,v])=>l+";"+c(v)),
+    "","BURGERS ET PLATS DU JOUR DU MOIS",...[...BG.map(([b,l])=>["Burger "+l.toLowerCase(),add(s["bb_"+b+"_midi"],s["bb_"+b+"_soir"])]),["Burger du mois",s.burgers]].map(([l,v])=>l+";"+c(v)+";"+(v&&s.bg?Math.round(v/s.bg*100)+" %":"")),
+    "Burgers vendus;"+c(s.bg),"Plats du jour;"+c(s.plats));
   offer(new Blob(["﻿"+lines.join("\r\n")],{type:"text/csv"}),fileBase()+".csv");
 };
 
