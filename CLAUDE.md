@@ -7,6 +7,7 @@ Tous les textes visibles sont en français.
 ## Pages
 - `index.html` : **Commande** (fournisseurs, prix, envoi par message). Onglet prioritaire : ne jamais le dégrader.
 - `accueil.html` (Aujourd'hui), `hygiene.html`, `menus.html`, `chiffres.html` (CA midi/soir, graphique), `evenements.html`.
+- `fidelite.html` : cartes de fidélité (profil Julien seulement pour l'instant) ; `carte.html` : page publique du client (jeton secret après #).
 - `profil.js` : choix du profil, barre du haut, notifications, partagé par toutes les pages.
 - `sw.js` : service worker (hors connexion, mise à jour d'un bloc).
 

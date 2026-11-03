@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<title>Ma carte fidélité · Double B</title>
+<meta name="description" content="Ta carte fidélité du Double B : 1 burger = 1 tampon, 10 tampons = 1 burger offert.">
+<meta name="theme-color" content="#f2a516">
+<meta name="apple-mobile-web-app-title" content="Double B">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700;800&display=swap">
+<style>
+/* Carte fidélité du client : elle ne fait qu'afficher. Les tampons sont ajoutés uniquement par l'équipe, au restaurant. */
+:root{
+  --bg:#f4f2ec; --surface:#ffffff; --sunken:#f9f7f2; --line:#e6e1d5; --fg:#1d1b17; --muted:#6f695d;
+  --accent:#f2a516; --accent-ink:#2a1d00; --accent-soft:#fdf1d6; --go:#2f7d4f; --go-soft:#e3f2e8;
+  --display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif; --body:"Figtree","Segoe UI",system-ui,sans-serif; color-scheme:light}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#141310; --surface:#1f1d18; --sunken:#191814; --line:#34312a; --fg:#f3efe5; --muted:#a69f90;
+  --accent:#f5b232; --accent-ink:#231800; --accent-soft:#3a2e12; --go:#5fbf86; --go-soft:#16301f; color-scheme:dark}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.4;
+  padding:max(20px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+[hidden]{display:none!important}
+.wrap{max-width:440px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:12px;margin:4px 4px 18px}
+.brand img{width:52px;height:52px;border-radius:14px}
+.brand b{display:block;font-family:var(--display);font-size:24px;font-weight:800;letter-spacing:-.3px;line-height:1}
+.brand small{display:block;font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+/* La carte elle-même, comme une vraie carte en carton */
+.card{position:relative;overflow:hidden;border-radius:26px;padding:22px 18px 20px;color:#2a1d00;
+  background:radial-gradient(120% 90% at 100% 0%,#ffd77a 0%,#f2a516 48%,#d9890a 100%);
+  box-shadow:0 18px 40px -18px rgba(120,70,0,.55),inset 0 1px 0 rgba(255,255,255,.5)}
+.card::after{content:"";position:absolute;right:-40px;bottom:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.12)}
+.card h1{margin:0;font-family:var(--display);font-size:30px;font-weight:800;letter-spacing:-.5px}
+.card .sub{font-weight:700;font-size:15px;opacity:.8;margin-top:2px}
+.stamps{position:relative;z-index:1;display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin:20px 0 6px}
+.stamp{aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font-size:clamp(20px,7vw,28px);background:rgba(255,255,255,.28);border:2.5px dashed rgba(42,29,0,.32)}
+.stamp.on{background:#fff;border:2.5px solid #fff;box-shadow:0 4px 10px -4px rgba(80,40,0,.5);animation:pop .4s cubic-bezier(.3,1.5,.5,1) both}
+.stamp.gift{border-style:solid;border-color:rgba(42,29,0,.55)}
+@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
+.msg{margin-top:16px;padding:16px;border-radius:20px;background:var(--surface);border:1px solid var(--line);text-align:center}
+.msg b{display:block;font-family:var(--display);font-size:22px;font-weight:800;line-height:1.2}
+.msg span{display:block;color:var(--muted);font-weight:600;margin-top:6px}
+.msg.win{background:var(--go-soft);border-color:color-mix(in srgb,var(--go) 40%,transparent)}
+.bar{height:12px;border-radius:6px;background:var(--sunken);border:1px solid var(--line);overflow:hidden;margin-top:12px}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:6px;transition:width .6s ease}
+.kp{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.kp div{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px}
+.kp small{display:block;font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.kp b{display:block;font-family:var(--display);font-size:26px;font-weight:800;margin-top:2px}
+.how{margin-top:16px;padding:16px;border-radius:20px;background:var(--surface);border:1px solid var(--line)}
+.how h2{margin:0 0 8px;font-family:var(--display);font-size:18px}
+.how p{margin:6px 0;color:var(--muted);font-weight:600;font-size:15px}
+.how p b{color:var(--fg)}
+.foot{text-align:center;color:var(--muted);font-size:14px;font-weight:600;margin-top:18px}
+.foot a{color:inherit}
+.none{text-align:center;padding:40px 10px;color:var(--muted);font-size:17px}
+.none b{display:block;font-size:46px;margin-bottom:10px}
+@media (prefers-reduced-motion:reduce){.stamp.on{animation:none}.bar i{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><img src="icone-appli.svg" alt="" width="52" height="52"><div><b>Double B</b><small>Carte fidélité</small></div></div>
+
+  <div id="load" class="none">Chargement de ta carte…</div>
+  <div id="none" class="none" hidden><b>🍔</b>Carte introuvable.<br>Demande au restaurant de te renvoyer ta carte.</div>
+
+  <div id="ok" hidden>
+    <div class="card">
+      <h1 id="nom"></h1>
+      <div class="sub" id="depuis"></div>
+      <div class="stamps" id="st"></div>
+    </div>
+    <div class="msg" id="msg"></div>
+    <div class="kp">
+      <div><small>Burgers offerts</small><b id="off">0</b></div>
+      <div><small>Dernière visite</small><b id="last" style="font-size:20px">—</b></div>
+    </div>
+    <div class="how">
+      <h2>Comment ça marche ?</h2>
+      <p>🍔 <b>1 burger acheté = 1 tampon.</b> Donne ton numéro de téléphone à la caisse.</p>
+      <p>🎁 <b>10 tampons = 1 burger offert</b>, celui que tu veux.</p>
+      <p>📌 Garde cette page dans tes favoris pour suivre tes tampons.</p>
+    </div>
+  </div>
+  <div class="foot">Le Double B · 59 avenue Foch, 57730 Folschviller</div>
+</div>
+<script>
+const API="https://kokjumjhpasxxxrpspng.supabase.co/rest/v1/rpc/fid_carte";
+const KEY="sb_publishable_HIJXH1eJ_CP-A4G3AecDKg_NbBUD0m2";
+const $=s=>document.querySelector(s);
+// Le jeton est dans l'adresse (après #, jamais envoyé au serveur de la page) ; on le retient pour la prochaine ouverture
+let J=(location.hash||"").slice(1).toLowerCase();
+try{if(/^[0-9a-f]{32}$/.test(J))localStorage.setItem("2b-carte",J);else J=localStorage.getItem("2b-carte")||""}catch{}
+let first=true;
+async function load(){
+  if(!/^[0-9a-f]{32}$/.test(J)){$("#load").hidden=true;$("#none").hidden=false;return}
+  let c;try{const r=await fetch(API,{method:"POST",headers:{"apikey":KEY,"Content-Type":"application/json"},body:JSON.stringify({p_jeton:J})});
+    if(!r.ok)throw 0;c=await r.json()}catch{if(first)$("#load").textContent="Pas de connexion. Réessaie dans un instant.";return}
+  $("#load").hidden=true;
+  if(!c){$("#none").hidden=false;$("#ok").hidden=true;return}
+  $("#ok").hidden=false;
+  const s=c.solde,full=Math.min(s,10);
+  $("#nom").textContent=c.prenom;
+  $("#depuis").textContent="Membre depuis "+new Date(c.depuis).toLocaleDateString("fr-FR",{month:"long",year:"numeric"});
+  $("#st").innerHTML=Array.from({length:10},(_,i)=>`<div class="stamp${i<full?" on":""}${i===9?" gift":""}" style="animation-delay:${first?i*70:0}ms${first?"":";animation:none"}">${i<full?"🍔":i===9?"🎁":""}</div>`).join("");
+  const m=$("#msg");m.className="msg"+(s>=10?" win":"");
+  m.innerHTML=s>=10?`<b>🎉 Ton burger est offert !</b><span>Montre cette carte ou donne ton numéro à ta prochaine visite.</span>`
+    :`<b>Plus que ${10-s} tampon${10-s>1?"s":""} avant ton burger offert !</b><span>${s} / 10 tampons</span><div class="bar"><i style="width:${s*10}%"></i></div>`;
+  if(c.anniv)m.innerHTML+=`<span style="margin-top:12px;color:var(--fg)">🎂 <b style="display:inline;font-size:16px;font-family:var(--body)">Joyeux anniversaire !</b> Un dessert ou une boisson t'attend ce mois-ci.</span>`;
+  $("#off").textContent=c.offerts;
+  $("#last").textContent=c.derniere?new Date(c.derniere).toLocaleDateString("fr-FR",{day:"numeric",month:"short"}):"—";
+  first=false;
+}
+load();
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")load()});
+</script>
+</body>
+</html>

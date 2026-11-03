@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<script>/* Changement d'onglet : sens de la transition (gauche / droite) ; retour en arrière ou lien interne : pas d'effet */
+addEventListener("pagereveal",e=>{if(!e.viewTransition)return;let d=null;try{d=sessionStorage.getItem("2b-sens");sessionStorage.removeItem("2b-sens")}catch(x){}
+if(d)try{e.viewTransition.types.add(d)}catch(x){}else e.viewTransition.skipTransition()});</script>
+<title>Fidélité · Double B</title>
+<meta name="description" content="Cartes de fidélité du Double B : 1 burger = 1 tampon, 10 tampons = 1 burger offert.">
+<meta name="theme-color" content="#f2a516">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Commande 2B">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
+<script>try{if(!localStorage.getItem("commande2b-code"))location.replace("./")}catch(e){}</script>
+<style>
+/* Fidélité : l'équipe retrouve un client par son numéro, ajoute ses tampons, offre le burger.
+   Toutes les règles (limites, solde, annulation) sont vérifiées par le serveur, pas par cette page. */
+:root{
+  --bg:#f4f2ec; --surface:#ffffff; --sunken:#f9f7f2; --line:#e6e1d5; --fg:#1d1b17; --muted:#6f695d;
+  --accent:#f2a516; --accent-ink:#2a1d00; --accent-soft:#fdf1d6; --go:#2f7d4f; --go-soft:#e3f2e8; --danger:#c23a2b;
+  --display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
+  --body:"Figtree","Segoe UI",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#141310; --surface:#1f1d18; --sunken:#191814; --line:#34312a; --fg:#f3efe5; --muted:#a69f90;
+  --accent:#f5b232; --accent-ink:#231800; --accent-soft:#3a2e12; --go:#5fbf86; --go-soft:#16301f; --danger:#e8705f; color-scheme:dark}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.35;
+  padding:env(safe-area-inset-top,0px) max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px))}
+[hidden]{display:none!important}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+.wrap{max-width:680px;margin:0 auto;padding-block:16px 24px}
+h1,h2,h3{font-family:var(--display);margin:0}
+.num{font-variant-numeric:tabular-nums}
+.head{margin:14px 4px 14px}
+.head h1{font-size:32px;font-weight:800;letter-spacing:-.6px}
+.head p{margin:6px 0 0;color:var(--muted);font-size:16px;font-weight:600}
+
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.seg button{min-height:52px;border-radius:14px;border:2px solid var(--line);background:var(--surface);font-weight:800;font-size:16px;color:var(--muted)}
+.seg button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--fg)}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:16px;margin-bottom:14px;box-shadow:0 1px 2px rgba(60,40,10,.04),0 6px 18px -10px rgba(60,40,10,.14)}
+.card h2{font-size:20px;font-weight:800;margin-bottom:10px}
+.lbl{display:block;font-size:14px;font-weight:800;color:var(--muted);margin:0 2px 6px}
+.in{width:100%;height:60px;border-radius:16px;border:2px solid var(--line);background:var(--sunken);padding:0 16px;font-size:22px;font-weight:700;outline:none}
+.in:focus{border-color:var(--accent)}
+.in.sm{height:52px;font-size:18px}
+.swap{display:block;margin:8px 2px 0;background:none;border:0;padding:6px 0;color:var(--muted);font-weight:700;font-size:15px;text-decoration:underline}
+.btn{height:56px;border-radius:15px;border:0;padding:0 18px;font-weight:800;font-size:17px;background:var(--accent);color:var(--accent-ink);display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  background-image:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,0));box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 6px 14px -8px color-mix(in srgb,var(--accent) 90%,#000)}
+.btn.go{background-color:var(--go);color:#fff}
+.btn.ghost{background:var(--sunken);color:var(--fg);border:1px solid var(--line);box-shadow:none}
+.btn.bad{background:var(--sunken);color:var(--danger);border:1px solid var(--line);box-shadow:none}
+.btn:disabled{opacity:.5}
+button:active{scale:.97}
+
+/* Résultats de recherche */
+.res{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.row{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border-radius:16px;border:1px solid var(--line);background:var(--sunken);text-align:left;min-height:64px}
+.row .av{flex:none;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft);font-weight:800;font-size:18px}
+.row .t{flex:1;min-width:0}
+.row .t b{display:block;font-size:17px;font-weight:800}
+.row .t small{display:block;color:var(--muted);font-size:14px;font-weight:600}
+.row .n{flex:none;font-weight:800;font-size:15px;padding:4px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--line)}
+.row .n.full{background:var(--go);color:#fff;border-color:var(--go)}
+.empty{color:var(--muted);font-size:16px;padding:6px 2px}
+.check{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:14px;background:var(--sunken);border:1px solid var(--line);font-size:15px;font-weight:600;line-height:1.35}
+.check input{flex:none;width:26px;height:26px;margin:0;accent-color:var(--accent)}
+.form{display:flex;flex-direction:column;gap:12px}
+
+/* Fiche client */
+.back{display:inline-flex;align-items:center;gap:6px;height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-weight:800;font-size:15px;margin-bottom:12px}
+.who{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.who .av{flex:none;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:24px;font-family:var(--display)}
+.who h2{font-size:26px;margin:0}
+.who small{display:block;color:var(--muted);font-size:15px;font-weight:600}
+.stamps{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:4px 0 12px}
+.stamp{aspect-ratio:1;border-radius:50%;border:2.5px dashed var(--line);display:grid;place-items:center;font-size:26px;background:var(--sunken)}
+.stamp.on{border:2.5px solid var(--accent);background:var(--accent-soft);animation:pop .35s cubic-bezier(.3,1.5,.5,1) both}
+.stamp.gift{border-style:solid;border-color:var(--go);background:var(--go-soft)}
+@keyframes pop{from{transform:scale(.6)}to{transform:none}}
+.status{text-align:center;font-size:18px;font-weight:800;margin-bottom:4px}
+.status small{display:block;font-size:14px;color:var(--muted);font-weight:600;margin-top:4px}
+.plus{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;margin-top:14px}
+.plus .btn{height:72px;font-size:20px;padding:0 6px}
+.plus .btn.ghost{font-size:20px}
+.gift-btn{margin-top:12px;height:64px;font-size:19px}
+.anniv{display:flex;align-items:center;gap:10px;margin-top:12px;padding:12px;border-radius:16px;background:var(--accent-soft);border:1.5px solid color-mix(in srgb,var(--accent) 50%,transparent);font-weight:700}
+.anniv span{flex:1}
+.anniv button{flex:none;height:46px;padding:0 12px;border-radius:12px;border:0;background:var(--accent);color:var(--accent-ink);font-weight:800}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.hist{display:flex;flex-direction:column}
+.hl{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:15.5px}
+.hl:first-child{border-top:0}
+.hl em{font-style:normal;font-size:20px;flex:none;width:28px;text-align:center}
+.hl span{flex:1;min-width:0}
+.hl span small{display:block;color:var(--muted);font-size:13px;font-weight:600}
+.hl b{flex:none;font-weight:800}
+.hl.x span,.hl.x b{text-decoration:line-through;opacity:.55}
+.hl button{flex:none;height:40px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-weight:800;font-size:14px;color:var(--danger)}
+
+/* Bilan */
+.kp{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kp div{background:var(--sunken);border-radius:14px;padding:12px;min-width:0}
+.kp small{display:block;font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.kp b{display:block;font-family:var(--display);font-size:30px;font-weight:800;margin-top:2px}
+.kp i{display:block;font-style:normal;font-size:13px;color:var(--muted);font-weight:600}
+.li{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.li:first-of-type{border-top:0}
+.li button.l{flex:1;min-width:0;background:none;border:0;padding:0;text-align:left}
+.li button.l b{display:block;font-size:16px;font-weight:800}
+.li button.l small{display:block;color:var(--muted);font-size:14px;font-weight:600}
+.li a{flex:none;height:42px;padding:0 12px;border-radius:12px;border:1px solid var(--line);background:var(--sunken);display:flex;align-items:center;text-decoration:none;color:var(--fg);font-weight:800;font-size:14px}
+.li .v{flex:none;font-weight:800}
+.warn{border:1.5px solid color-mix(in srgb,var(--danger) 45%,transparent)}
+.note{color:var(--muted);font-size:14px;font-weight:600;margin-top:8px}
+
+/* Fenêtres */
+.modal{position:fixed;inset:0;background:rgba(10,8,4,.55);z-index:20;display:flex;align-items:flex-end;justify-content:center;animation:fIn .15s}
+.modal .box{background:var(--surface);width:100%;max-width:520px;border-radius:22px 22px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));max-height:92vh;overflow:auto;display:flex;flex-direction:column;gap:12px;animation:upIn .22s cubic-bezier(.2,.8,.2,1)}
+@media (min-width:600px){.modal{align-items:center}.modal .box{border-radius:22px}}
+.modal h3{font-size:22px;font-weight:800}
+.modal p{margin:0;color:var(--muted);font-size:16px}
+.qr{align-self:center;padding:14px;background:#fff;border-radius:18px;border:1px solid var(--line)}
+.qr img,.qr canvas{display:block;width:220px;height:220px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:12px 16px;border-radius:12px;font-weight:700;font-size:15px;z-index:30;max-width:calc(100% - 32px);text-align:center}
+.locked{text-align:center;padding:40px 16px;color:var(--muted);font-size:17px}
+.locked b{display:block;font-size:46px;margin-bottom:10px}
+@keyframes fIn{from{opacity:0}} @keyframes upIn{from{opacity:.4;transform:translateY(28px)}}
+@media (prefers-reduced-motion:reduce){.stamp.on,.modal,.modal .box{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="pbar" id="pbar"></div><script src="profil.js"></script>
+
+  <header class="head"><h1>⭐ Fidélité</h1><p>1 burger = 1 tampon · 10 tampons = 1 burger offert</p></header>
+
+  <div id="locked" class="locked" hidden><b>🔒</b>Les cartes de fidélité sont réservées à Julien pour l'instant.</div>
+
+  <div id="app" hidden>
+    <div class="seg" role="group" aria-label="Partie">
+      <button type="button" id="tCli" aria-pressed="true">🔎 Client</button>
+      <button type="button" id="tBil" aria-pressed="false">📊 Bilan</button>
+    </div>
+
+    <!-- Recherche / création -->
+    <section id="vSearch">
+      <div class="card">
+        <label class="lbl" for="q" id="qL">Numéro de téléphone du client</label>
+        <input class="in num" id="q" type="search" inputmode="tel" autocomplete="off" placeholder="06 12 34 56 78">
+        <button type="button" class="swap" id="qSwap">Chercher par prénom</button>
+        <div class="res" id="res"></div>
+      </div>
+      <div class="card" id="newCard" hidden>
+        <h2>➕ Nouvelle carte</h2>
+        <div class="form">
+          <div><label class="lbl" for="nP">Prénom</label><input class="in sm" id="nP" autocomplete="off" maxlength="40" placeholder="Prénom du client"></div>
+          <div><label class="lbl" for="nT">Téléphone</label><input class="in sm num" id="nT" inputmode="tel" autocomplete="off" placeholder="06 12 34 56 78"></div>
+          <div><label class="lbl" for="nA">Mois d'anniversaire (facultatif)</label><select class="in sm" id="nA"></select></div>
+          <label class="check"><input type="checkbox" id="nOk"><span>Le client est d'accord pour qu'on garde son prénom et son numéro pour sa carte fidélité. Il peut demander à tout effacer.</span></label>
+          <button type="button" class="btn" id="nGo">Créer la carte · 2 tampons offerts 🎁</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Fiche d'un client -->
+    <section id="vFiche" hidden>
+      <button type="button" class="back" id="fBack">‹ Autre client</button>
+      <div class="card">
+        <div class="who"><div class="av" id="fAv"></div><div><h2 id="fNom"></h2><small id="fTel"></small></div></div>
+        <div class="stamps" id="fSt"></div>
+        <div class="status" id="fStat"></div>
+        <div class="plus">
+          <button type="button" class="btn" data-n="1">+1 burger</button>
+          <button type="button" class="btn ghost" data-n="2">+2</button>
+          <button type="button" class="btn ghost" data-n="3">+3</button>
+          <button type="button" class="btn ghost" data-n="4">+4</button>
+        </div>
+        <button type="button" class="btn go gift-btn" id="fGift" hidden>🎁 Offrir son burger (−10 tampons)</button>
+        <div class="anniv" id="fAnniv" hidden><span>🎂 C'est son mois d'anniversaire : un dessert ou une boisson offert.</span><button type="button" id="fAnnivGo">Donné ✓</button></div>
+      </div>
+      <div class="card">
+        <div class="acts">
+          <button type="button" class="btn ghost" id="fQr">📲 Sa carte</button>
+          <button type="button" class="btn ghost" id="fEdit">✏️ Modifier</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>🕘 Historique</h2>
+        <div class="hist" id="fHist"></div>
+        <p class="note">Une erreur ? Touche « Annuler » dans les 15 minutes.</p>
+      </div>
+    </section>
+
+    <!-- Bilan -->
+    <section id="vBilan" hidden><div id="bil"><div class="card"><div class="empty">Chargement…</div></div></div></section>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const API="https://kokjumjhpasxxxrpspng.supabase.co/rest/v1/rpc/";
+const KEY="sb_publishable_HIJXH1eJ_CP-A4G3AecDKg_NbBUD0m2";
+let CODE=null;try{CODE=localStorage.getItem("commande2b-code")}catch{}
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+async function rpc(fn,args={}){
+  const r=await fetch(API+fn,{method:"POST",headers:{"apikey":KEY,"Content-Type":"application/json"},body:JSON.stringify({p_code:CODE,...args})});
+  if(!r.ok){let e={};try{e=await r.json()}catch{}const err=new Error(e.message||"net");err.code=e.code;throw err}
+  const t=await r.text();return t?JSON.parse(t):null;
+}
+const lost=e=>{if(e&&e.code==="28000"){try{localStorage.removeItem("commande2b-code")}catch{}location.replace("./");return true}return false};
+const who=()=>(window.Profil&&Profil.get())||null;
+function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2800)}
+// Messages clairs pour les refus du serveur
+const ERR={limite:"Maximum 8 tampons par jour sur une même carte","pas assez":"Pas encore 10 tampons","trop tard":"Trop tard pour annuler (15 minutes passées)",
+  solde:"Impossible : le burger offert a déjà utilisé ces tampons. Annule d'abord le burger offert.",numero:"Numéro de téléphone pas valable",prenom:"Écris le prénom",
+  deja:"Ce numéro a déjà une carte",anniv:"Cadeau d'anniversaire déjà donné cette année"};
+const fail=e=>{if(lost(e))return;toast(ERR[e.message]||"Pas enregistré : vérifie la connexion")};
+const telF=t=>String(t||"").replace(/(\d{2})(?=\d)/g,"$1 ");
+const digits=s=>{let d=String(s||"").replace(/\D/g,"");if(/^33[1-9]\d{8}$/.test(d))d="0"+d.slice(2);return d};
+const MOIS=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+const dF=s=>new Date(s).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"});
+const dtF=s=>{const d=new Date(s);return d.toLocaleDateString("fr-FR",{day:"numeric",month:"short"})+" · "+d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})};
+const ago=s=>{if(!s)return "jamais venu";const n=Math.floor((Date.now()-new Date(s))/864e5);return n<1?"aujourd'hui":n===1?"hier":n<60?`il y a ${n} jours`:`il y a ${Math.round(n/30)} mois`};
+const NOMS=()=>(window.Profil&&Profil.noms)||{};
+$("#nA").innerHTML=`<option value="">Ne pas indiquer</option>`+MOIS.map((m,i)=>`<option value="${i+1}">${m[0].toUpperCase()+m.slice(1)}</option>`).join("");
+
+/* Réservé au profil Julien pour l'instant (simple affichage : les données restent protégées par le code d'équipe) */
+function gate(){const ok=who()==="julien";$("#app").hidden=!ok;$("#locked").hidden=ok;return ok}
+
+/* ---------- Onglets ---------- */
+function tab(b){$("#tCli").setAttribute("aria-pressed",!b);$("#tBil").setAttribute("aria-pressed",b);
+  $("#vBilan").hidden=!b;if(b){$("#vSearch").hidden=true;$("#vFiche").hidden=true;bilan()}else showSearch()}
+$("#tCli").onclick=()=>tab(false);$("#tBil").onclick=()=>tab(true);
+
+/* ---------- Recherche ---------- */
+let byName=false,qT=0,qN=0;
+$("#qSwap").onclick=()=>{byName=!byName;const q=$("#q");q.value="";q.inputMode=byName?"text":"tel";q.placeholder=byName?"Prénom":"06 12 34 56 78";
+  $("#qL").textContent=byName?"Prénom du client":"Numéro de téléphone du client";$("#qSwap").textContent=byName?"Chercher par numéro":"Chercher par prénom";
+  $("#res").innerHTML="";$("#newCard").hidden=true;q.focus()};
+$("#q").addEventListener("input",()=>{clearTimeout(qT);qT=setTimeout(search,250)});
+async function search(){
+  const v=$("#q").value.trim(),n=++qN,d=digits(v);
+  if((byName?v.length:d.length)<2){$("#res").innerHTML="";$("#newCard").hidden=true;return}
+  let l;try{l=await rpc("fid_chercher",{p_q:v})}catch(e){if(n===qN)fail(e);return}
+  if(n!==qN)return;
+  $("#res").innerHTML=l.length?l.map(c=>`<button type="button" class="row" data-id="${c.id}"><span class="av">${esc(c.prenom[0].toUpperCase())}</span>
+    <span class="t"><b>${esc(c.prenom)}</b><small class="num">${telF(c.tel)}</small></span><span class="n${c.solde>=10?" full":""}">${c.solde>=10?"🎁 offert":c.solde+" / 10"}</span></button>`).join("")
+    :`<div class="empty">${!byName&&d.length===10?"Pas encore de carte pour ce numéro.":"Aucun client trouvé."}</div>`;
+  // Numéro complet et inconnu : on propose tout de suite de créer la carte
+  const neuf=!byName&&d.length===10&&!l.some(c=>c.tel===d);
+  $("#newCard").hidden=!neuf&&!(byName&&!l.length&&v.length>=2);
+  if(neuf)$("#nT").value=telF(d);else if(byName)$("#nP").value=v.charAt(0).toUpperCase()+v.slice(1);
+}
+$("#res").addEventListener("click",e=>{const b=e.target.closest(".row");if(b)openCli(b.dataset.id)});
+$("#nGo").onclick=async()=>{
+  const p=$("#nP").value.trim(),t=digits($("#nT").value);
+  if(!p){toast("Écris le prénom");$("#nP").focus();return}
+  if(!/^0[1-9]\d{8}$/.test(t)){toast("Numéro de téléphone pas valable");$("#nT").focus();return}
+  if(!$("#nOk").checked){toast("Coche l'accord du client");return}
+  const b=$("#nGo");b.disabled=true;
+  try{const r=await rpc("fid_creer",{p_prenom:p,p_tel:t,p_anniv_mois:$("#nA").value?+$("#nA").value:null,p_par:who()});
+    ["#nP","#nT"].forEach(s=>$(s).value="");$("#nA").value="";$("#nOk").checked=false;
+    show(r.client);toast(r.existe?"Ce numéro avait déjà une carte":"Carte créée · 2 tampons offerts 🎁");if(!r.existe)setTimeout(qr,500)}
+  catch(e){fail(e)}finally{b.disabled=false}
+};
+function showSearch(){CUR=null;$("#vFiche").hidden=true;$("#vSearch").hidden=false;$("#q").value="";$("#res").innerHTML="";$("#newCard").hidden=true}
+$("#fBack").onclick=()=>{showSearch();$("#q").focus()};
+
+/* ---------- Fiche client ---------- */
+let CUR=null,busy=false;
+async function openCli(id){try{show(await rpc("fid_fiche",{p_client:id}))}catch(e){fail(e)}}
+const LAB={bienvenue:["👋","Bienvenue"],burger:["🍔","Burger"],offert:["🎁","Burger offert"],anniv:["🎂","Cadeau anniversaire"]};
+function show(c,anim){
+  if(!c){toast("Client introuvable");showSearch();return}
+  CUR=c;$("#tCli").setAttribute("aria-pressed",true);$("#tBil").setAttribute("aria-pressed",false);
+  $("#vSearch").hidden=true;$("#vBilan").hidden=true;$("#vFiche").hidden=false;
+  $("#fAv").textContent=c.prenom[0].toUpperCase();$("#fNom").textContent=c.prenom;
+  $("#fTel").textContent=`${telF(c.tel)} · client depuis ${dF(c.cree_le)}`;
+  const s=c.solde,full=Math.min(s,10);
+  $("#fSt").innerHTML=Array.from({length:10},(_,i)=>`<div class="stamp${i<full?" on":""}${i===9?" gift":""}"${i<full&&anim!=null&&i>=anim?` style="animation-delay:${(i-anim)*60}ms"`:i<full?' style="animation:none"':""}>${i<full?"🍔":i===9?"🎁":""}</div>`).join("");
+  $("#fStat").innerHTML=s>=10?`🎉 Burger offert disponible !<small>${s>10?`Et déjà ${s-10} tampon${s-10>1?"s":""} pour la carte suivante · `:""}Total : ${c.burgers} burgers achetés</small>`
+    :`Plus que ${10-s} tampon${10-s>1?"s":""} avant son burger offert<small>${c.burgers} burger${c.burgers>1?"s":""} acheté${c.burgers>1?"s":""} · ${c.offerts} offert${c.offerts>1?"s":""}${c.aujourdhui?` · aujourd'hui : ${c.aujourdhui} / 8`:""}</small>`;
+  $("#fGift").hidden=s<10;$("#fAnniv").hidden=!c.anniv_dispo;
+  $("#fHist").innerHTML=c.historique.length?c.historique.map(h=>{const[e,l]=LAB[h.sorte];
+    const v=h.sorte==="anniv"?"":h.nb>0?"+"+h.nb:String(h.nb);
+    return `<div class="hl${h.annule?" x":""}"><em>${e}</em><span>${l}${h.annule?" (annulé)":""}<small>${dtF(h.le)}${h.par?" · "+esc(NOMS()[h.par]||h.par):""}</small></span><b>${v}</b>${h.annulable?`<button type="button" data-x="${h.id}">Annuler</button>`:""}</div>`}).join("")
+    :`<div class="empty">Rien pour l'instant.</div>`;
+}
+async function act(fn,args,msg){if(busy||!CUR)return;busy=true;const before=CUR.solde;
+  try{const c=await rpc(fn,{p_client:CUR.id,...args});show(c,Math.min(before,10));if(msg)toast(typeof msg==="function"?msg(c):msg)}catch(e){fail(e)}finally{busy=false}}
+document.querySelectorAll(".plus .btn").forEach(b=>b.onclick=()=>{const n=+b.dataset.n;
+  act("fid_tamponner",{p_nb:n,p_par:who()},c=>`+${n} tampon${n>1?"s":""} ✓${c.solde>=10?" · 🎁 burger offert disponible !":""}`)});
+$("#fGift").onclick=()=>confirmBox("🎁 Offrir le burger ?",`${esc(CUR.prenom)} a ${CUR.solde} tampons. On en retire 10.`,"Oui, burger offert",()=>act("fid_offrir",{p_par:who()},"Burger offert ✓ · bon appétit !"));
+$("#fAnnivGo").onclick=()=>act("fid_anniv",{p_par:who()},"Cadeau d'anniversaire noté ✓");
+$("#fHist").addEventListener("click",e=>{const b=e.target.closest("[data-x]");if(!b||busy)return;
+  confirmBox("Annuler cette ligne ?","Elle restera visible, barrée, dans l'historique.","Oui, annuler",async()=>{busy=true;
+    try{show(await rpc("fid_annuler",{p_mvt:+b.dataset.x,p_par:who()}));toast("Annulé ✓")}catch(e){fail(e)}finally{busy=false}})});
+
+/* ---------- Fenêtres ---------- */
+function modal(html){const m=document.createElement("div");m.className="modal";m.innerHTML=`<div class="box" role="dialog">${html}</div>`;
+  m.addEventListener("click",e=>{if(e.target===m||e.target.closest("[data-close]"))m.remove()});document.body.appendChild(m);return m}
+function confirmBox(t,p,ok,fn){const m=modal(`<h3>${t}</h3><p>${p}</p><button type="button" class="btn" data-ok>${ok}</button><button type="button" class="btn ghost" data-close>Non</button>`);
+  m.querySelector("[data-ok]").onclick=()=>{m.remove();fn()}}
+// QR code de la carte du client : il le scanne une fois et garde la page (aucune installation)
+let qrLib=null;
+const loadQr=()=>qrLib||(qrLib=new Promise((res,rej)=>{const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
+  s.onload=res;s.onerror=()=>{qrLib=null;rej()};document.head.appendChild(s)}));
+const lien=c=>new URL("carte.html#"+c.jeton,location.href).href;
+async function qr(){if(!CUR)return;const c=CUR,url=lien(c);
+  const sms=`sms:${c.tel}${/iPhone|iPad/.test(navigator.userAgent)?"&":"?"}body=${encodeURIComponent(`Bonjour ${c.prenom} ! Voici ta carte fidélité Double B 🍔 : ${url}`)}`;
+  const m=modal(`<h3>📲 La carte de ${esc(c.prenom)}</h3><p>Le client scanne ce code avec l'appareil photo de son téléphone. Sa carte s'ouvre, il n'a rien à installer.</p>
+    <div class="qr" id="qrBox"></div><a class="btn" href="${sms}">💬 Lui envoyer par SMS</a><button type="button" class="btn ghost" data-close>Fermer</button>`);
+  try{await loadQr();new QRCode(m.querySelector("#qrBox"),{text:url,width:440,height:440,correctLevel:QRCode.CorrectLevel.M})}
+  catch{m.querySelector("#qrBox").innerHTML=`<p>QR code indisponible (connexion). Utilise le SMS.</p>`}}
+$("#fQr").onclick=qr;
+$("#fEdit").onclick=()=>{const c=CUR;
+  const m=modal(`<h3>✏️ Modifier ${esc(c.prenom)}</h3>
+    <div><label class="lbl" for="eP">Prénom</label><input class="in sm" id="eP" maxlength="40" value="${esc(c.prenom)}"></div>
+    <div><label class="lbl" for="eT">Téléphone</label><input class="in sm num" id="eT" inputmode="tel" value="${telF(c.tel)}"></div>
+    <div><label class="lbl" for="eA">Mois d'anniversaire</label><select class="in sm" id="eA">${$("#nA").innerHTML}</select></div>
+    <button type="button" class="btn" id="eGo">Enregistrer</button><button type="button" class="btn ghost" data-close>Annuler</button>
+    <button type="button" class="btn bad" id="eDel">🗑️ Effacer ce client (à sa demande)</button>`);
+  m.querySelector("#eA").value=c.anniv_mois||"";
+  m.querySelector("#eGo").onclick=async()=>{try{const r=await rpc("fid_modifier",{p_client:c.id,p_prenom:m.querySelector("#eP").value,p_tel:digits(m.querySelector("#eT").value),
+      p_anniv_mois:m.querySelector("#eA").value?+m.querySelector("#eA").value:null});m.remove();show(r);toast("Enregistré ✓")}catch(e){fail(e)}};
+  m.querySelector("#eDel").onclick=()=>{m.remove();confirmBox("🗑️ Effacer "+esc(c.prenom)+" ?","Sa carte, ses tampons et son historique seront effacés pour de bon. À faire seulement si le client le demande.","Oui, tout effacer",async()=>{
+    try{await rpc("fid_effacer",{p_client:c.id});showSearch();toast("Client effacé")}catch(e){fail(e)}})}};
+
+/* ---------- Bilan ---------- */
+async function bilan(){
+  let b;try{b=await rpc("fid_bilan")}catch(e){fail(e);$("#bil").innerHTML=`<div class="card"><div class="empty">Pas de connexion.</div></div>`;return}
+  const li=(xs,sub,right)=>xs.map(x=>`<div class="li"><button type="button" class="l" data-id="${x.id}"><b>${esc(x.prenom)}</b><small>${sub(x)}</small></button>${right?right(x):""}</div>`).join("");
+  const smsA=(x,t)=>`<a href="sms:${x.tel}${/iPhone|iPad/.test(navigator.userAgent)?"&":"?"}body=${encodeURIComponent(t)}">💬 SMS</a>`;
+  const pp=Object.entries(b.parpersonne||{}).sort((a,c)=>c[1]-a[1]);
+  $("#bil").innerHTML=`<div class="card"><h2>📊 Ce mois-ci</h2><div class="kp">
+      <div><small>Clients fidèles</small><b class="num">${b.clients}</b><i>+${b.nouveaux_mois} ce mois</i></div>
+      <div><small>Venus en 30 jours</small><b class="num">${b.actifs_30j}</b><i>clients différents</i></div>
+      <div><small>Tampons</small><b class="num">${b.tampons_mois}</b><i>burgers ce mois</i></div>
+      <div><small>Burgers offerts</small><b class="num">${b.offerts_mois}</b><i>${b.offerts_total} au total</i></div></div>
+      ${b.presque?`<p class="note">🔥 ${b.presque} client${b.presque>1?"s sont":" est"} à 1 ou 2 tampons du burger offert.</p>`:""}</div>
+    ${b.alertes.length?`<div class="card warn"><h2>⚠️ À vérifier</h2><p class="note" style="margin:-4px 0 6px">Plus de 12 tampons en 7 jours : ça peut être normal (famille, collègues), mais jette un œil.</p>
+      ${li(b.alertes,x=>`${x.n} tampons cette semaine · ${telF(x.tel)}`)}</div>`:""}
+    ${b.anniv.length?`<div class="card"><h2>🎂 Anniversaires ce mois</h2>${li(b.anniv,x=>telF(x.tel),x=>smsA(x,`Joyeux anniversaire ${x.prenom} ! 🎂 Le Double B t'offre un dessert ou une boisson ce mois-ci, passe nous voir !`))}</div>`:""}
+    <div class="card"><h2>😴 Pas revenus depuis 2 mois</h2>${b.relancer.length?li(b.relancer,x=>"Dernière visite "+ago(x.derniere),
+      x=>smsA(x,`Bonjour ${x.prenom} ! Ça fait longtemps 🙂 Ta carte fidélité t'attend au Double B, on a hâte de te revoir !`)):`<div class="empty">Personne, bravo !</div>`}</div>
+    <div class="card"><h2>🏆 Meilleurs clients</h2>${b.top.length?li(b.top,x=>telF(x.tel),x=>`<span class="v num">${x.burgers} 🍔</span>`):`<div class="empty">Pas encore de tampons.</div>`}</div>
+    ${pp.length?`<div class="card"><h2>👥 Tampons donnés ce mois</h2>${pp.map(([p,n])=>`<div class="li"><span style="flex:1;font-weight:800">${esc(NOMS()[p]||p)}</span><span class="v num">${n}</span></div>`).join("")}</div>`:""}`;
+}
+$("#bil").addEventListener("click",e=>{const b=e.target.closest("button.l");if(b)openCli(b.dataset.id)});
+
+if(gate())$("#q").focus({preventScroll:true});
+// Changement de profil depuis la barre du haut : on revérifie
+addEventListener("storage",gate);document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")gate()});
+if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>
