@@ -21,8 +21,8 @@
   --display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif; --body:"Figtree","Segoe UI",system-ui,sans-serif; color-scheme:light}
 @media (prefers-color-scheme: dark){:root{--bg:#0f0d0a; --surface:#1c1915; --line:#322e27; --fg:#f3efe5; --muted:#a69f90; --go:#5fbf86; --go-soft:#16301f; color-scheme:dark}}
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.4;overflow-x:hidden;
+html{-webkit-text-size-adjust:100%;overflow-x:hidden;overflow-x:clip}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.4;overflow-x:hidden;overflow-x:clip;
   padding:max(18px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 [hidden]{display:none!important}
 .wrap{max-width:430px;margin:0 auto}
@@ -51,10 +51,7 @@ body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:
 .stage{perspective:900px}
 .card.enter{animation:enter .9s cubic-bezier(.2,.9,.25,1) both}
 @keyframes enter{0%{transform:translateY(40px) rotateX(35deg) rotateY(-25deg) scale(.9);opacity:0}100%{transform:none;opacity:1}}
-.card .glare{position:absolute;inset:0;z-index:3;pointer-events:none;border-radius:inherit;opacity:0;transition:opacity .3s;
-  background:radial-gradient(circle at var(--gx,50%) var(--gy,30%),rgba(255,255,255,.22),transparent 55%)}
-.card.tilting .glare{opacity:1}
-.card{transform-style:preserve-3d;will-change:transform}
+
 @keyframes shake{20%{transform:translateY(3px) scale(.995)}45%{transform:translate(-2px,-1px)}70%{transform:translate(1px,0)}}
 .top{display:flex;align-items:center;gap:10px}
 .top img{width:40px;height:40px;border-radius:11px;box-shadow:0 0 0 1px rgba(255,211,107,.3)}
@@ -99,10 +96,13 @@ body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:
 .bar{height:10px;border-radius:5px;background:rgba(255,211,107,.14);overflow:hidden;margin-top:8px}
 .bar i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,#f2a516,#ffd36b);box-shadow:0 0 12px rgba(255,200,80,.6);transition:width .5s cubic-bezier(.3,.9,.3,1)}
 
-.msg{margin-top:14px;padding:16px;border-radius:22px;background:var(--surface);border:1px solid var(--line);text-align:center;transition:background-color .3s}
-.msg b{display:block;font-family:var(--display);font-size:21px;font-weight:800;line-height:1.2}
-.msg span{display:block;color:var(--muted);font-weight:600;margin-top:6px;font-size:15px}
-.msg.win{background:var(--go-soft);border-color:color-mix(in srgb,var(--go) 40%,transparent)}
+.msg{position:relative;overflow:hidden;margin-top:14px;padding:18px 16px;border-radius:24px;text-align:center;color:#3a2000;
+  background:linear-gradient(135deg,#fff2d2 0%,#ffd88a 60%,#ffc25a 100%);box-shadow:0 12px 26px -16px rgba(200,120,0,.75),inset 0 1px 0 rgba(255,255,255,.6)}
+.msg::before{content:"🍔";position:absolute;right:-10px;bottom:-22px;font-size:92px;opacity:.16;transform:rotate(-14deg)}
+.msg b{position:relative;display:block;font-family:var(--display);font-size:22px;font-weight:800;line-height:1.2}
+.msg span{position:relative;display:block;color:#6b4300;font-weight:700;margin-top:6px;font-size:15px}
+.msg.win{color:#0f3a20;background:linear-gradient(135deg,#dff7e6 0%,#9fe3b5 60%,#62c98a 100%);box-shadow:0 12px 26px -16px rgba(30,130,70,.8),inset 0 1px 0 rgba(255,255,255,.6)}
+.msg.win span{color:#1d5534}.msg.win::before{content:"🎁"}
 .msg.win b{font-size:24px}
 .show{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:58px;margin-top:12px;border:0;border-radius:17px;cursor:pointer;
   font:inherit;font-weight:800;font-size:18px;color:#2a1d00;background:linear-gradient(180deg,#ffd36b,#f2a516);box-shadow:0 10px 22px -10px rgba(200,120,0,.8),inset 0 1px 0 rgba(255,255,255,.5);
@@ -124,16 +124,25 @@ body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:
 .bday span{display:block;font-weight:700;margin-top:4px;font-size:15px}
 .bday .e{display:inline-block;font-size:34px;animation:float 2.4s ease-in-out infinite}
 @keyframes float{50%{transform:translateY(-6px) rotate(6deg)}}
-.kp{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
-.kp div{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:11px 10px;text-align:center}
-.kp small{display:block;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
-.kp b{display:block;font-family:var(--display);font-size:22px;font-weight:800;margin-top:2px;white-space:nowrap}
-.open{display:flex;align-items:center;gap:8px;margin-top:12px;padding:10px 12px;border-radius:16px;background:var(--surface);border:1px solid var(--line);font-size:14px;font-weight:700}
+.kp{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px}
+.kp div{position:relative;overflow:hidden;border-radius:20px;padding:12px 8px 11px;text-align:center;color:#fff;box-shadow:0 10px 20px -14px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.3)}
+.kp div:nth-child(1){background:linear-gradient(160deg,#ffb53b,#e8740c)}
+.kp div:nth-child(2){background:linear-gradient(160deg,#4fd08a,#1f8a51)}
+.kp div:nth-child(3){background:linear-gradient(160deg,#8d7bff,#5a3fd6)}
+.kp div::after{content:"";position:absolute;top:-30px;right:-30px;width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.14)}
+.kp i{display:block;font-style:normal;font-size:20px;line-height:1;margin-bottom:5px}
+.kp small{position:relative;display:block;font-size:10.5px;font-weight:800;color:rgba(255,255,255,.88);text-transform:uppercase;letter-spacing:.05em}
+.kp b{position:relative;display:block;font-family:var(--display);font-size:25px;font-weight:800;margin-top:2px;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,.2)}
+.open{display:flex;align-items:center;gap:8px;margin-top:12px;padding:10px 10px 10px 14px;border-radius:20px;font-size:14px;font-weight:800;
+  background:color-mix(in srgb,var(--st,#3fbf6f) 13%,var(--surface));border:1.5px solid color-mix(in srgb,var(--st,#3fbf6f) 40%,transparent)}
+.open.ferme{--st:#d65a4a}
 .open .t{flex:1;min-width:0;line-height:1.25}
-.open .t i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
-.open a{flex:none;height:38px;padding:0 11px;border-radius:11px;display:flex;align-items:center;gap:5px;text-decoration:none;color:var(--fg);background:var(--bg);border:1px solid var(--line);font-weight:800;font-size:13.5px}
+.open .t i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:0;background:var(--st,#3fbf6f);box-shadow:0 0 0 3px color-mix(in srgb,var(--st,#3fbf6f) 25%,transparent)}
+.open a{flex:none;height:40px;padding:0 12px;border-radius:13px;display:flex;align-items:center;gap:5px;text-decoration:none;color:#fff;font-weight:800;font-size:13.5px;
+  background:linear-gradient(160deg,#4fd08a,#1f8a51);box-shadow:0 6px 12px -8px rgba(0,0,0,.6)}
+.open a+a{background:linear-gradient(160deg,#5aa8ff,#2f6fd6)}
 .how{margin-top:14px;border-radius:16px;color:var(--muted)}
-.how summary{list-style:none;cursor:pointer;text-align:center;font-size:13.5px;font-weight:700;padding:8px;color:var(--muted)}
+.how summary{list-style:none;cursor:pointer;display:block;width:max-content;margin:0 auto;font-size:13.5px;font-weight:800;padding:9px 16px;border-radius:999px;color:var(--muted);background:var(--surface);border:1px solid var(--line)}
 .how summary::-webkit-details-marker{display:none}
 .how[open] summary{color:var(--fg)}
 .how p{display:flex;gap:10px;margin:6px 4px 0;color:var(--muted);font-weight:600;font-size:13.5px}
@@ -159,7 +168,7 @@ body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:
   <div id="none" class="none" hidden><b>🍔</b>Carte introuvable.<br>Demande au Double B de te renvoyer ta carte.</div>
 
   <div id="ok" hidden>
-    <div class="stage"><div class="card enter" id="card"><div class="glare"></div>
+    <div class="stage"><div class="card enter" id="card">
       <div class="top"><img src="icone-appli.svg" alt="" width="40" height="40"><div><b>Double B</b><small>Carte fidélité</small></div><span class="lvl" id="lvl"></span></div>
       <div class="name" id="nom"></div>
       <div class="since" id="depuis"></div>
@@ -172,9 +181,9 @@ body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:
     <div class="msg" id="msg"></div>
     <button type="button" class="show" id="showGo" hidden>🎁 Montrer mon burger offert</button>
     <div class="kp">
-      <div><small>Burgers</small><b id="kb">0</b></div>
-      <div><small>Offerts</small><b id="ko">0</b></div>
-      <div><small>Dernière visite</small><b id="kl" style="font-size:17px;line-height:26px">—</b></div>
+      <div><i>🍔</i><small>Burgers</small><b id="kb">0</b></div>
+      <div><i>🎁</i><small>Offerts</small><b id="ko">0</b></div>
+      <div><i>📅</i><small>Dernière visite</small><b id="kl" style="font-size:18px;line-height:30px">—</b></div>
     </div>
     <div class="open" id="open" hidden><span class="t" id="openT"></span>
       <a href="tel:+33613100503" aria-label="Appeler le Double B">📞 Appeler</a>
@@ -270,8 +279,8 @@ function draw(c){
 }
 // Ouvert aujourd'hui ? (jours d'ouverture de l'appli du restaurant)
 function drawOpen(o){if(!o)return;const h=new Date().getHours(),el=$("#openT");$("#open").hidden=false;
-  const vert=`<i style="background:#3fbf6f"></i>`,rouge=`<i style="background:#d65a4a"></i>`;
-  const midi=o.midi&&h<14,soir=o.soir&&h<22;
+  const vert=`<i></i>`,rouge=`<i></i>`;
+  const midi=o.midi&&h<14,soir=o.soir&&h<22;$("#open").classList.toggle("ferme",!(midi||soir));
   if(midi||soir)el.innerHTML=vert+(midi&&o.soir?"Ouvert ce midi et ce soir":midi?"Ouvert ce midi":"Ouvert ce soir");
   else if(o.prochain){const d=new Date(o.prochain.jour+"T12:00:00"),dm=(d-new Date(new Date().toDateString()))/864e5;
     el.innerHTML=rouge+`Fermé · on rouvre ${dm<1.5?"demain":JOURS[d.getDay()]} ${o.prochain.service==="midi"?"midi":"soir"}`}
@@ -282,13 +291,7 @@ $("#showGo").onclick=()=>{const t=document.createElement("div");t.className="tic
   t.querySelector(".who").textContent=PRENOM;document.body.appendChild(t);confetti();
   const tick=()=>{const e=t.querySelector("#clk");if(e)e.textContent=new Date().toLocaleString("fr-FR",{weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit",second:"2-digit"})};
   tick();const iv=setInterval(tick,1000);t.querySelector("button").onclick=()=>{clearInterval(iv);t.remove()}};
-// La carte suit le doigt : elle s'incline et la lumière glisse dessus
-(()=>{const c=$("#card");if(calme)return;let raf=0;
-  const move=e=>{const r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;if(x<-.1||x>1.1||y<-.1||y>1.1)return;
-    cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{c.classList.remove("enter");c.classList.add("tilting");
-      c.style.transform=`rotateX(${(.5-y)*12}deg) rotateY(${(x-.5)*16}deg)`;c.style.setProperty("--gx",x*100+"%");c.style.setProperty("--gy",y*100+"%")})};
-  const leave=()=>{cancelAnimationFrame(raf);c.classList.remove("tilting");c.style.transition="transform .5s cubic-bezier(.2,.9,.3,1.2)";c.style.transform="";setTimeout(()=>c.style.transition="",500)};
-  c.addEventListener("pointermove",move);c.addEventListener("pointerdown",move);c.addEventListener("pointerleave",leave);c.addEventListener("pointerup",leave);c.addEventListener("pointercancel",leave);
+(()=>{
   // Toucher un tampon : il remue (juste pour le plaisir)
   $("#st").addEventListener("click",e=>{const k=e.target.closest(".coin");if(!k)return;k.classList.remove("new","wig");void k.offsetWidth;k.classList.add("wig");try{navigator.vibrate&&navigator.vibrate(15)}catch{}});
 })();
