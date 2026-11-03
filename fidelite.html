@@ -39,7 +39,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-
 [hidden]{display:none!important}
 button,input,select{font:inherit;color:inherit}
 button{cursor:pointer}
-.wrap{max-width:680px;margin:0 auto;padding-block:16px 24px}
+.wrap{max-width:680px;margin:0 auto;padding-block:16px 24px;overflow-x:clip}
 h1,h2,h3{font-family:var(--display);margin:0}
 .num{font-variant-numeric:tabular-nums}
 .head{margin:14px 4px 14px}
@@ -87,14 +87,18 @@ button:active{scale:.97}
 .who small{display:block;color:var(--muted);font-size:15px;font-weight:600}
 .stamps{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:4px 0 12px}
 .stamp{aspect-ratio:1;border-radius:50%;border:2.5px dashed var(--line);display:grid;place-items:center;font-size:26px;background:var(--sunken)}
-.stamp.on{border:2.5px solid var(--accent);background:var(--accent-soft);animation:pop .35s cubic-bezier(.3,1.5,.5,1) both}
+.stamp.on{border:2.5px solid var(--accent);background:var(--accent-soft)}
+.stamp.new{animation:slam .45s cubic-bezier(.2,.9,.3,1.2) both}
+@keyframes slam{0%{transform:scale(2.2) rotate(-18deg);opacity:0}55%{transform:scale(.88) rotate(4deg);opacity:1}100%{transform:none}}
 .stamp.gift{border-style:solid;border-color:var(--go);background:var(--go-soft)}
 @keyframes pop{from{transform:scale(.6)}to{transform:none}}
 .status{text-align:center;font-size:18px;font-weight:800;margin-bottom:4px}
 .status small{display:block;font-size:14px;color:var(--muted);font-weight:600;margin-top:4px}
-.plus{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;margin-top:14px}
-.plus .btn{height:72px;font-size:20px;padding:0 6px}
-.plus .btn.ghost{font-size:20px}
+.plus{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:14px}
+.plus .btn{height:54px;font-size:17px;padding:0}
+.plus .btn.one{grid-column:1/-1;height:72px;font-size:21px}
+.plus-n{text-align:center;color:var(--muted);font-size:13.5px;font-weight:700;margin-top:8px}
+.two{display:grid;grid-template-columns:1fr 1.4fr;gap:8px}
 .gift-btn{margin-top:12px;height:64px;font-size:19px}
 .anniv{display:flex;align-items:center;gap:10px;margin-top:12px;padding:12px;border-radius:16px;background:var(--accent-soft);border:1.5px solid color-mix(in srgb,var(--accent) 50%,transparent);font-weight:700}
 .anniv span{flex:1}
@@ -138,14 +142,14 @@ button:active{scale:.97}
 .locked{text-align:center;padding:40px 16px;color:var(--muted);font-size:17px}
 .locked b{display:block;font-size:46px;margin-bottom:10px}
 @keyframes fIn{from{opacity:0}} @keyframes upIn{from{opacity:.4;transform:translateY(28px)}}
-@media (prefers-reduced-motion:reduce){.stamp.on,.modal,.modal .box{animation:none}}
+@media (prefers-reduced-motion:reduce){.stamp.new,.modal,.modal .box{animation:none}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="pbar" id="pbar"></div><script src="profil.js"></script>
 
-  <header class="head"><h1>⭐ Fidélité</h1><p>1 burger = 1 tampon · 10 tampons = 1 burger offert</p></header>
+  <header class="head"><h1>⭐ Fidélité</h1><p>1 burger = 1 tampon · 10 tampons = 1 burger offert<br>8 tampons maximum par commande</p></header>
 
   <div id="locked" class="locked" hidden><b>🔒</b>Les cartes de fidélité sont réservées à Julien pour l'instant.</div>
 
@@ -168,8 +172,9 @@ button:active{scale:.97}
         <div class="form">
           <div><label class="lbl" for="nP">Prénom</label><input class="in sm" id="nP" autocomplete="off" maxlength="40" placeholder="Prénom du client"></div>
           <div><label class="lbl" for="nT">Téléphone</label><input class="in sm num" id="nT" inputmode="tel" autocomplete="off" placeholder="06 12 34 56 78"></div>
-          <div><label class="lbl" for="nA">Mois d'anniversaire (facultatif)</label><select class="in sm" id="nA"></select></div>
+          <div><span class="lbl">Date d'anniversaire (facultatif, sans l'année)</span><div class="two"><select class="in sm" id="nJ" aria-label="Jour"></select><select class="in sm" id="nA" aria-label="Mois"></select></div></div>
           <label class="check"><input type="checkbox" id="nOk"><span>Le client est d'accord pour qu'on garde son prénom et son numéro pour sa carte fidélité. Il peut demander à tout effacer.</span></label>
+          <label class="check"><input type="checkbox" id="nSms"><span>🎂 Il accepte de recevoir un SMS le jour de son anniversaire (dessert offert).</span></label>
           <button type="button" class="btn" id="nGo">Créer la carte · 2 tampons offerts 🎁</button>
         </div>
       </div>
@@ -183,13 +188,13 @@ button:active{scale:.97}
         <div class="stamps" id="fSt"></div>
         <div class="status" id="fStat"></div>
         <div class="plus">
-          <button type="button" class="btn" data-n="1">+1 burger</button>
-          <button type="button" class="btn ghost" data-n="2">+2</button>
-          <button type="button" class="btn ghost" data-n="3">+3</button>
-          <button type="button" class="btn ghost" data-n="4">+4</button>
+          <button type="button" class="btn one" data-n="1">+1 burger</button>
+          <button type="button" class="btn ghost" data-n="2">+2</button><button type="button" class="btn ghost" data-n="3">+3</button><button type="button" class="btn ghost" data-n="4">+4</button>
+          <button type="button" class="btn ghost" data-n="5">+5</button><button type="button" class="btn ghost" data-n="6">+6</button><button type="button" class="btn ghost" data-n="7">+7</button><button type="button" class="btn ghost" data-n="8">+8</button>
         </div>
+        <div class="plus-n">Un tampon par burger de la commande · 8 maximum par commande</div>
         <button type="button" class="btn go gift-btn" id="fGift" hidden>🎁 Offrir son burger (−10 tampons)</button>
-        <div class="anniv" id="fAnniv" hidden><span>🎂 C'est son mois d'anniversaire : un dessert ou une boisson offert.</span><button type="button" id="fAnnivGo">Donné ✓</button></div>
+        <div class="anniv" id="fAnniv" hidden><span id="fAnnivT"></span><button type="button" id="fAnnivGo">Donné ✓</button></div>
       </div>
       <div class="card">
         <div class="acts">
@@ -225,9 +230,9 @@ const lost=e=>{if(e&&e.code==="28000"){try{localStorage.removeItem("commande2b-c
 const who=()=>(window.Profil&&Profil.get())||null;
 function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2800)}
 // Messages clairs pour les refus du serveur
-const ERR={limite:"Maximum 8 tampons par jour sur une même carte","pas assez":"Pas encore 10 tampons","trop tard":"Trop tard pour annuler (15 minutes passées)",
+const ERR={limite:"Maximum 16 tampons par jour sur une même carte (2 commandes)",nombre:"8 tampons maximum par commande",date:"Choisis le jour ET le mois de l'anniversaire","pas assez":"Pas encore 10 tampons","trop tard":"Trop tard pour annuler (15 minutes passées)",
   solde:"Impossible : le burger offert a déjà utilisé ces tampons. Annule d'abord le burger offert.",numero:"Numéro de téléphone pas valable",prenom:"Écris le prénom",
-  deja:"Ce numéro a déjà une carte",anniv:"Cadeau d'anniversaire déjà donné cette année"};
+  deja:"Ce numéro a déjà une carte",anniv:"Dessert d'anniversaire déjà donné ou plus valable"};
 const fail=e=>{if(lost(e))return;toast(ERR[e.message]||"Pas enregistré : vérifie la connexion")};
 const telF=t=>String(t||"").replace(/(\d{2})(?=\d)/g,"$1 ");
 const digits=s=>{let d=String(s||"").replace(/\D/g,"");if(/^33[1-9]\d{8}$/.test(d))d="0"+d.slice(2);return d};
@@ -236,7 +241,11 @@ const dF=s=>new Date(s).toLocaleDateString("fr-FR",{day:"numeric",month:"short",
 const dtF=s=>{const d=new Date(s);return d.toLocaleDateString("fr-FR",{day:"numeric",month:"short"})+" · "+d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})};
 const ago=s=>{if(!s)return "jamais venu";const n=Math.floor((Date.now()-new Date(s))/864e5);return n<1?"aujourd'hui":n===1?"hier":n<60?`il y a ${n} jours`:`il y a ${Math.round(n/30)} mois`};
 const NOMS=()=>(window.Profil&&Profil.noms)||{};
-$("#nA").innerHTML=`<option value="">Ne pas indiquer</option>`+MOIS.map((m,i)=>`<option value="${i+1}">${m[0].toUpperCase()+m.slice(1)}</option>`).join("");
+const JOURS=`<option value="">Jour</option>`+Array.from({length:31},(_,i)=>`<option value="${i+1}">${i+1}</option>`).join("");
+const MOISO=`<option value="">Mois</option>`+MOIS.map((m,i)=>`<option value="${i+1}">${m[0].toUpperCase()+m.slice(1)}</option>`).join("");
+$("#nJ").innerHTML=JOURS;$("#nA").innerHTML=MOISO;
+const dmF=s=>s?new Date(s+"T12:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long"}):"";
+const date2=(j,m)=>{const a=j.value?+j.value:null,b=m.value?+m.value:null;return (a==null)!==(b==null)?false:[a,b]};
 
 /* Réservé au profil Julien pour l'instant (simple affichage : les données restent protégées par le code d'équipe) */
 function gate(){const ok=who()==="julien";$("#app").hidden=!ok;$("#locked").hidden=ok;return ok}
@@ -271,9 +280,10 @@ $("#nGo").onclick=async()=>{
   if(!p){toast("Écris le prénom");$("#nP").focus();return}
   if(!/^0[1-9]\d{8}$/.test(t)){toast("Numéro de téléphone pas valable");$("#nT").focus();return}
   if(!$("#nOk").checked){toast("Coche l'accord du client");return}
+  const dd=date2($("#nJ"),$("#nA"));if(!dd){toast(ERR.date);return}
   const b=$("#nGo");b.disabled=true;
-  try{const r=await rpc("fid_creer",{p_prenom:p,p_tel:t,p_anniv_mois:$("#nA").value?+$("#nA").value:null,p_par:who()});
-    ["#nP","#nT"].forEach(s=>$(s).value="");$("#nA").value="";$("#nOk").checked=false;
+  try{const r=await rpc("fid_creer",{p_prenom:p,p_tel:t,p_anniv_jour:dd[0],p_anniv_mois:dd[1],p_sms:$("#nSms").checked,p_par:who()});
+    ["#nP","#nT"].forEach(s=>$(s).value="");$("#nJ").value="";$("#nA").value="";$("#nOk").checked=false;$("#nSms").checked=false;
     show(r.client);toast(r.existe?"Ce numéro avait déjà une carte":"Carte créée · 2 tampons offerts 🎁");if(!r.existe)setTimeout(qr,500)}
   catch(e){fail(e)}finally{b.disabled=false}
 };
@@ -283,7 +293,7 @@ $("#fBack").onclick=()=>{showSearch();$("#q").focus()};
 /* ---------- Fiche client ---------- */
 let CUR=null,busy=false;
 async function openCli(id){try{show(await rpc("fid_fiche",{p_client:id}))}catch(e){fail(e)}}
-const LAB={bienvenue:["👋","Bienvenue"],burger:["🍔","Burger"],offert:["🎁","Burger offert"],anniv:["🎂","Cadeau anniversaire"]};
+const LAB={bienvenue:["👋","Bienvenue"],burger:["🍔","Burger"],offert:["🎁","Burger offert"],anniv:["🎂","Dessert anniversaire"]};
 function show(c,anim){
   if(!c){toast("Client introuvable");showSearch();return}
   CUR=c;$("#tCli").setAttribute("aria-pressed",true);$("#tBil").setAttribute("aria-pressed",false);
@@ -291,10 +301,13 @@ function show(c,anim){
   $("#fAv").textContent=c.prenom[0].toUpperCase();$("#fNom").textContent=c.prenom;
   $("#fTel").textContent=`${telF(c.tel)} · client depuis ${dF(c.cree_le)}`;
   const s=c.solde,full=Math.min(s,10);
-  $("#fSt").innerHTML=Array.from({length:10},(_,i)=>`<div class="stamp${i<full?" on":""}${i===9?" gift":""}"${i<full&&anim!=null&&i>=anim?` style="animation-delay:${(i-anim)*60}ms"`:i<full?' style="animation:none"':""}>${i<full?"🍔":i===9?"🎁":""}</div>`).join("");
+  $("#fSt").innerHTML=Array.from({length:10},(_,i)=>{const nw=anim!=null&&i<full&&i>=anim;
+    return `<div class="stamp${i<full?" on":""}${nw?" new":""}${i===9?" gift":""}"${nw?` style="animation-delay:${(i-anim)*140}ms"`:""}>${i<full?"🍔":i===9?"🎁":""}</div>`}).join("");
+  if(anim!=null&&full>anim&&navigator.vibrate)try{navigator.vibrate(Array.from({length:full-anim},()=>[25,115]).flat())}catch{}
   $("#fStat").innerHTML=s>=10?`🎉 Burger offert disponible !<small>${s>10?`Et déjà ${s-10} tampon${s-10>1?"s":""} pour la carte suivante · `:""}Total : ${c.burgers} burgers achetés</small>`
     :`Plus que ${10-s} tampon${10-s>1?"s":""} avant son burger offert<small>${c.burgers} burger${c.burgers>1?"s":""} acheté${c.burgers>1?"s":""} · ${c.offerts} offert${c.offerts>1?"s":""}${c.aujourdhui?` · aujourd'hui : ${c.aujourdhui} / 8`:""}</small>`;
   $("#fGift").hidden=s<10;$("#fAnniv").hidden=!c.anniv_dispo;
+  if(c.anniv_dispo)$("#fAnnivT").innerHTML=`🎂 Anniversaire : <b>dessert offert</b> jusqu'au ${dmF(c.anniv_fin)}.${c.sms?`<br><small>${c.sms.statut==="envoye"?"SMS envoyé ✓":"SMS à envoyer à la main (Bilan)"}</small>`:""}`;
   $("#fHist").innerHTML=c.historique.length?c.historique.map(h=>{const[e,l]=LAB[h.sorte];
     const v=h.sorte==="anniv"?"":h.nb>0?"+"+h.nb:String(h.nb);
     return `<div class="hl${h.annule?" x":""}"><em>${e}</em><span>${l}${h.annule?" (annulé)":""}<small>${dtF(h.le)}${h.par?" · "+esc(NOMS()[h.par]||h.par):""}</small></span><b>${v}</b>${h.annulable?`<button type="button" data-x="${h.id}">Annuler</button>`:""}</div>`}).join("")
@@ -305,7 +318,7 @@ async function act(fn,args,msg){if(busy||!CUR)return;busy=true;const before=CUR.
 document.querySelectorAll(".plus .btn").forEach(b=>b.onclick=()=>{const n=+b.dataset.n;
   act("fid_tamponner",{p_nb:n,p_par:who()},c=>`+${n} tampon${n>1?"s":""} ✓${c.solde>=10?" · 🎁 burger offert disponible !":""}`)});
 $("#fGift").onclick=()=>confirmBox("🎁 Offrir le burger ?",`${esc(CUR.prenom)} a ${CUR.solde} tampons. On en retire 10.`,"Oui, burger offert",()=>act("fid_offrir",{p_par:who()},"Burger offert ✓ · bon appétit !"));
-$("#fAnnivGo").onclick=()=>act("fid_anniv",{p_par:who()},"Cadeau d'anniversaire noté ✓");
+$("#fAnnivGo").onclick=()=>act("fid_anniv",{p_par:who()},"Dessert d'anniversaire noté ✓");
 $("#fHist").addEventListener("click",e=>{const b=e.target.closest("[data-x]");if(!b||busy)return;
   confirmBox("Annuler cette ligne ?","Elle restera visible, barrée, dans l'historique.","Oui, annuler",async()=>{busy=true;
     try{show(await rpc("fid_annuler",{p_mvt:+b.dataset.x,p_par:who()}));toast("Annulé ✓")}catch(e){fail(e)}finally{busy=false}})});
@@ -331,12 +344,14 @@ $("#fEdit").onclick=()=>{const c=CUR;
   const m=modal(`<h3>✏️ Modifier ${esc(c.prenom)}</h3>
     <div><label class="lbl" for="eP">Prénom</label><input class="in sm" id="eP" maxlength="40" value="${esc(c.prenom)}"></div>
     <div><label class="lbl" for="eT">Téléphone</label><input class="in sm num" id="eT" inputmode="tel" value="${telF(c.tel)}"></div>
-    <div><label class="lbl" for="eA">Mois d'anniversaire</label><select class="in sm" id="eA">${$("#nA").innerHTML}</select></div>
+    <div><span class="lbl">Date d'anniversaire</span><div class="two"><select class="in sm" id="eJ" aria-label="Jour">${JOURS}</select><select class="in sm" id="eA" aria-label="Mois">${MOISO}</select></div></div>
+    <label class="check"><input type="checkbox" id="eS"${c.sms_ok?" checked":""}><span>🎂 Accepte le SMS d'anniversaire</span></label>
     <button type="button" class="btn" id="eGo">Enregistrer</button><button type="button" class="btn ghost" data-close>Annuler</button>
     <button type="button" class="btn bad" id="eDel">🗑️ Effacer ce client (à sa demande)</button>`);
-  m.querySelector("#eA").value=c.anniv_mois||"";
-  m.querySelector("#eGo").onclick=async()=>{try{const r=await rpc("fid_modifier",{p_client:c.id,p_prenom:m.querySelector("#eP").value,p_tel:digits(m.querySelector("#eT").value),
-      p_anniv_mois:m.querySelector("#eA").value?+m.querySelector("#eA").value:null});m.remove();show(r);toast("Enregistré ✓")}catch(e){fail(e)}};
+  m.querySelector("#eA").value=c.anniv_jour?c.anniv_mois:"";m.querySelector("#eJ").value=c.anniv_jour||"";
+  m.querySelector("#eGo").onclick=async()=>{const dd=date2(m.querySelector("#eJ"),m.querySelector("#eA"));if(!dd){toast(ERR.date);return}
+    try{const r=await rpc("fid_modifier",{p_client:c.id,p_prenom:m.querySelector("#eP").value,p_tel:digits(m.querySelector("#eT").value),
+      p_anniv_jour:dd[0],p_anniv_mois:dd[1],p_sms:m.querySelector("#eS").checked});m.remove();show(r);toast("Enregistré ✓")}catch(e){fail(e)}};
   m.querySelector("#eDel").onclick=()=>{m.remove();confirmBox("🗑️ Effacer "+esc(c.prenom)+" ?","Sa carte, ses tampons et son historique seront effacés pour de bon. À faire seulement si le client le demande.","Oui, tout effacer",async()=>{
     try{await rpc("fid_effacer",{p_client:c.id});showSearch();toast("Client effacé")}catch(e){fail(e)}})}};
 
@@ -352,9 +367,11 @@ async function bilan(){
       <div><small>Tampons</small><b class="num">${b.tampons_mois}</b><i>burgers ce mois</i></div>
       <div><small>Burgers offerts</small><b class="num">${b.offerts_mois}</b><i>${b.offerts_total} au total</i></div></div>
       ${b.presque?`<p class="note">🔥 ${b.presque} client${b.presque>1?"s sont":" est"} à 1 ou 2 tampons du burger offert.</p>`:""}</div>
-    ${b.alertes.length?`<div class="card warn"><h2>⚠️ À vérifier</h2><p class="note" style="margin:-4px 0 6px">Plus de 12 tampons en 7 jours : ça peut être normal (famille, collègues), mais jette un œil.</p>
+    ${b.alertes.length?`<div class="card warn"><h2>⚠️ À vérifier</h2><p class="note" style="margin:-4px 0 6px">Plus de 20 tampons en 7 jours : ça peut être normal (famille, collègues), mais jette un œil.</p>
       ${li(b.alertes,x=>`${x.n} tampons cette semaine · ${telF(x.tel)}`)}</div>`:""}
-    ${b.anniv.length?`<div class="card"><h2>🎂 Anniversaires ce mois</h2>${li(b.anniv,x=>telF(x.tel),x=>smsA(x,`Joyeux anniversaire ${x.prenom} ! 🎂 Le Double B t'offre un dessert ou une boisson ce mois-ci, passe nous voir !`))}</div>`:""}
+    ${b.anniv.length?`<div class="card"><h2>🎂 Desserts d'anniversaire</h2><p class="note" style="margin:-4px 0 6px">${b.sms_auto?"Les SMS partent tout seuls le matin de l'anniversaire.":"SMS automatique pas encore branché : envoie-le d'un toucher avec 💬."}</p>
+      ${li(b.anniv,x=>`${x.jour} ${MOIS[x.mois-1]} · ${x.dispo?"valable jusqu'au "+dmF(x.fin):"dessert donné ✓"}${x.sms&&x.sms.statut==="envoye"?" · SMS envoyé":""}`,
+        x=>x.dispo&&x.sms_ok&&!(x.sms&&x.sms.statut==="envoye")?smsA(x,`Joyeux anniversaire ${x.prenom} ! Le Double B t'offre un dessert avec ta prochaine commande, jusqu'au ${dmF(x.fin)}. A tres vite !`):"")}</div>`:""}
     <div class="card"><h2>😴 Pas revenus depuis 2 mois</h2>${b.relancer.length?li(b.relancer,x=>"Dernière visite "+ago(x.derniere),
       x=>smsA(x,`Bonjour ${x.prenom} ! Ça fait longtemps 🙂 Ta carte fidélité t'attend au Double B, on a hâte de te revoir !`)):`<div class="empty">Personne, bravo !</div>`}</div>
     <div class="card"><h2>🏆 Meilleurs clients</h2>${b.top.length?li(b.top,x=>telF(x.tel),x=>`<span class="v num">${x.burgers} 🍔</span>`):`<div class="empty">Pas encore de tampons.</div>`}</div>
