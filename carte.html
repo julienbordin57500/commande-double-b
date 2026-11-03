@@ -47,6 +47,14 @@ body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:
   background:linear-gradient(90deg,transparent,rgba(255,236,190,.16),transparent);animation:sheen 6s ease-in-out 1.5s infinite}
 @keyframes sheen{0%,70%{left:-60%}100%{left:130%}}
 .card.shake{animation:shake .32s cubic-bezier(.3,.6,.4,1)}
+/* La carte arrive en se retournant, puis suit le doigt (reflet de lumière qui bouge) */
+.stage{perspective:900px}
+.card.enter{animation:enter .9s cubic-bezier(.2,.9,.25,1) both}
+@keyframes enter{0%{transform:translateY(40px) rotateX(35deg) rotateY(-25deg) scale(.9);opacity:0}100%{transform:none;opacity:1}}
+.card .glare{position:absolute;inset:0;z-index:3;pointer-events:none;border-radius:inherit;opacity:0;transition:opacity .3s;
+  background:radial-gradient(circle at var(--gx,50%) var(--gy,30%),rgba(255,255,255,.22),transparent 55%)}
+.card.tilting .glare{opacity:1}
+.card{transform-style:preserve-3d;will-change:transform}
 @keyframes shake{20%{transform:translateY(3px) scale(.995)}45%{transform:translate(-2px,-1px)}70%{transform:translate(1px,0)}}
 .top{display:flex;align-items:center;gap:10px}
 .top img{width:40px;height:40px;border-radius:11px;box-shadow:0 0 0 1px rgba(255,211,107,.3)}
@@ -62,7 +70,13 @@ body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:
 .stamps{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:18px 0 4px}
 .slot{position:relative;aspect-ratio:1;border-radius:50%;border:2px dashed rgba(255,211,107,.28);display:grid;place-items:center;
   font-family:var(--display);font-weight:800;font-size:13px;color:rgba(255,211,107,.35)}
-.slot.gift{border:2px solid rgba(255,211,107,.55);font-size:clamp(20px,6.5vw,26px);color:inherit}
+.slot.gift{border:2px solid var(--mt);font-size:clamp(20px,6.5vw,26px);color:inherit;flex-direction:column}
+.slot.gift em{position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);font-style:normal;font-family:var(--body);font-size:9px;font-weight:800;letter-spacing:.08em;
+  padding:2px 6px;border-radius:999px;background:var(--m2);color:#1a1205;white-space:nowrap}
+.slot.gift.near{animation:near 1.8s ease-in-out infinite}
+@keyframes near{50%{transform:scale(1.08) rotate(-4deg);box-shadow:0 0 18px 2px var(--mt)}}
+.coin.wig{animation:wig .5s ease}
+@keyframes wig{25%{transform:rotate(-14deg) scale(1.08)}60%{transform:rotate(10deg)}100%{transform:none}}
 .slot.gift.ready{animation:glow 1.6s ease-in-out infinite;background:radial-gradient(circle,rgba(255,211,107,.35),transparent 70%)}
 @keyframes glow{50%{box-shadow:0 0 0 6px rgba(255,211,107,.15),0 0 26px 6px rgba(255,190,60,.55);transform:scale(1.06)}}
 /* Le tampon : une pièce dorée avec le burger, légèrement de travers comme un vrai coup de tampon */
@@ -90,6 +104,20 @@ body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:
 .msg span{display:block;color:var(--muted);font-weight:600;margin-top:6px;font-size:15px}
 .msg.win{background:var(--go-soft);border-color:color-mix(in srgb,var(--go) 40%,transparent)}
 .msg.win b{font-size:24px}
+.show{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:58px;margin-top:12px;border:0;border-radius:17px;cursor:pointer;
+  font:inherit;font-weight:800;font-size:18px;color:#2a1d00;background:linear-gradient(180deg,#ffd36b,#f2a516);box-shadow:0 10px 22px -10px rgba(200,120,0,.8),inset 0 1px 0 rgba(255,255,255,.5);
+  animation:breathe 2.2s ease-in-out infinite}
+@keyframes breathe{50%{transform:scale(1.03)}}
+/* Ticket plein écran à montrer au serveur */
+.ticket{position:fixed;inset:0;z-index:70;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;color:#2a1d00;
+  background:radial-gradient(120% 80% at 50% 0%,#fff1c2,#ffcf5a 45%,#f2a516 100%);animation:fIn .25s}
+.ticket .big{font-size:96px;line-height:1;animation:float 2.4s ease-in-out infinite}
+.ticket h2{margin:0;font-family:var(--display);font-size:38px;font-weight:800;letter-spacing:-.8px;line-height:1.05}
+.ticket p{margin:0;font-size:18px;font-weight:700;max-width:320px}
+.ticket .who{font-family:var(--display);font-size:26px;font-weight:800;padding:8px 18px;border-radius:14px;background:rgba(255,255,255,.45)}
+.ticket button{margin-top:10px;height:52px;padding:0 26px;border-radius:15px;border:2px solid rgba(42,29,0,.25);background:transparent;font:inherit;font-weight:800;font-size:17px;color:inherit}
+.ticket .clock{font-variant-numeric:tabular-nums;font-weight:800;font-size:15px;opacity:.7}
+@keyframes fIn{from{opacity:0}}
 .bday{margin-top:12px;padding:16px;border-radius:22px;text-align:center;color:#3a1d00;
   background:linear-gradient(135deg,#ffe1a8,#ffc0cb 55%,#e9c6ff);box-shadow:0 10px 24px -14px rgba(160,60,80,.6)}
 .bday b{display:block;font-family:var(--display);font-size:21px;font-weight:800}
@@ -104,12 +132,6 @@ body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:
 .open .t{flex:1;min-width:0;line-height:1.25}
 .open .t i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
 .open a{flex:none;height:38px;padding:0 11px;border-radius:11px;display:flex;align-items:center;gap:5px;text-decoration:none;color:var(--fg);background:var(--bg);border:1px solid var(--line);font-weight:800;font-size:13.5px}
-.par{margin-top:12px;padding:14px;border-radius:22px;background:var(--surface);border:1px solid var(--line);display:flex;gap:12px;align-items:center}
-.par .e{flex:none;font-size:30px}
-.par div{flex:1;min-width:0}
-.par b{display:block;font-family:var(--display);font-size:17px}
-.par span{display:block;color:var(--muted);font-weight:600;font-size:14px;margin-top:2px}
-.par button{flex:none;height:44px;padding:0 13px;border-radius:13px;border:0;background:var(--gold);color:#2a1d00;font:inherit;font-weight:800;font-size:14.5px;cursor:pointer}
 .how{margin-top:14px;border-radius:16px;color:var(--muted)}
 .how summary{list-style:none;cursor:pointer;text-align:center;font-size:13.5px;font-weight:700;padding:8px;color:var(--muted)}
 .how summary::-webkit-details-marker{display:none}
@@ -128,7 +150,7 @@ body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:
 .conf{position:fixed;inset:0;pointer-events:none;z-index:50;overflow:hidden}
 .conf i{position:absolute;top:-20px;width:9px;height:14px;border-radius:2px;animation:fall var(--t) cubic-bezier(.25,.6,.4,1) both;animation-delay:var(--d)}
 @keyframes fall{to{transform:translate(var(--x),110vh) rotate(var(--r));opacity:.9}}
-@media (prefers-reduced-motion:reduce){.card::after,.coin.new,.ring,.spark,.slot.gift.ready,.bday .e,.live i,.left b.bump,.card.shake{animation:none!important}.conf{display:none}}
+@media (prefers-reduced-motion:reduce){.card.enter,.slot.gift.near,.show,.ticket .big,.coin.wig,.card::after,.coin.new,.ring,.spark,.slot.gift.ready,.bday .e,.live i,.left b.bump,.card.shake{animation:none!important}.conf{display:none}}
 </style>
 </head>
 <body>
@@ -137,7 +159,7 @@ body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:
   <div id="none" class="none" hidden><b>🍔</b>Carte introuvable.<br>Demande au Double B de te renvoyer ta carte.</div>
 
   <div id="ok" hidden>
-    <div class="card" id="card">
+    <div class="stage"><div class="card enter" id="card"><div class="glare"></div>
       <div class="top"><img src="icone-appli.svg" alt="" width="40" height="40"><div><b>Double B</b><small>Carte fidélité</small></div><span class="lvl" id="lvl"></span></div>
       <div class="name" id="nom"></div>
       <div class="since" id="depuis"></div>
@@ -145,9 +167,10 @@ body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:
       <div class="left"><span id="leftT"></span><b id="leftN"></b></div>
       <div class="bar"><i id="bar" style="width:0"></i></div>
       <div class="next" id="next"></div>
-    </div>
+    </div></div>
     <div class="bday" id="bday" hidden></div>
     <div class="msg" id="msg"></div>
+    <button type="button" class="show" id="showGo" hidden>🎁 Montrer mon burger offert</button>
     <div class="kp">
       <div><small>Burgers</small><b id="kb">0</b></div>
       <div><small>Offerts</small><b id="ko">0</b></div>
@@ -156,14 +179,12 @@ body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:
     <div class="open" id="open" hidden><span class="t" id="openT"></span>
       <a href="tel:+33613100503" aria-label="Appeler le Double B">📞 Appeler</a>
       <a href="https://maps.google.com/?q=Double+B,+59+avenue+Foch,+57730+Folschviller" target="_blank" rel="noopener" aria-label="Itinéraire">📍 Y aller</a></div>
-    <div class="par"><span class="e">👥</span><div><b>Parraine un ami</b><span id="parT">Il crée sa carte avec ton numéro : 1 tampon offert à chacun dès son 1er burger.</span></div><button type="button" id="parGo">Inviter</button></div>
     <details class="how"><summary>ℹ️ Les règles de la carte</summary>
       <p><em>🍔</em><span><b>1 burger acheté = 1 tampon</b>, en donnant ton numéro.</span></p>
       <p><em>🎁</em><span><b>10 tampons = 1 burger offert</b>, celui que tu veux.</span></p>
       <p><em>🧾</em><span>8 tampons maximum par commande.</span></p>
       <p><em>🎂</em><span>Ton anniversaire : un dessert offert, valable 30 jours.</span></p>
-      <p><em>🏅</em><span>Niveaux : 🥉 Habitué à 1 carte terminée, 🥈 Fidèle à 3, 🥇 VIP à 5.</span></p>
-      <p><em>👥</em><span>Parrainage : 1 tampon pour toi et ton ami à son premier burger.</span></p>
+      <p><em>🏅</em><span>Niveaux : 🥉 Habitué à 1 carte terminée, 🥈 Gourmand à 3, 🥇 VIP à 5.</span></p>
       <p><em>📌</em><span>Garde cette page en favori : tes tampons arrivent en direct.</span></p>
     </details>
     <div class="live"><i></i>Carte à jour en direct</div>
@@ -184,7 +205,7 @@ const setVu=v=>{try{localStorage.setItem("2b-carte-vu",JSON.stringify(v))}catch{
 const TILT=[-8,5,-3,9,-6,4,-10,7,-4,0];   // chaque tampon un peu de travers, toujours le même
 const dmF=s=>new Date(s+"T12:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long"});
 let shown=null;
-const NIV=[[5,"vip","🥇 VIP"],[3,"argent","🥈 Fidèle"],[1,"bronze","🥉 Habitué"],[0,"","Classique"]];
+const NIV=[[5,"vip","🥇 VIP"],[3,"argent","🥈 Gourmand"],[1,"bronze","🥉 Habitué"],[0,"","Classique"]];
 const niv=o=>NIV.find(n=>o>=n[0]);
 const JOURS=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
 let PRENOM="";
@@ -194,18 +215,19 @@ function draw(c){
   // Carte précédente terminée (burger offert) : la nouvelle carte repart de zéro, on n'anime que ce qui est nouveau sur celle-ci
   let from=shown?(shown.offerts===c.offerts?shown.full:0):(vu&&vu.offerts===c.offerts?Math.min(vu.solde,10):0);
   if(from>full)from=0;
-  drawOpen(c.ouvert);$("#parT").textContent=c.filleuls?`Déjà ${c.filleuls} ami${c.filleuls>1?"s":""} parrainé${c.filleuls>1?"s":""} 🙌 Ton ami crée sa carte avec ton numéro : 1 tampon chacun.`:"Ton ami crée sa carte avec ton numéro : 1 tampon offert à chacun dès son 1er burger.";
+  drawOpen(c.ouvert);
   if(shown&&shown.full===full&&shown.offerts===c.offerts&&shown.anniv===c.anniv)return;
   PRENOM=c.prenom;
   $("#nom").textContent=c.prenom;
-  const n=niv(c.offerts),card=$("#card");card.className="card"+(n[1]?" "+n[1]:"");
+  const n=niv(c.offerts),card=$("#card");
+  ["bronze","argent","vip"].forEach(k=>card.classList.toggle(k,k===n[1]));
   const lv=$("#lvl");lv.textContent=n[2];
   const nx=NIV.slice().reverse().find(x=>x[0]>c.offerts);
   $("#next").textContent=nx?`Encore ${nx[0]-c.offerts} carte${nx[0]-c.offerts>1?"s":""} complète${nx[0]-c.offerts>1?"s":""} pour devenir ${nx[2]}`:"Tu es au plus haut niveau. Merci pour ta fidélité !";
   // Nouveau niveau atteint depuis la dernière visite : le badge éclate et un petit bandeau félicite
   const avant=shown?shown.offerts:vu?vu.offerts:c.offerts;
   if(niv(avant)!==n&&c.offerts>avant&&!calme){lv.classList.remove("up");void lv.offsetWidth;lv.classList.add("up");
-    const t=document.createElement("div");t.className="toastlvl";t.textContent=`Bravo ${c.prenom}, tu passes ${n[2]} !`;document.body.appendChild(t);setTimeout(()=>t.remove(),3600)}
+    const t=document.createElement("div");t.className="toastlvl";t.textContent=`Bravo ${c.prenom}, tu passes ${n[2]} !`;document.body.appendChild(t);setTimeout(()=>t.remove(),3600);setTimeout(confetti,500)}
   $("#depuis").textContent="Membre depuis "+new Date(c.depuis).toLocaleDateString("fr-FR",{month:"long",year:"numeric"})+" · carte n°"+(c.offerts+1);
   const st=$("#st");st.innerHTML="";
   const neufs=[];
@@ -214,7 +236,8 @@ function draw(c){
       if(i>=from&&!calme){k.classList.add("new");neufs.push([d,k])}}
     else d.textContent=i===9?"🎁":String(i+1);
     st.appendChild(d)}
-  if(full>=10)st.lastChild.classList.add("ready");
+  const g=st.lastChild;if(full<10){g.innerHTML=`🎁<em>OFFERT</em>`;if(s>=7)g.classList.add("near")}else g.querySelector(".coin").textContent="🎁";
+  if(full>=10)g.classList.add("ready");
   // Les nouveaux tampons tombent l'un après l'autre : choc, onde dorée, étincelles, petite secousse
   const step=neufs.length>5?260:420;
   neufs.forEach(([d,k],n)=>{const delay=350+n*step;k.style.setProperty("--d",delay+"ms");
@@ -237,6 +260,7 @@ function draw(c){
     :s>=7?`<b>Tu y es presque, ${p} !</b><span>Plus que ${10-s} burgers avant ton burger offert.</span>`
     :s>=5?`<b>Plus de la moitié, ${p} ! 💪</b><span>Encore ${10-s} burgers et le suivant est offert.</span>`
     :`<b>Bien parti, ${p} !</b><span>Encore ${10-s} burgers et le suivant est offert.</span>`;
+  $("#showGo").hidden=s<10;
   const b=$("#bday");b.hidden=!c.anniv;
   if(c.anniv)b.innerHTML=`<span class="e">🎂</span><b>Joyeux anniversaire ${c.prenom.replace(/[<>&"]/g,"")} !</b><span>Un dessert t'est offert avec ta prochaine commande, jusqu'au ${dmF(c.anniv_fin)}.</span>`;
   $("#kb").textContent=c.burgers;$("#ko").textContent=c.offerts;
@@ -252,10 +276,22 @@ function drawOpen(o){if(!o)return;const h=new Date().getHours(),el=$("#openT");$
   else if(o.prochain){const d=new Date(o.prochain.jour+"T12:00:00"),dm=(d-new Date(new Date().toDateString()))/864e5;
     el.innerHTML=rouge+`Fermé · on rouvre ${dm<1.5?"demain":JOURS[d.getDay()]} ${o.prochain.service==="midi"?"midi":"soir"}`}
   else el.innerHTML=rouge+"Fermé pour le moment"}
-// Inviter un ami : partage natif du téléphone (ou SMS)
-$("#parGo").onclick=async()=>{const t=`Viens goûter les burgers du Double B 🍔 (59 av. Foch, Folschviller) ! En créant ta carte fidélité, dis que tu viens de la part de ${PRENOM} et donne mon numéro : on gagne chacun un tampon.`;
-  if(navigator.share)try{await navigator.share({text:t});return}catch(e){if(e&&e.name==="AbortError")return}
-  location.href=`sms:${/iPhone|iPad/.test(navigator.userAgent)?"&":"?"}body=${encodeURIComponent(t)}`};
+// Ticket plein écran : le client le montre au serveur (avec l'heure qui tourne : impossible de montrer une capture d'écran)
+$("#showGo").onclick=()=>{const t=document.createElement("div");t.className="ticket";t.setAttribute("role","dialog");
+  t.innerHTML=`<div class="big">🍔</div><h2>Burger offert !</h2><div class="who"></div><p>Montre cet écran au serveur avec ta commande.</p><div class="clock" id="clk"></div><button type="button">Fermer</button>`;
+  t.querySelector(".who").textContent=PRENOM;document.body.appendChild(t);confetti();
+  const tick=()=>{const e=t.querySelector("#clk");if(e)e.textContent=new Date().toLocaleString("fr-FR",{weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit",second:"2-digit"})};
+  tick();const iv=setInterval(tick,1000);t.querySelector("button").onclick=()=>{clearInterval(iv);t.remove()}};
+// La carte suit le doigt : elle s'incline et la lumière glisse dessus
+(()=>{const c=$("#card");if(calme)return;let raf=0;
+  const move=e=>{const r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;if(x<-.1||x>1.1||y<-.1||y>1.1)return;
+    cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{c.classList.remove("enter");c.classList.add("tilting");
+      c.style.transform=`rotateX(${(.5-y)*12}deg) rotateY(${(x-.5)*16}deg)`;c.style.setProperty("--gx",x*100+"%");c.style.setProperty("--gy",y*100+"%")})};
+  const leave=()=>{cancelAnimationFrame(raf);c.classList.remove("tilting");c.style.transition="transform .5s cubic-bezier(.2,.9,.3,1.2)";c.style.transform="";setTimeout(()=>c.style.transition="",500)};
+  c.addEventListener("pointermove",move);c.addEventListener("pointerdown",move);c.addEventListener("pointerleave",leave);c.addEventListener("pointerup",leave);c.addEventListener("pointercancel",leave);
+  // Toucher un tampon : il remue (juste pour le plaisir)
+  $("#st").addEventListener("click",e=>{const k=e.target.closest(".coin");if(!k)return;k.classList.remove("new","wig");void k.offsetWidth;k.classList.add("wig");try{navigator.vibrate&&navigator.vibrate(15)}catch{}});
+})();
 // Compteur « tampons sur 10 » et barre : avancent au rythme des coups de tampon
 function count(n,quiet){$("#leftT").textContent=n>=10?"Carte complète !":"Tampons";
   const el=$("#leftN");el.textContent=Math.min(n,10)+" / 10";$("#bar").style.width=Math.min(n,10)*10+"%";
