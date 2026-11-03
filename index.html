@@ -279,7 +279,18 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
 .hrow{display:flex;align-items:center;gap:10px;padding:8px 8px 8px 12px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
 .hrow .dt{flex:1;color:var(--muted);font-size:14px}
 .hrow b{font-size:16px}
-.hrow .x{width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font-size:18px;line-height:1}
+.hrow .x{width:40px;height:40px;flex:none;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font-size:17px;line-height:1}
+/* Corriger un prix de l'historique : la ligne s'ouvre en petit formulaire */
+.hrow.edit{flex-wrap:wrap;background:var(--sunken)}
+.hed{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;padding:2px 4px 6px 0}
+.hed .in{position:relative}
+.hed input,.hed select{width:100%;height:48px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);padding:0 12px;font-size:17px;font-weight:700}
+.hed .in input{padding-right:30px}
+.hed .in span{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-weight:800;color:var(--muted)}
+.hed .hd{grid-column:1/-1;font-weight:500}
+.hed .hpr{display:flex;align-items:center;gap:8px;font-weight:700;min-height:48px}
+.hed .hpr input{width:24px;height:24px;margin:0}
+.hed .btn{height:48px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:11px 16px;border-radius:12px;font-weight:600;font-size:15px;z-index:10;max-width:calc(100% - 32px)}
 @media (max-width:400px){.titles h1{font-size:25px}header.top .logo{width:92px;height:54px}.ico{width:46px;height:46px}.ico svg{width:28px;height:28px}.toggle{padding:0 12px 0 8px;font-size:13px}.qty{width:62px}}
 @media (prefers-reduced-motion:reduce){.chev{transition:none}}
@@ -1085,11 +1096,33 @@ async function openPrice(id,o={}){
   async function hist(){
     try{const h=await rpc("historique_prix",{p_id:id});
       $("#phd").querySelector("summary").textContent=`Historique des prix (${h.length})`;
-      $("#ph").innerHTML=h.length?h.map((x,i)=>`<div class="hrow"><span class="dt">${dshort(x.le)}</span><b>${esc(prixLigne(x))}</b>${x.promo?PROMO:""}${varHTML(varPct(x,h[i+1]))}<button class="x" data-hx="${x.id}" aria-label="Supprimer ce prix">×</button></div>`).join("")
+      hist.h=h;
+      $("#ph").innerHTML=h.length?h.map((x,i)=>`<div class="hrow"><span class="dt">${dshort(x.le)}</span><b>${esc(prixLigne(x))}</b>${x.promo?PROMO:""}${varHTML(varPct(x,h[i+1]))}<button class="x" data-he="${i}" aria-label="Modifier ce prix">✏️</button><button class="x" data-hx="${x.id}" aria-label="Supprimer ce prix">🗑️</button></div>`).join("")
         :`<div class="hrow"><span class="dt">Pas encore de prix. Note-le à chaque commande pour suivre les hausses.</span></div>`;
     }catch(e){$("#ph").innerHTML=`<div class="hrow"><span class="dt">Historique indisponible (connexion).</span></div>`}
   }
-  $("#ph").addEventListener("click",async e=>{const b=e.target.closest("[data-hx]");if(!b)return;
+  // ✏️ corriger un prix déjà noté (sa date ne change pas)
+  $("#ph").addEventListener("click",async e=>{
+    const be=e.target.closest("[data-he]");
+    if(be){const x=hist.h[+be.dataset.he],row=be.closest(".hrow");if(!x)return;
+      const us=["pièce","kg","L"].includes(x.u)?["pièce","kg","L"]:[x.u,"pièce","kg","L"];
+      row.classList.add("edit");
+      row.innerHTML=`<span class="dt">Corriger le prix du ${dshort(x.le)}</span><div class="hed">
+        <div class="in"><input class="hp" inputmode="decimal" value="${String(+x.p).replace(".",",")}" aria-label="Prix payé"><span>€</span></div>
+        <select class="hu" aria-label="Vendu">${us.map(u=>`<option value="${esc(u)}"${u===x.u?" selected":""}>${u==="pièce"?"la pièce":u==="kg"?"le kilo":u==="L"?"le litre":esc(u)}</option>`).join("")}</select>
+        <label class="hpr"><input type="checkbox" class="hpp"${x.promo?" checked":""}>🏷️ En promo</label><span></span>
+        <input class="hd" maxlength="80" placeholder="Détail (facultatif), ex. carton de 6" value="${esc(x.d||"")}" aria-label="Détail">
+        <button class="btn" type="button" data-hs>Enregistrer</button><button class="btn soft" type="button" data-hc>Annuler</button></div>`;
+      const hp=row.querySelector(".hp");hp.focus();hp.select();
+      row.querySelector("[data-hc]").onclick=()=>hist();
+      const ok=async()=>{const v=num(hp.value);if(!v||v>100000){toast("Entre un prix, ex. 2,40");hp.focus();return}
+        row.querySelector("[data-hs]").disabled=true;
+        try{await rpc("modif_prix",{p_prix_id:x.id,p_prix:v,p_unite:row.querySelector(".hu").value,p_promo:row.querySelector(".hpp").checked,p_detail:row.querySelector(".hd").value.trim()});
+          toast("Prix corrigé ✓");hist();refresh()}
+        catch(err){toast("Pas enregistré : vérifie la connexion");row.querySelector("[data-hs]").disabled=false}};
+      row.querySelector("[data-hs]").onclick=ok;row.querySelectorAll(".hp,.hd").forEach(el=>el.addEventListener("keydown",k=>{if(k.key==="Enter"){k.preventDefault();ok()}}));
+      return}
+    const b=e.target.closest("[data-hx]");if(!b)return;
     const ok=await ask("Supprimer ce prix ?","Il sera retiré de l'historique.",[{label:"Oui, supprimer",value:true,cls:"danger"},{label:"Annuler",value:false,cls:"soft"}]);if(!ok)return;
     try{await rpc("suppr_prix",{p_prix_id:+b.dataset.hx});toast("Prix supprimé");hist();refresh()}catch{toast("Pas supprimé : vérifie la connexion")}});
   const save=async()=>{
