@@ -99,6 +99,12 @@ button:active{scale:.97}
 .plus .btn.one{grid-column:1/-1;height:72px;font-size:21px}
 .plus-n{text-align:center;color:var(--muted);font-size:13.5px;font-weight:700;margin-top:8px}
 .two{display:grid;grid-template-columns:1fr 1.4fr;gap:8px}
+.pi{display:grid;grid-template-columns:1fr 92px;gap:8px}
+.pi .in{text-transform:none}
+#nI,#eI{text-align:center;text-transform:uppercase}
+.pok{font-size:14.5px;font-weight:700;margin:6px 2px 0;color:var(--muted)}
+.pok.ok{color:var(--go)} .pok.no{color:var(--danger)}
+.par{margin-top:12px;font-size:15px;font-weight:700;color:var(--muted);text-align:center}
 .gift-btn{margin-top:12px;height:64px;font-size:19px}
 .anniv{display:flex;align-items:center;gap:10px;margin-top:12px;padding:12px;border-radius:16px;background:var(--accent-soft);border:1.5px solid color-mix(in srgb,var(--accent) 50%,transparent);font-weight:700}
 .anniv span{flex:1}
@@ -170,9 +176,11 @@ button:active{scale:.97}
       <div class="card" id="newCard" hidden>
         <h2>➕ Nouvelle carte</h2>
         <div class="form">
-          <div><label class="lbl" for="nP">Prénom</label><input class="in sm" id="nP" autocomplete="off" maxlength="40" placeholder="Prénom du client"></div>
+          <div class="pi"><div><label class="lbl" for="nP">Prénom</label><input class="in sm" id="nP" autocomplete="off" maxlength="40" placeholder="Prénom du client"></div>
+            <div><label class="lbl" for="nI">Initiale nom</label><input class="in sm" id="nI" autocomplete="off" maxlength="1" placeholder="B"></div></div>
           <div><label class="lbl" for="nT">Téléphone</label><input class="in sm num" id="nT" inputmode="tel" autocomplete="off" placeholder="06 12 34 56 78"></div>
           <div><span class="lbl">Date d'anniversaire (facultatif, sans l'année)</span><div class="two"><select class="in sm" id="nJ" aria-label="Jour"></select><select class="in sm" id="nA" aria-label="Mois"></select></div></div>
+          <div><label class="lbl" for="nPa">👥 Parrainé par (facultatif) : numéro du parrain</label><input class="in sm num" id="nPa" inputmode="tel" autocomplete="off" placeholder="06 …"><div class="pok" id="nPaOk"></div></div>
           <label class="check"><input type="checkbox" id="nOk"><span>Le client est d'accord pour qu'on garde son prénom et son numéro pour sa carte fidélité. Il peut demander à tout effacer.</span></label>
           <label class="check"><input type="checkbox" id="nSms"><span>🎂 Il accepte de recevoir un SMS le jour de son anniversaire (dessert offert).</span></label>
           <button type="button" class="btn" id="nGo">Créer la carte · 2 tampons offerts 🎁</button>
@@ -194,6 +202,7 @@ button:active{scale:.97}
         </div>
         <div class="plus-n">Un tampon par burger de la commande · 8 maximum par commande</div>
         <button type="button" class="btn go gift-btn" id="fGift" hidden>🎁 Offrir son burger (−10 tampons)</button>
+        <div class="par" id="fPar" hidden></div>
         <div class="anniv" id="fAnniv" hidden><span id="fAnnivT"></span><button type="button" id="fAnnivGo">Donné ✓</button></div>
       </div>
       <div class="card">
@@ -230,10 +239,11 @@ const lost=e=>{if(e&&e.code==="28000"){try{localStorage.removeItem("commande2b-c
 const who=()=>(window.Profil&&Profil.get())||null;
 function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2800)}
 // Messages clairs pour les refus du serveur
-const ERR={limite:"Maximum 16 tampons par jour sur une même carte (2 commandes)",nombre:"8 tampons maximum par commande",date:"Choisis le jour ET le mois de l'anniversaire","pas assez":"Pas encore 10 tampons","trop tard":"Trop tard pour annuler (15 minutes passées)",
+const ERR={limite:"Maximum 16 tampons par jour sur une même carte (2 commandes)",nombre:"8 tampons maximum par commande",parrain:"Aucune carte avec le numéro du parrain",date:"Choisis le jour ET le mois de l'anniversaire","pas assez":"Pas encore 10 tampons","trop tard":"Trop tard pour annuler (15 minutes passées)",
   solde:"Impossible : le burger offert a déjà utilisé ces tampons. Annule d'abord le burger offert.",numero:"Numéro de téléphone pas valable",prenom:"Écris le prénom",
   deja:"Ce numéro a déjà une carte",anniv:"Dessert d'anniversaire déjà donné ou plus valable"};
 const fail=e=>{if(lost(e))return;toast(ERR[e.message]||"Pas enregistré : vérifie la connexion")};
+const nomF=c=>c.prenom+(c.initiale?" "+c.initiale+".":"");   // initiale du nom : vue seulement par l'équipe
 const telF=t=>String(t||"").replace(/(\d{2})(?=\d)/g,"$1 ");
 const digits=s=>{let d=String(s||"").replace(/\D/g,"");if(/^33[1-9]\d{8}$/.test(d))d="0"+d.slice(2);return d};
 const MOIS=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
@@ -267,23 +277,29 @@ async function search(){
   let l;try{l=await rpc("fid_chercher",{p_q:v})}catch(e){if(n===qN)fail(e);return}
   if(n!==qN)return;
   $("#res").innerHTML=l.length?l.map(c=>`<button type="button" class="row" data-id="${c.id}"><span class="av">${esc(c.prenom[0].toUpperCase())}</span>
-    <span class="t"><b>${esc(c.prenom)}</b><small class="num">${telF(c.tel)}</small></span><span class="n${c.solde>=10?" full":""}">${c.solde>=10?"🎁 offert":c.solde+" / 10"}</span></button>`).join("")
+    <span class="t"><b>${esc(nomF(c))}</b><small class="num">${telF(c.tel)}</small></span><span class="n${c.solde>=10?" full":""}">${c.solde>=10?"🎁 offert":c.solde+" / 10"}</span></button>`).join("")
     :`<div class="empty">${!byName&&d.length===10?"Pas encore de carte pour ce numéro.":"Aucun client trouvé."}</div>`;
   // Numéro complet et inconnu : on propose tout de suite de créer la carte
   const neuf=!byName&&d.length===10&&!l.some(c=>c.tel===d);
   $("#newCard").hidden=!neuf&&!(byName&&!l.length&&v.length>=2);
   if(neuf)$("#nT").value=telF(d);else if(byName)$("#nP").value=v.charAt(0).toUpperCase()+v.slice(1);
 }
+// Parrain : on vérifie son numéro en direct et on affiche son nom
+let paT=0;$("#nPa").addEventListener("input",()=>{clearTimeout(paT);paT=setTimeout(async()=>{const d=digits($("#nPa").value),o=$("#nPaOk");
+  if(d.length<10){o.textContent="";o.className="pok";return}
+  try{const l=await rpc("fid_chercher",{p_q:d}),x=l.find(c=>c.tel===d);o.className="pok "+(x?"ok":"no");
+    o.textContent=x?`✓ ${nomF(x)} · 1 tampon chacun au premier burger`:"Aucune carte avec ce numéro"}catch{}},300)});
 $("#res").addEventListener("click",e=>{const b=e.target.closest(".row");if(b)openCli(b.dataset.id)});
 $("#nGo").onclick=async()=>{
-  const p=$("#nP").value.trim(),t=digits($("#nT").value);
+  const p=$("#nP").value.trim(),t=digits($("#nT").value),pa=digits($("#nPa").value);
+  if(pa&&!/^0[1-9]\d{8}$/.test(pa)){toast("Numéro du parrain pas valable");$("#nPa").focus();return}
   if(!p){toast("Écris le prénom");$("#nP").focus();return}
   if(!/^0[1-9]\d{8}$/.test(t)){toast("Numéro de téléphone pas valable");$("#nT").focus();return}
   if(!$("#nOk").checked){toast("Coche l'accord du client");return}
   const dd=date2($("#nJ"),$("#nA"));if(!dd){toast(ERR.date);return}
   const b=$("#nGo");b.disabled=true;
-  try{const r=await rpc("fid_creer",{p_prenom:p,p_tel:t,p_anniv_jour:dd[0],p_anniv_mois:dd[1],p_sms:$("#nSms").checked,p_par:who()});
-    ["#nP","#nT"].forEach(s=>$(s).value="");$("#nJ").value="";$("#nA").value="";$("#nOk").checked=false;$("#nSms").checked=false;
+  try{const r=await rpc("fid_creer",{p_prenom:p,p_initiale:$("#nI").value,p_tel:t,p_anniv_jour:dd[0],p_anniv_mois:dd[1],p_sms:$("#nSms").checked,p_parrain_tel:pa||null,p_par:who()});
+    ["#nP","#nI","#nT","#nPa"].forEach(s=>$(s).value="");$("#nPaOk").textContent="";$("#nJ").value="";$("#nA").value="";$("#nOk").checked=false;$("#nSms").checked=false;
     show(r.client);toast(r.existe?"Ce numéro avait déjà une carte":"Carte créée · 2 tampons offerts 🎁");if(!r.existe)setTimeout(qr,500)}
   catch(e){fail(e)}finally{b.disabled=false}
 };
@@ -293,12 +309,14 @@ $("#fBack").onclick=()=>{showSearch();$("#q").focus()};
 /* ---------- Fiche client ---------- */
 let CUR=null,busy=false;
 async function openCli(id){try{show(await rpc("fid_fiche",{p_client:id}))}catch(e){fail(e)}}
-const LAB={bienvenue:["👋","Bienvenue"],burger:["🍔","Burger"],offert:["🎁","Burger offert"],anniv:["🎂","Dessert anniversaire"]};
+const LAB={bienvenue:["👋","Bienvenue"],burger:["🍔","Burger"],offert:["🎁","Burger offert"],anniv:["🎂","Dessert anniversaire"],parrainage:["👥","Parrainage"]};
 function show(c,anim){
   if(!c){toast("Client introuvable");showSearch();return}
   CUR=c;$("#tCli").setAttribute("aria-pressed",true);$("#tBil").setAttribute("aria-pressed",false);
   $("#vSearch").hidden=true;$("#vBilan").hidden=true;$("#vFiche").hidden=false;
-  $("#fAv").textContent=c.prenom[0].toUpperCase();$("#fNom").textContent=c.prenom;
+  $("#fAv").textContent=c.prenom[0].toUpperCase();$("#fNom").textContent=nomF(c);
+  const pr=[c.parrain?`Parrainé par ${esc(nomF(c.parrain))}`:"",c.filleuls?`👥 ${c.filleuls} ami${c.filleuls>1?"s":""} parrainé${c.filleuls>1?"s":""}`:""].filter(Boolean);
+  $("#fPar").hidden=!pr.length;$("#fPar").innerHTML=pr.join(" · ");
   $("#fTel").textContent=`${telF(c.tel)} · client depuis ${dF(c.cree_le)}`;
   const s=c.solde,full=Math.min(s,10);
   $("#fSt").innerHTML=Array.from({length:10},(_,i)=>{const nw=anim!=null&&i<full&&i>=anim;
@@ -342,7 +360,8 @@ async function qr(){if(!CUR)return;const c=CUR,url=lien(c);
 $("#fQr").onclick=qr;
 $("#fEdit").onclick=()=>{const c=CUR;
   const m=modal(`<h3>✏️ Modifier ${esc(c.prenom)}</h3>
-    <div><label class="lbl" for="eP">Prénom</label><input class="in sm" id="eP" maxlength="40" value="${esc(c.prenom)}"></div>
+    <div class="pi"><div><label class="lbl" for="eP">Prénom</label><input class="in sm" id="eP" maxlength="40" value="${esc(c.prenom)}"></div>
+      <div><label class="lbl" for="eI">Initiale nom</label><input class="in sm" id="eI" maxlength="1" value="${esc(c.initiale||"")}"></div></div>
     <div><label class="lbl" for="eT">Téléphone</label><input class="in sm num" id="eT" inputmode="tel" value="${telF(c.tel)}"></div>
     <div><span class="lbl">Date d'anniversaire</span><div class="two"><select class="in sm" id="eJ" aria-label="Jour">${JOURS}</select><select class="in sm" id="eA" aria-label="Mois">${MOISO}</select></div></div>
     <label class="check"><input type="checkbox" id="eS"${c.sms_ok?" checked":""}><span>🎂 Accepte le SMS d'anniversaire</span></label>
@@ -350,7 +369,7 @@ $("#fEdit").onclick=()=>{const c=CUR;
     <button type="button" class="btn bad" id="eDel">🗑️ Effacer ce client (à sa demande)</button>`);
   m.querySelector("#eA").value=c.anniv_jour?c.anniv_mois:"";m.querySelector("#eJ").value=c.anniv_jour||"";
   m.querySelector("#eGo").onclick=async()=>{const dd=date2(m.querySelector("#eJ"),m.querySelector("#eA"));if(!dd){toast(ERR.date);return}
-    try{const r=await rpc("fid_modifier",{p_client:c.id,p_prenom:m.querySelector("#eP").value,p_tel:digits(m.querySelector("#eT").value),
+    try{const r=await rpc("fid_modifier",{p_client:c.id,p_prenom:m.querySelector("#eP").value,p_initiale:m.querySelector("#eI").value,p_tel:digits(m.querySelector("#eT").value),
       p_anniv_jour:dd[0],p_anniv_mois:dd[1],p_sms:m.querySelector("#eS").checked});m.remove();show(r);toast("Enregistré ✓")}catch(e){fail(e)}};
   m.querySelector("#eDel").onclick=()=>{m.remove();confirmBox("🗑️ Effacer "+esc(c.prenom)+" ?","Sa carte, ses tampons et son historique seront effacés pour de bon. À faire seulement si le client le demande.","Oui, tout effacer",async()=>{
     try{await rpc("fid_effacer",{p_client:c.id});showSearch();toast("Client effacé")}catch(e){fail(e)}})}};
@@ -358,7 +377,7 @@ $("#fEdit").onclick=()=>{const c=CUR;
 /* ---------- Bilan ---------- */
 async function bilan(){
   let b;try{b=await rpc("fid_bilan")}catch(e){fail(e);$("#bil").innerHTML=`<div class="card"><div class="empty">Pas de connexion.</div></div>`;return}
-  const li=(xs,sub,right)=>xs.map(x=>`<div class="li"><button type="button" class="l" data-id="${x.id}"><b>${esc(x.prenom)}</b><small>${sub(x)}</small></button>${right?right(x):""}</div>`).join("");
+  const li=(xs,sub,right)=>xs.map(x=>`<div class="li"><button type="button" class="l" data-id="${x.id}"><b>${esc(nomF(x))}</b><small>${sub(x)}</small></button>${right?right(x):""}</div>`).join("");
   const smsA=(x,t)=>`<a href="sms:${x.tel}${/iPhone|iPad/.test(navigator.userAgent)?"&":"?"}body=${encodeURIComponent(t)}">💬 SMS</a>`;
   const pp=Object.entries(b.parpersonne||{}).sort((a,c)=>c[1]-a[1]);
   $("#bil").innerHTML=`<div class="card"><h2>📊 Ce mois-ci</h2><div class="kp">
