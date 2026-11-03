@@ -105,6 +105,23 @@ button:active{scale:.97}
 .pok{font-size:14.5px;font-weight:700;margin:6px 2px 0;color:var(--muted)}
 .pok.ok{color:var(--go)} .pok.no{color:var(--danger)}
 .par{margin-top:12px;font-size:15px;font-weight:700;color:var(--muted);text-align:center}
+.hint{margin:8px 2px 0;color:var(--muted);font-size:14px;font-weight:600}
+.rec{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.rec .rl{flex-basis:100%;font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.rec button{height:46px;padding:0 14px;border-radius:14px;border:1px solid var(--line);background:var(--sunken);font-weight:800;font-size:15.5px}
+/* Après un tampon : confirmation claire, annuler en un toucher, client suivant */
+.done{display:flex;flex-direction:column;gap:8px;margin-top:10px;padding:10px;border-radius:18px;background:var(--go-soft);border:1.5px solid color-mix(in srgb,var(--go) 45%,transparent);animation:upIn .25s}
+.done b{font-size:17px;text-align:center}
+.done .dr{display:grid;grid-template-columns:1fr 1.6fr;gap:8px}
+.done .btn{height:52px;font-size:16px}
+.step{display:flex;align-items:center;gap:10px}
+.step button{flex:none;width:56px;height:56px;border-radius:16px;border:2px solid var(--line);background:var(--surface);font-size:26px;font-weight:800}
+.step b{flex:1;text-align:center;font-family:var(--display);font-size:30px}
+/* Fiche ouverte : titre et onglets cachés, tout le geste tient sur l'écran */
+body.fiche .head,body.fiche .seg{display:none}
+body.fiche .wrap{padding-top:10px}
+.next-top{position:sticky;top:8px;z-index:5;display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+.next-top .back{margin:0}
 .gift-btn{margin-top:12px;height:64px;font-size:19px}
 .anniv{display:flex;align-items:center;gap:10px;margin-top:12px;padding:12px;border-radius:16px;background:var(--accent-soft);border:1.5px solid color-mix(in srgb,var(--accent) 50%,transparent);font-weight:700}
 .anniv span{flex:1}
@@ -155,7 +172,7 @@ button:active{scale:.97}
 <div class="wrap">
   <div class="pbar" id="pbar"></div><script src="profil.js"></script>
 
-  <header class="head"><h1>⭐ Fidélité</h1><p>1 burger = 1 tampon · 10 tampons = 1 burger offert<br>8 tampons maximum par commande</p></header>
+  <header class="head"><h1>⭐ Fidélité</h1><p>1 burger = 1 tampon · 10 = 1 offert · 8 max par commande</p></header>
 
   <div id="locked" class="locked" hidden><b>🔒</b>Les cartes de fidélité sont réservées à Julien pour l'instant.</div>
 
@@ -170,8 +187,10 @@ button:active{scale:.97}
       <div class="card">
         <label class="lbl" for="q" id="qL">Numéro de téléphone du client</label>
         <input class="in num" id="q" type="search" inputmode="tel" autocomplete="off" placeholder="06 12 34 56 78">
+        <p class="hint" id="qHint">Les 4 derniers chiffres suffisent. La fiche s'ouvre toute seule.</p>
         <button type="button" class="swap" id="qSwap">Chercher par prénom</button>
         <div class="res" id="res"></div>
+        <div class="rec" id="rec" hidden></div>
       </div>
       <div class="card" id="newCard" hidden>
         <h2>➕ Nouvelle carte</h2>
@@ -179,18 +198,20 @@ button:active{scale:.97}
           <div class="pi"><div><label class="lbl" for="nP">Prénom</label><input class="in sm" id="nP" autocomplete="off" maxlength="40" placeholder="Prénom du client"></div>
             <div><label class="lbl" for="nI">Initiale nom</label><input class="in sm" id="nI" autocomplete="off" maxlength="1" placeholder="B"></div></div>
           <div><label class="lbl" for="nT">Téléphone</label><input class="in sm num" id="nT" inputmode="tel" autocomplete="off" placeholder="06 12 34 56 78"></div>
-          <div><span class="lbl">Date d'anniversaire (facultatif, sans l'année)</span><div class="two"><select class="in sm" id="nJ" aria-label="Jour"></select><select class="in sm" id="nA" aria-label="Mois"></select></div></div>
+          <div><span class="lbl">🍔 Burgers dans cette commande</span><div class="step"><button type="button" id="nMoins" aria-label="Un de moins">−</button><b id="nNb">1</b><button type="button" id="nPlus" aria-label="Un de plus">+</button></div></div>
+          <div><span class="lbl">🎂 Anniversaire (facultatif, sans l'année)</span><div class="two"><select class="in sm" id="nJ" aria-label="Jour"></select><select class="in sm" id="nA" aria-label="Mois"></select></div></div>
           <div hidden><label class="lbl" for="nPa">👥 Parrainé par (facultatif) : numéro du parrain</label><input class="in sm num" id="nPa" inputmode="tel" autocomplete="off" placeholder="06 …"><div class="pok" id="nPaOk"></div></div>
           <label class="check"><input type="checkbox" id="nOk"><span>Le client est d'accord pour qu'on garde son prénom et son numéro pour sa carte fidélité. Il peut demander à tout effacer.</span></label>
-          <label class="check"><input type="checkbox" id="nSms"><span>🎂 Il accepte de recevoir un SMS le jour de son anniversaire (dessert offert).</span></label>
-          <button type="button" class="btn" id="nGo">Créer la carte · 2 tampons offerts 🎁</button>
+          <label class="check" id="nSmsL" hidden><input type="checkbox" id="nSms"><span>🎂 Il accepte un SMS le jour de son anniversaire (dessert offert).</span></label>
+          <button type="button" class="btn" id="nGo">Créer la carte</button>
+          <p class="hint" style="text-align:center;margin-top:0">2 tampons de bienvenue offerts en plus 🎁</p>
         </div>
       </div>
     </section>
 
     <!-- Fiche d'un client -->
     <section id="vFiche" hidden>
-      <button type="button" class="back" id="fBack">‹ Autre client</button>
+      <div class="next-top"><button type="button" class="back" id="fBack">‹ Client suivant</button></div>
       <div class="card">
         <div class="who"><div class="av" id="fAv"></div><div><h2 id="fNom"></h2><small id="fTel"></small></div></div>
         <div class="stamps" id="fSt"></div>
@@ -201,6 +222,7 @@ button:active{scale:.97}
           <button type="button" class="btn ghost" data-n="5">+5</button><button type="button" class="btn ghost" data-n="6">+6</button><button type="button" class="btn ghost" data-n="7">+7</button><button type="button" class="btn ghost" data-n="8">+8</button>
         </div>
         <div class="plus-n">Un tampon par burger de la commande · 8 maximum par commande</div>
+        <div class="done" id="fDone" hidden><b id="fDoneT"></b><div class="dr"><button type="button" class="btn bad" id="fUndo">↩︎ Annuler</button><button type="button" class="btn" id="fNext">Client suivant ›</button></div></div>
         <button type="button" class="btn go gift-btn" id="fGift" hidden>🎁 Offrir son burger (−10 tampons)</button>
         <div class="par" id="fPar" hidden></div>
         <div class="anniv" id="fAnniv" hidden><span id="fAnnivT"></span><button type="button" id="fAnnivGo">Donné ✓</button></div>
@@ -262,27 +284,38 @@ function gate(){const ok=who()==="julien";$("#app").hidden=!ok;$("#locked").hidd
 
 /* ---------- Onglets ---------- */
 function tab(b){$("#tCli").setAttribute("aria-pressed",!b);$("#tBil").setAttribute("aria-pressed",b);
-  $("#vBilan").hidden=!b;if(b){$("#vSearch").hidden=true;$("#vFiche").hidden=true;bilan()}else showSearch()}
+  $("#vBilan").hidden=!b;if(b){document.body.classList.remove("fiche");$("#vSearch").hidden=true;$("#vFiche").hidden=true;bilan()}else showSearch()}
 $("#tCli").onclick=()=>tab(false);$("#tBil").onclick=()=>tab(true);
+
+/* ---------- Clients récents (sur ce téléphone) : un toucher pour rouvrir ---------- */
+const REC=()=>{try{return JSON.parse(localStorage.getItem("2b-fid-recents")||"[]")}catch{return []}};
+function addRec(c){const l=REC().filter(x=>x.id!==c.id);l.unshift({id:c.id,n:nomF(c)});try{localStorage.setItem("2b-fid-recents",JSON.stringify(l.slice(0,6)))}catch{}}
+function drawRec(){const l=REC(),el=$("#rec");el.hidden=!l.length||!!$("#q").value.trim();
+  el.innerHTML=`<span class="rl">Récemment</span>`+l.map(x=>`<button type="button" data-id="${x.id}">${esc(x.n)}</button>`).join("")}
+$("#rec").addEventListener("click",e=>{const b=e.target.closest("button[data-id]");if(b)openCli(b.dataset.id)});
 
 /* ---------- Recherche ---------- */
 let byName=false,qT=0,qN=0;
 $("#qSwap").onclick=()=>{byName=!byName;const q=$("#q");q.value="";q.inputMode=byName?"text":"tel";q.placeholder=byName?"Prénom":"06 12 34 56 78";
   $("#qL").textContent=byName?"Prénom du client":"Numéro de téléphone du client";$("#qSwap").textContent=byName?"Chercher par numéro":"Chercher par prénom";
   $("#res").innerHTML="";$("#newCard").hidden=true;q.focus()};
-$("#q").addEventListener("input",()=>{clearTimeout(qT);qT=setTimeout(search,250)});
+$("#q").addEventListener("input",()=>{clearTimeout(qT);drawRec();
+  // Numéro complet : on cherche tout de suite (pas d'attente)
+  qT=setTimeout(search,!byName&&digits($("#q").value).length===10?0:250)});
 async function search(){
   const v=$("#q").value.trim(),n=++qN,d=digits(v);
   if((byName?v.length:d.length)<2){$("#res").innerHTML="";$("#newCard").hidden=true;return}
   let l;try{l=await rpc("fid_chercher",{p_q:v})}catch(e){if(n===qN)fail(e);return}
   if(n!==qN)return;
+  // Numéro complet et connu : la fiche s'ouvre toute seule
+  const exact=!byName&&d.length===10&&l.find(c=>c.tel===d);if(exact){openCli(exact.id);return}
   $("#res").innerHTML=l.length?l.map(c=>`<button type="button" class="row" data-id="${c.id}"><span class="av">${esc(c.prenom[0].toUpperCase())}</span>
     <span class="t"><b>${esc(nomF(c))}</b><small class="num">${telF(c.tel)}</small></span><span class="n${c.solde>=10?" full":""}">${c.solde>=10?"🎁 offert":c.solde+" / 10"}</span></button>`).join("")
     :`<div class="empty">${!byName&&d.length===10?"Pas encore de carte pour ce numéro.":"Aucun client trouvé."}</div>`;
   // Numéro complet et inconnu : on propose tout de suite de créer la carte
   const neuf=!byName&&d.length===10&&!l.some(c=>c.tel===d);
   $("#newCard").hidden=!neuf&&!(byName&&!l.length&&v.length>=2);
-  if(neuf)$("#nT").value=telF(d);else if(byName)$("#nP").value=v.charAt(0).toUpperCase()+v.slice(1);
+  if(neuf){$("#nT").value=telF(d);NB=1;$("#nNb").textContent=1}else if(byName)$("#nP").value=v.charAt(0).toUpperCase()+v.slice(1);
 }
 // Parrain : on vérifie son numéro en direct et on affiche son nom
 let paT=0;$("#nPa").addEventListener("input",()=>{clearTimeout(paT);paT=setTimeout(async()=>{const d=digits($("#nPa").value),o=$("#nPaOk");
@@ -290,6 +323,10 @@ let paT=0;$("#nPa").addEventListener("input",()=>{clearTimeout(paT);paT=setTimeo
   try{const l=await rpc("fid_chercher",{p_q:d}),x=l.find(c=>c.tel===d);o.className="pok "+(x?"ok":"no");
     o.textContent=x?`✓ ${nomF(x)} · 1 tampon chacun au premier burger`:"Aucune carte avec ce numéro"}catch{}},300)});
 $("#res").addEventListener("click",e=>{const b=e.target.closest(".row");if(b)openCli(b.dataset.id)});
+// Nombre de burgers de la commande pour un nouveau client (le bouton dit exactement ce qui va se passer)
+let NB=1;const nbSet=n=>{NB=Math.max(0,Math.min(8,n));$("#nNb").textContent=NB;$("#nGo").textContent=NB?`Créer la carte + ${NB} burger${NB>1?"s":""}`:"Créer la carte"};
+$("#nMoins").onclick=()=>nbSet(NB-1);$("#nPlus").onclick=()=>nbSet(NB+1);nbSet(1);
+const smsVis=()=>{$("#nSmsL").hidden=!($("#nJ").value&&$("#nA").value)};$("#nJ").onchange=smsVis;$("#nA").onchange=smsVis;
 $("#nGo").onclick=async()=>{
   const p=$("#nP").value.trim(),t=digits($("#nT").value),pa=digits($("#nPa").value);
   if(pa&&!/^0[1-9]\d{8}$/.test(pa)){toast("Numéro du parrain pas valable");$("#nPa").focus();return}
@@ -299,12 +336,17 @@ $("#nGo").onclick=async()=>{
   const dd=date2($("#nJ"),$("#nA"));if(!dd){toast(ERR.date);return}
   const b=$("#nGo");b.disabled=true;
   try{const r=await rpc("fid_creer",{p_prenom:p,p_initiale:$("#nI").value,p_tel:t,p_anniv_jour:dd[0],p_anniv_mois:dd[1],p_sms:$("#nSms").checked,p_parrain_tel:pa||null,p_par:who()});
-    ["#nP","#nI","#nT","#nPa"].forEach(s=>$(s).value="");$("#nPaOk").textContent="";$("#nJ").value="";$("#nA").value="";$("#nOk").checked=false;$("#nSms").checked=false;
-    show(r.client);toast(r.existe?"Ce numéro avait déjà une carte":"Carte créée · 2 tampons offerts 🎁");if(!r.existe)setTimeout(qr,500)}
+    ["#nP","#nI","#nT","#nPa"].forEach(s=>$(s).value="");$("#nPaOk").textContent="";$("#nJ").value="";$("#nA").value="";$("#nOk").checked=false;$("#nSms").checked=false;smsVis();
+    if(r.existe){show(r.client);toast("Ce numéro avait déjà une carte");return}
+    // Carte créée : on ajoute tout de suite les burgers de la commande, puis on montre le QR à scanner
+    CUR=r.client;let c=r.client;const n=NB;nbSet(1);
+    if(n)try{c=await rpc("fid_tamponner",{p_client:c.id,p_nb:n,p_par:who()})}catch(e){fail(e)}
+    show(c,0);addRec(c);if(n)doneMsg(c,n,"Carte créée · ");else toast("Carte créée · 2 tampons offerts 🎁");setTimeout(qr,900)}
   catch(e){fail(e)}finally{b.disabled=false}
 };
-function showSearch(){CUR=null;$("#vFiche").hidden=true;$("#vSearch").hidden=false;$("#q").value="";$("#res").innerHTML="";$("#newCard").hidden=true}
-$("#fBack").onclick=()=>{showSearch();$("#q").focus()};
+function showSearch(){CUR=null;document.body.classList.remove("fiche");$("#vFiche").hidden=true;$("#vSearch").hidden=false;$("#q").value="";$("#res").innerHTML="";$("#newCard").hidden=true;$("#fDone").hidden=true;drawRec()}
+const nextCli=()=>{showSearch();scrollTo(0,0);$("#q").focus()};
+$("#fBack").onclick=nextCli;$("#fNext").onclick=nextCli;
 
 /* ---------- Fiche client ---------- */
 let CUR=null,busy=false;
@@ -312,6 +354,9 @@ async function openCli(id){try{show(await rpc("fid_fiche",{p_client:id}))}catch(
 const LAB={bienvenue:["👋","Bienvenue"],burger:["🍔","Burger"],offert:["🎁","Burger offert"],anniv:["🎂","Dessert anniversaire"],parrainage:["👥","Parrainage"]};
 function show(c,anim){
   if(!c){toast("Client introuvable");showSearch();return}
+  if(!CUR||CUR.id!==c.id){$("#fDone").hidden=true;$(".plus-n").hidden=false;addRec(c)}
+  if(!CUR||CUR.id!==c.id)scrollTo(0,0);
+  document.body.classList.add("fiche");
   CUR=c;$("#tCli").setAttribute("aria-pressed",true);$("#tBil").setAttribute("aria-pressed",false);
   $("#vSearch").hidden=true;$("#vBilan").hidden=true;$("#vFiche").hidden=false;
   $("#fAv").textContent=c.prenom[0].toUpperCase();$("#fNom").textContent=nomF(c);
@@ -323,7 +368,7 @@ function show(c,anim){
     return `<div class="stamp${i<full?" on":""}${nw?" new":""}${i===9?" gift":""}"${nw?` style="animation-delay:${(i-anim)*140}ms"`:""}>${i<full?"🍔":i===9?"🎁":""}</div>`}).join("");
   if(anim!=null&&full>anim&&navigator.vibrate)try{navigator.vibrate(Array.from({length:full-anim},()=>[25,115]).flat())}catch{}
   $("#fStat").innerHTML=s>=10?`🎉 Burger offert disponible !<small>${s>10?`Et déjà ${s-10} tampon${s-10>1?"s":""} pour la carte suivante · `:""}Total : ${c.burgers} burgers achetés</small>`
-    :`Plus que ${10-s} tampon${10-s>1?"s":""} avant son burger offert<small>${c.burgers} burger${c.burgers>1?"s":""} acheté${c.burgers>1?"s":""} · ${c.offerts} offert${c.offerts>1?"s":""}${c.aujourdhui?` · aujourd'hui : ${c.aujourdhui} / 8`:""}</small>`;
+    :`Plus que ${10-s} tampon${10-s>1?"s":""} avant son burger offert<small>${c.burgers} burger${c.burgers>1?"s":""} acheté${c.burgers>1?"s":""} · ${c.offerts} offert${c.offerts>1?"s":""}${c.aujourdhui?` · aujourd'hui : ${c.aujourdhui}`:""}</small>`;
   $("#fGift").hidden=s<10;$("#fAnniv").hidden=!c.anniv_dispo;
   if(c.anniv_dispo)$("#fAnnivT").innerHTML=`🎂 Anniversaire : <b>dessert offert</b> jusqu'au ${dmF(c.anniv_fin)}.${c.sms?`<br><small>${c.sms.statut==="envoye"?"SMS envoyé ✓":"SMS à envoyer à la main (Bilan)"}</small>`:""}`;
   $("#fHist").innerHTML=c.historique.length?c.historique.map(h=>{const[e,l]=LAB[h.sorte];
@@ -333,8 +378,17 @@ function show(c,anim){
 }
 async function act(fn,args,msg){if(busy||!CUR)return;busy=true;const before=CUR.solde;
   try{const c=await rpc(fn,{p_client:CUR.id,...args});show(c,Math.min(before,10));if(msg)toast(typeof msg==="function"?msg(c):msg)}catch(e){fail(e)}finally{busy=false}}
-document.querySelectorAll(".plus .btn").forEach(b=>b.onclick=()=>{const n=+b.dataset.n;
-  act("fid_tamponner",{p_nb:n,p_par:who()},c=>`+${n} tampon${n>1?"s":""} ✓${c.solde>=10?" · 🎁 burger offert disponible !":""}`)});
+// Bandeau après un tampon : ce qui vient d'être fait, « Annuler » en un toucher, « Client suivant »
+let LAST=null;
+function doneMsg(c,n,pre=""){const h=c.historique.find(x=>x.sorte==="burger"&&!x.annule);LAST=h&&h.annulable?h.id:null;
+  $("#fDoneT").textContent=`${pre}✓ +${n} tampon${n>1?"s":""} pour ${c.prenom}${c.solde>=10?" · 🎁 burger offert disponible !":` · ${Math.min(c.solde,10)}/10`}`;
+  $("#fUndo").hidden=!LAST;$("#fDone").hidden=false;$(".plus-n").hidden=true;
+  // Le bandeau reste visible au-dessus de la barre du bas
+  requestAnimationFrame(()=>{const r=$("#fDone").getBoundingClientRect(),lim=innerHeight-100;if(r.bottom>lim)scrollBy({top:r.bottom-lim,behavior:"smooth"})})}
+document.querySelectorAll(".plus .btn").forEach(b=>b.onclick=async()=>{const n=+b.dataset.n;
+  const avant=CUR&&CUR.solde;await act("fid_tamponner",{p_nb:n,p_par:who()});if(CUR&&CUR.solde!==avant)doneMsg(CUR,n)});
+$("#fUndo").onclick=async()=>{if(!LAST||busy)return;busy=true;
+  try{show(await rpc("fid_annuler",{p_mvt:LAST,p_par:who()}));$("#fDone").hidden=true;toast("Annulé ✓")}catch(e){fail(e)}finally{busy=false}};
 $("#fGift").onclick=()=>confirmBox("🎁 Offrir le burger ?",`${esc(CUR.prenom)} a ${CUR.solde} tampons. On en retire 10.`,"Oui, burger offert",()=>act("fid_offrir",{p_par:who()},"Burger offert ✓ · bon appétit !"));
 $("#fAnnivGo").onclick=()=>act("fid_anniv",{p_par:who()},"Dessert d'anniversaire noté ✓");
 $("#fHist").addEventListener("click",e=>{const b=e.target.closest("[data-x]");if(!b||busy)return;
@@ -398,7 +452,7 @@ async function bilan(){
 }
 $("#bil").addEventListener("click",e=>{const b=e.target.closest("button.l");if(b)openCli(b.dataset.id)});
 
-if(gate())$("#q").focus({preventScroll:true});
+if(gate()){drawRec();$("#q").focus({preventScroll:true})}
 // Changement de profil depuis la barre du haut : on revérifie
 addEventListener("storage",gate);document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")gate()});
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});

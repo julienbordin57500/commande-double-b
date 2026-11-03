@@ -126,6 +126,13 @@ a{color:inherit}
 
   <button class="bell-cta" id="news" type="button" hidden><em aria-hidden="true">🛎️</em><span id="newsT"></span><b aria-hidden="true">›</b></button>
 
+  <a class="card c4" href="fidelite.html" id="cFid" hidden>
+    <div class="card-h"><span class="ico" aria-hidden="true">⭐</span><h2>Fidélité</h2><span class="go" aria-hidden="true">›</span></div>
+    <div class="empty">Retrouver un client, ajouter ses tampons, offrir son burger.</div>
+  </a>
+  <script>/* Cartes de fidélité : visibles seulement sur le profil Julien pour l'instant */
+  try{document.getElementById("cFid").hidden=!(window.Profil&&Profil.get()==="julien")}catch(e){}</script>
+
   <div class="card ouv" id="cOuv">
     <div class="card-h"><span class="ico" aria-hidden="true">🕒</span><h2 id="ouvT">Aujourd'hui</h2></div>
     <div class="ouvp" id="ouvP"></div>
@@ -152,12 +159,6 @@ a{color:inherit}
     <div id="hier"><div class="empty">Chargement…</div></div>
   </a>
 
-  <a class="card c4" href="fidelite.html" id="cFid" hidden>
-    <div class="card-h"><span class="ico" aria-hidden="true">⭐</span><h2>Fidélité</h2><span class="go" aria-hidden="true">›</span></div>
-    <div class="empty">Retrouver un client, ajouter ses tampons, offrir son burger.</div>
-  </a>
-  <script>/* Cartes de fidélité : visibles seulement sur le profil Julien pour l'instant */
-  try{document.getElementById("cFid").hidden=!(window.Profil&&Profil.get()==="julien")}catch(e){}</script>
 </div>
 
 <script>

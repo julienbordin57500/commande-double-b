@@ -6,7 +6,7 @@
 <meta name="referrer" content="no-referrer">
 <title>Ma carte fidélité · Double B</title>
 <meta name="description" content="Ta carte fidélité du Double B : 1 burger = 1 tampon, 10 tampons = 1 burger offert.">
-<meta name="theme-color" content="#17120b">
+<meta name="theme-color" content="#0c0a07">
 <meta name="apple-mobile-web-app-title" content="Double B">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png" type="image/png">
@@ -17,12 +17,13 @@
 /* Carte fidélité du client : elle ne fait qu'afficher. Les tampons sont ajoutés uniquement par l'équipe, au restaurant.
    Chaque nouveau tampon « claque » sur la carte (même en direct, si le client la regarde pendant qu'on tamponne). */
 :root{
-  --bg:#f4f0e6; --surface:#ffffff; --line:#e6e1d5; --fg:#1d1b17; --muted:#6f695d; --gold:#f2a516; --gold2:#ffd36b; --go:#2f7d4f; --go-soft:#e3f2e8;
-  --display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif; --body:"Figtree","Segoe UI",system-ui,sans-serif; color-scheme:light}
-@media (prefers-color-scheme: dark){:root{--bg:#0f0d0a; --surface:#1c1915; --line:#322e27; --fg:#f3efe5; --muted:#a69f90; --go:#5fbf86; --go-soft:#16301f; color-scheme:dark}}
+  --bg:#0c0a07; --surface:#16120c; --surface2:#1d1810; --line:rgba(242,179,58,.16); --line2:rgba(242,179,58,.32);
+  --fg:#f6ecd6; --muted:#a8987a; --gold:#f2b33a; --gold2:#ffd36b; --gold3:#fff1c2; --ok:#4fd08a; --ko:#e2685a;
+  --display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif; --body:"Figtree","Segoe UI",system-ui,sans-serif; color-scheme:dark}
+body{background:radial-gradient(120% 60% at 50% -10%,#2a1f0e 0%,var(--bg) 60%) fixed,var(--bg)}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;overflow-x:hidden;overflow-x:clip}
-body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.4;overflow-x:hidden;overflow-x:clip;
+body{margin:0;min-height:100vh;color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.4;overflow-x:hidden;overflow-x:clip;
   padding:max(18px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 [hidden]{display:none!important}
 .wrap{max-width:430px;margin:0 auto}
@@ -40,8 +41,11 @@ body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:
   box-shadow:0 24px 50px -20px rgba(40,22,0,.7),inset 0 0 0 1px var(--mt),inset 0 1px 0 rgba(255,255,255,.16)}
 .card.vip{box-shadow:0 24px 50px -18px rgba(120,80,0,.8),0 0 0 1.5px rgba(255,215,90,.55),inset 0 1px 0 rgba(255,246,207,.3)}
 .card.vip::after{background:linear-gradient(90deg,transparent,rgba(255,240,190,.3),transparent);animation-duration:4s}
-.card::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.09;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='%23ffd36b' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M14 22a14 9 0 0 1 28 0z'/%3E%3Cpath d='M13 27h30M14 32h28a3 3 0 0 1-3 4H17a3 3 0 0 1-3-4z'/%3E%3C/g%3E%3C/svg%3E");background-size:56px;transform:rotate(-12deg) scale(1.4)}
+.card::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.11;pointer-events:none;
+  background:repeating-radial-gradient(circle at 118% -18%,transparent 0 7px,var(--m2) 7px 8px),repeating-radial-gradient(circle at -25% 125%,transparent 0 7px,var(--m2) 7px 8px);
+  -webkit-mask-image:linear-gradient(115deg,#000 0%,transparent 42%,transparent 58%,#000 100%);mask-image:linear-gradient(115deg,#000 0%,transparent 42%,transparent 58%,#000 100%)}
+.wm{position:absolute;right:-14px;bottom:-78px;z-index:-1;pointer-events:none;font-family:var(--display);font-weight:800;font-size:250px;line-height:1;letter-spacing:-10px;
+  color:transparent;-webkit-text-stroke:1.2px var(--mt);opacity:.6;user-select:none}
 /* Reflet qui passe sur la carte de temps en temps */
 .card::after{content:"";position:absolute;top:-50%;left:-60%;width:40%;height:200%;z-index:2;pointer-events:none;transform:rotate(20deg);
   background:linear-gradient(90deg,transparent,rgba(255,236,190,.16),transparent);animation:sheen 6s ease-in-out 1.5s infinite}
@@ -96,14 +100,14 @@ body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:
 .bar{height:10px;border-radius:5px;background:rgba(255,211,107,.14);overflow:hidden;margin-top:8px}
 .bar i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,#f2a516,#ffd36b);box-shadow:0 0 12px rgba(255,200,80,.6);transition:width .5s cubic-bezier(.3,.9,.3,1)}
 
-.msg{position:relative;overflow:hidden;margin-top:14px;padding:18px 16px;border-radius:24px;text-align:center;color:#3a2000;
-  background:linear-gradient(135deg,#fff2d2 0%,#ffd88a 60%,#ffc25a 100%);box-shadow:0 12px 26px -16px rgba(200,120,0,.75),inset 0 1px 0 rgba(255,255,255,.6)}
-.msg::before{content:"🍔";position:absolute;right:-10px;bottom:-22px;font-size:92px;opacity:.16;transform:rotate(-14deg)}
-.msg b{position:relative;display:block;font-family:var(--display);font-size:22px;font-weight:800;line-height:1.2}
-.msg span{position:relative;display:block;color:#6b4300;font-weight:700;margin-top:6px;font-size:15px}
-.msg.win{color:#0f3a20;background:linear-gradient(135deg,#dff7e6 0%,#9fe3b5 60%,#62c98a 100%);box-shadow:0 12px 26px -16px rgba(30,130,70,.8),inset 0 1px 0 rgba(255,255,255,.6)}
-.msg.win span{color:#1d5534}.msg.win::before{content:"🎁"}
-.msg.win b{font-size:24px}
+.msg{position:relative;overflow:hidden;margin-top:14px;padding:18px 16px 17px;border-radius:24px;text-align:center;
+  background:linear-gradient(160deg,var(--surface2),var(--surface));border:1px solid var(--line2);box-shadow:0 14px 30px -18px rgba(0,0,0,.9),inset 0 1px 0 rgba(255,236,190,.08)}
+.msg::before{content:"";position:absolute;right:-22px;bottom:-18px;width:150px;height:125px;opacity:.13;transform:rotate(-12deg);background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 100'%3E%3Cg fill='none' stroke='%23f2b33a' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 44C14 22 34 10 60 10s46 12 46 34z'/%3E%3Cpath d='M38 24l2 2M58 20l1 2M78 25l2 2M48 33l1 2M70 32l2 2'/%3E%3Cpath d='M10 54c8 6 14-4 22 2s14-4 22 2 14-4 22 2 14-4 22 2 12-2 12-2'/%3E%3Cpath d='M12 66h96'/%3E%3Cpath d='M14 76h92a4 4 0 0 1-4 12H18a4 4 0 0 1-4-12z'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat;pointer-events:none}
+.msg b{position:relative;display:block;font-family:var(--display);font-size:22px;font-weight:800;line-height:1.2;
+  background:linear-gradient(180deg,var(--gold3),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+.msg span{position:relative;display:block;color:var(--muted);font-weight:600;margin-top:6px;font-size:15px}
+.msg.win{border-color:rgba(255,211,107,.6);box-shadow:0 0 0 1px rgba(255,211,107,.25),0 16px 34px -14px rgba(242,179,58,.45)}
+.msg.win b{font-size:25px}
 .show{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:58px;margin-top:12px;border:0;border-radius:17px;cursor:pointer;
   font:inherit;font-weight:800;font-size:18px;color:#2a1d00;background:linear-gradient(180deg,#ffd36b,#f2a516);box-shadow:0 10px 22px -10px rgba(200,120,0,.8),inset 0 1px 0 rgba(255,255,255,.5);
   animation:breathe 2.2s ease-in-out infinite}
@@ -118,31 +122,27 @@ body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:
 .ticket button{margin-top:10px;height:52px;padding:0 26px;border-radius:15px;border:2px solid rgba(42,29,0,.25);background:transparent;font:inherit;font-weight:800;font-size:17px;color:inherit}
 .ticket .clock{font-variant-numeric:tabular-nums;font-weight:800;font-size:15px;opacity:.7}
 @keyframes fIn{from{opacity:0}}
-.bday{margin-top:12px;padding:16px;border-radius:22px;text-align:center;color:#3a1d00;
-  background:linear-gradient(135deg,#ffe1a8,#ffc0cb 55%,#e9c6ff);box-shadow:0 10px 24px -14px rgba(160,60,80,.6)}
-.bday b{display:block;font-family:var(--display);font-size:21px;font-weight:800}
-.bday span{display:block;font-weight:700;margin-top:4px;font-size:15px}
+.bday{position:relative;overflow:hidden;margin-top:12px;padding:16px;border-radius:24px;text-align:center;
+  background:linear-gradient(160deg,#2a1b17,var(--surface));border:1px solid rgba(255,190,160,.35);box-shadow:0 14px 30px -18px rgba(0,0,0,.9)}
+.bday b{display:block;font-family:var(--display);font-size:21px;font-weight:800;background:linear-gradient(180deg,#ffe3d3,#f6b48f);-webkit-background-clip:text;background-clip:text;color:transparent}
+.bday span{display:block;font-weight:600;margin-top:4px;font-size:15px;color:#d9b9a8}
 .bday .e{display:inline-block;font-size:34px;animation:float 2.4s ease-in-out infinite}
 @keyframes float{50%{transform:translateY(-6px) rotate(6deg)}}
 .kp{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px}
-.kp div{position:relative;overflow:hidden;border-radius:20px;padding:12px 8px 11px;text-align:center;color:#fff;box-shadow:0 10px 20px -14px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.3)}
-.kp div:nth-child(1){background:linear-gradient(160deg,#ffb53b,#e8740c)}
-.kp div:nth-child(2){background:linear-gradient(160deg,#4fd08a,#1f8a51)}
-.kp div:nth-child(3){background:linear-gradient(160deg,#8d7bff,#5a3fd6)}
-.kp div::after{content:"";position:absolute;top:-30px;right:-30px;width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.14)}
-.kp i{display:block;font-style:normal;font-size:20px;line-height:1;margin-bottom:5px}
-.kp small{position:relative;display:block;font-size:10.5px;font-weight:800;color:rgba(255,255,255,.88);text-transform:uppercase;letter-spacing:.05em}
-.kp b{position:relative;display:block;font-family:var(--display);font-size:25px;font-weight:800;margin-top:2px;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,.2)}
-.open{display:flex;align-items:center;gap:8px;margin-top:12px;padding:10px 10px 10px 14px;border-radius:20px;font-size:14px;font-weight:800;
-  background:color-mix(in srgb,var(--st,#3fbf6f) 13%,var(--surface));border:1.5px solid color-mix(in srgb,var(--st,#3fbf6f) 40%,transparent)}
-.open.ferme{--st:#d65a4a}
-.open .t{flex:1;min-width:0;line-height:1.25}
-.open .t i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:0;background:var(--st,#3fbf6f);box-shadow:0 0 0 3px color-mix(in srgb,var(--st,#3fbf6f) 25%,transparent)}
-.open a{flex:none;height:40px;padding:0 12px;border-radius:13px;display:flex;align-items:center;gap:5px;text-decoration:none;color:#fff;font-weight:800;font-size:13.5px;
-  background:linear-gradient(160deg,#4fd08a,#1f8a51);box-shadow:0 6px 12px -8px rgba(0,0,0,.6)}
-.open a+a{background:linear-gradient(160deg,#5aa8ff,#2f6fd6)}
+.kp div{border-radius:20px;padding:12px 8px 11px;text-align:center;background:var(--surface);border:1px solid var(--line)}
+.kp i{display:grid;place-items:center;width:36px;height:36px;margin:0 auto 7px;border-radius:50%;font-style:normal;font-size:18px;
+  background:radial-gradient(circle at 35% 30%,rgba(255,211,107,.3),rgba(242,179,58,.1));box-shadow:inset 0 0 0 1px var(--line2)}
+.kp small{display:block;font-size:10.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.kp b{display:block;font-family:var(--display);font-size:24px;font-weight:800;margin-top:2px;white-space:nowrap;color:var(--fg)}
+.open{display:flex;align-items:center;gap:8px;margin-top:12px;padding:10px 10px 10px 14px;border-radius:20px;font-size:14px;font-weight:700;background:var(--surface);border:1px solid var(--line)}
+.open .t{flex:1;min-width:0;line-height:1.25;color:var(--fg)}
+.open .t i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:1px;background:var(--ok);box-shadow:0 0 0 3px rgba(79,208,138,.18)}
+.open.ferme .t i{background:var(--ko);box-shadow:0 0 0 3px rgba(226,104,90,.18)}
+.open a{flex:none;height:40px;padding:0 12px;border-radius:13px;display:flex;align-items:center;gap:5px;text-decoration:none;font-weight:800;font-size:13.5px;
+  color:#241700;background:linear-gradient(180deg,var(--gold2),var(--gold))}
+.open a+a{color:var(--gold2);background:transparent;border:1px solid var(--line2)}
 .how{margin-top:14px;border-radius:16px;color:var(--muted)}
-.how summary{list-style:none;cursor:pointer;display:block;width:max-content;margin:0 auto;font-size:13.5px;font-weight:800;padding:9px 16px;border-radius:999px;color:var(--muted);background:var(--surface);border:1px solid var(--line)}
+.how summary{list-style:none;cursor:pointer;display:block;width:max-content;margin:0 auto;font-size:13.5px;font-weight:700;padding:9px 16px;border-radius:999px;color:var(--muted);background:transparent;border:1px solid var(--line)}
 .how summary::-webkit-details-marker{display:none}
 .how[open] summary{color:var(--fg)}
 .how p{display:flex;gap:10px;margin:6px 4px 0;color:var(--muted);font-weight:600;font-size:13.5px}
@@ -168,7 +168,7 @@ body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:
   <div id="none" class="none" hidden><b>🍔</b>Carte introuvable.<br>Demande au Double B de te renvoyer ta carte.</div>
 
   <div id="ok" hidden>
-    <div class="stage"><div class="card enter" id="card">
+    <div class="stage"><div class="card enter" id="card"><span class="wm" aria-hidden="true">2B</span>
       <div class="top"><img src="icone-appli.svg" alt="" width="40" height="40"><div><b>Double B</b><small>Carte fidélité</small></div><span class="lvl" id="lvl"></span></div>
       <div class="name" id="nom"></div>
       <div class="since" id="depuis"></div>
@@ -186,8 +186,8 @@ body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:
       <div><i>📅</i><small>Dernière visite</small><b id="kl" style="font-size:18px;line-height:30px">—</b></div>
     </div>
     <div class="open" id="open" hidden><span class="t" id="openT"></span>
-      <a href="tel:+33613100503" aria-label="Appeler le Double B">📞 Appeler</a>
-      <a href="https://maps.google.com/?q=Double+B,+59+avenue+Foch,+57730+Folschviller" target="_blank" rel="noopener" aria-label="Itinéraire">📍 Y aller</a></div>
+      <a href="tel:+33613100503" aria-label="Appeler le Double B">Appeler</a>
+      <a href="https://maps.google.com/?q=Double+B,+59+avenue+Foch,+57730+Folschviller" target="_blank" rel="noopener" aria-label="Itinéraire">Y aller</a></div>
     <details class="how"><summary>ℹ️ Les règles de la carte</summary>
       <p><em>🍔</em><span><b>1 burger acheté = 1 tampon</b>, en donnant ton numéro.</span></p>
       <p><em>🎁</em><span><b>10 tampons = 1 burger offert</b>, celui que tu veux.</span></p>
@@ -232,11 +232,11 @@ function draw(c){
   ["bronze","argent","vip"].forEach(k=>card.classList.toggle(k,k===n[1]));
   const lv=$("#lvl");lv.textContent=n[2];
   const nx=NIV.slice().reverse().find(x=>x[0]>c.offerts);
-  $("#next").textContent=nx?`Encore ${nx[0]-c.offerts} carte${nx[0]-c.offerts>1?"s":""} complète${nx[0]-c.offerts>1?"s":""} pour devenir ${nx[2]}`:"Tu es au plus haut niveau. Merci pour ta fidélité !";
+  $("#next").textContent=nx?`Encore ${nx[0]-c.offerts} carte${nx[0]-c.offerts>1?"s":""} complète${nx[0]-c.offerts>1?"s":""} pour devenir ${nx[2]}`:"Tu es au plus haut niveau. Merci pour ta fidélité !";
   // Nouveau niveau atteint depuis la dernière visite : le badge éclate et un petit bandeau félicite
   const avant=shown?shown.offerts:vu?vu.offerts:c.offerts;
   if(niv(avant)!==n&&c.offerts>avant&&!calme){lv.classList.remove("up");void lv.offsetWidth;lv.classList.add("up");
-    const t=document.createElement("div");t.className="toastlvl";t.textContent=`Bravo ${c.prenom}, tu passes ${n[2]} !`;document.body.appendChild(t);setTimeout(()=>t.remove(),3600);setTimeout(confetti,500)}
+    const t=document.createElement("div");t.className="toastlvl";t.textContent=`Bravo ${c.prenom}, tu passes ${n[2]} !`;document.body.appendChild(t);setTimeout(()=>t.remove(),3600);setTimeout(confetti,500)}
   $("#depuis").textContent="Membre depuis "+new Date(c.depuis).toLocaleDateString("fr-FR",{month:"long",year:"numeric"})+" · carte n°"+(c.offerts+1);
   const st=$("#st");st.innerHTML="";
   const neufs=[];
@@ -262,22 +262,22 @@ function draw(c){
   const m=$("#msg");m.className="msg"+(s>=10?" win":"");
   // Petit mot personnalisé selon où en est le client
   const p=c.prenom,absent=c.derniere&&(Date.now()-new Date(c.derniere))/864e5>30;
-  m.innerHTML=s>=10?`<b>Bravo ${p} ! 🎉</b><span>Ton burger est offert : donne ton numéro à ta prochaine commande, il est pour nous.</span>`
-    :s===9?`<b>Plus qu'un burger, ${p}, on t'attend ! 🔥</b><span>Le prochain tampon te fait gagner ton burger offert.</span>`
-    :absent?`<b>Ça fait longtemps, ${p} ! 🙂</b><span>Encore ${10-s} burgers avant ton burger offert. On a hâte de te revoir.</span>`
-    :s===0?`<b>Nouvelle carte, ${p} ! C'est reparti 🍔</b><span>10 tampons et le burger suivant est pour nous.</span>`
-    :s>=7?`<b>Tu y es presque, ${p} !</b><span>Plus que ${10-s} burgers avant ton burger offert.</span>`
-    :s>=5?`<b>Plus de la moitié, ${p} ! 💪</b><span>Encore ${10-s} burgers et le suivant est offert.</span>`
-    :`<b>Bien parti, ${p} !</b><span>Encore ${10-s} burgers et le suivant est offert.</span>`;
+  m.innerHTML=s>=10?`<b>Bravo ${p} ! 🎉</b><span>Ton burger est offert : donne ton numéro à ta prochaine commande, il est pour nous.</span>`
+    :s===9?`<b>Plus qu'un burger, ${p}, on t'attend ! 🔥</b><span>Le prochain tampon te fait gagner ton burger offert.</span>`
+    :absent?`<b>Ça fait longtemps, ${p} ! 🙂</b><span>Encore ${10-s} burgers avant ton burger offert. On a hâte de te revoir.</span>`
+    :s===0?`<b>Nouvelle carte, ${p} ! C'est reparti 🍔</b><span>10 tampons et le burger suivant est pour nous.</span>`
+    :s>=7?`<b>Tu y es presque, ${p} !</b><span>Plus que ${10-s} burgers avant ton burger offert.</span>`
+    :s>=5?`<b>Plus de la moitié, ${p} ! 💪</b><span>Encore ${10-s} burgers et le suivant est offert.</span>`
+    :`<b>Bien parti, ${p} !</b><span>Encore ${10-s} burgers et le suivant est offert.</span>`;
   $("#showGo").hidden=s<10;
   const b=$("#bday");b.hidden=!c.anniv;
-  if(c.anniv)b.innerHTML=`<span class="e">🎂</span><b>Joyeux anniversaire ${c.prenom.replace(/[<>&"]/g,"")} !</b><span>Un dessert t'est offert avec ta prochaine commande, jusqu'au ${dmF(c.anniv_fin)}.</span>`;
+  if(c.anniv)b.innerHTML=`<span class="e">🎂</span><b>Joyeux anniversaire ${c.prenom.replace(/[<>&"]/g,"")} !</b><span>Un dessert t'est offert avec ta prochaine commande, jusqu'au ${dmF(c.anniv_fin)}.</span>`;
   $("#kb").textContent=c.burgers;$("#ko").textContent=c.offerts;
   $("#kl").textContent=c.derniere?new Date(c.derniere).toLocaleDateString("fr-FR",{day:"numeric",month:"short"}):"—";
   shown={full,offerts:c.offerts,anniv:c.anniv};
   setVu({solde:s,offerts:c.offerts});
 }
-// Ouvert aujourd'hui ? (jours d'ouverture de l'appli du restaurant)
+// Ouvert aujourd'hui ? (jours d'ouverture de l'appli du restaurant)
 function drawOpen(o){if(!o)return;const h=new Date().getHours(),el=$("#openT");$("#open").hidden=false;
   const vert=`<i></i>`,rouge=`<i></i>`;
   const midi=o.midi&&h<14,soir=o.soir&&h<22;$("#open").classList.toggle("ferme",!(midi||soir));
@@ -287,7 +287,7 @@ function drawOpen(o){if(!o)return;const h=new Date().getHours(),el=$("#openT");$
   else el.innerHTML=rouge+"Fermé pour le moment"}
 // Ticket plein écran : le client le montre au serveur (avec l'heure qui tourne : impossible de montrer une capture d'écran)
 $("#showGo").onclick=()=>{const t=document.createElement("div");t.className="ticket";t.setAttribute("role","dialog");
-  t.innerHTML=`<div class="big">🍔</div><h2>Burger offert !</h2><div class="who"></div><p>Montre cet écran au serveur avec ta commande.</p><div class="clock" id="clk"></div><button type="button">Fermer</button>`;
+  t.innerHTML=`<div class="big">🍔</div><h2>Burger offert !</h2><div class="who"></div><p>Montre cet écran au serveur avec ta commande.</p><div class="clock" id="clk"></div><button type="button">Fermer</button>`;
   t.querySelector(".who").textContent=PRENOM;document.body.appendChild(t);confetti();
   const tick=()=>{const e=t.querySelector("#clk");if(e)e.textContent=new Date().toLocaleString("fr-FR",{weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit",second:"2-digit"})};
   tick();const iv=setInterval(tick,1000);t.querySelector("button").onclick=()=>{clearInterval(iv);t.remove()}};
@@ -296,7 +296,7 @@ $("#showGo").onclick=()=>{const t=document.createElement("div");t.className="tic
   $("#st").addEventListener("click",e=>{const k=e.target.closest(".coin");if(!k)return;k.classList.remove("new","wig");void k.offsetWidth;k.classList.add("wig");try{navigator.vibrate&&navigator.vibrate(15)}catch{}});
 })();
 // Compteur « tampons sur 10 » et barre : avancent au rythme des coups de tampon
-function count(n,quiet){$("#leftT").textContent=n>=10?"Carte complète !":"Tampons";
+function count(n,quiet){$("#leftT").textContent=n>=10?"Carte complète !":"Tampons";
   const el=$("#leftN");el.textContent=Math.min(n,10)+" / 10";$("#bar").style.width=Math.min(n,10)*10+"%";
   if(!quiet&&!calme){el.classList.remove("bump");void el.offsetWidth;el.classList.add("bump")}}
 function confetti(){if(calme)return;const w=document.createElement("div");w.className="conf";
