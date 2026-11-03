@@ -72,9 +72,8 @@ header.top{display:flex;align-items:center;gap:14px}
 .kpi b{display:block;font-family:var(--display);font-size:24px;font-weight:800;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .kpi em{display:block;font-style:normal;font-size:12px;color:var(--muted);font-weight:600;margin-top:3px;line-height:1.5}
 .cmpv{font-weight:800;color:var(--fg)} .cmpv.up{color:var(--go)} .cmpv.down{color:var(--danger)}
-.chartbtn{margin-top:10px;width:100%;height:46px;border-radius:14px;border:1px solid var(--line);background:var(--surface);font-weight:700;font-size:15px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:8px}
-.chartbtn .cv{transition:transform .2s}.chartbtn[aria-expanded="true"] .cv{transform:rotate(180deg)}
-.chartbox{margin-top:8px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px 10px 6px}
+.cht{font-size:19px;font-weight:800;margin:2px 4px 8px}
+.chartbox{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px 10px 6px}
 /* Graphique : tous les jours côte à côte. On touche n'importe où (le jour le plus proche est choisi),
    on peut glisser le doigt, et les flèches avancent d'un jour */
 .chopt{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 2px 8px}
@@ -117,9 +116,9 @@ header.top{display:flex;align-items:center;gap:14px}
 .rl .v{font-variant-numeric:tabular-nums;font-weight:800;white-space:nowrap}
 .rl .tr{grid-column:1/-1;height:8px;border-radius:4px;background:var(--sunken);overflow:hidden}
 .rl .tr i{display:block;height:100%;border-radius:4px;background:var(--c)}
-.rl.tot{border-top:2px solid var(--fg);margin-top:6px;padding-top:8px;font-size:17px}
-.vh{margin:16px 0 4px;font-size:15px;font-weight:800}
-.rl.tot small{grid-column:1/-1;font-weight:600;color:var(--muted);font-size:13px}
+.rl.rtot{border-top:2px solid var(--fg);margin-top:6px;padding-top:8px;font-size:17px}
+.rl .pc{color:var(--muted);font-weight:700}
+.rl.rtot small{grid-column:1/-1;font-weight:600;color:var(--muted);font-size:13px}
 .prs{margin-top:12px;display:flex;flex-direction:column;gap:8px}
 .prs h4{margin:0;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 .prs .vide{color:var(--muted);font-size:14px;margin:0}
@@ -152,13 +151,7 @@ td.pt{font-size:13px} td.pt.fut{color:var(--muted)} .compact i.p{color:var(--fg)
 .grp.midi{--c:var(--midi);--soft:var(--midi-soft)} .grp.soir{--c:var(--soir);--soft:var(--soir-soft)} .grp.autre{--c:var(--mamie);--soft:var(--mamie-soft)}
 .fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .fields.one{grid-template-columns:1fr}
-/* Burgers par type : 4 cases côte à côte ; le burger du mois juste dessous */
-.grp .fields+.bgs,.grp .bgs+.fields{margin-top:8px}
-.bgt{display:block;font-size:13px;font-weight:800;color:var(--c);margin:0 0 4px}
-.fields.four{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
-.fields.four label{justify-content:center;text-align:center;font-size:12px;min-height:30px}
-.fields.four input{font-size:17px;padding:0 2px}
-/* Plats de la carte : un dépliant par service, fermé par défaut ; une ligne par plat, la case à droite */
+/* Plats vendus : un dépliant par service (plats du jour, burgers, carte), fermé par défaut, sur 2 colonnes */
 .carte{margin-top:10px;border-radius:12px;background:var(--surface);border:1.5px solid color-mix(in srgb,var(--c) 30%,transparent)}
 .carte>summary{list-style:none;cursor:pointer;min-height:50px;padding:0 12px;display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px;user-select:none}
 .carte>summary::-webkit-details-marker{display:none}
@@ -166,14 +159,13 @@ td.pt{font-size:13px} td.pt.fut{color:var(--muted)} .compact i.p{color:var(--fg)
 .carte>summary em{font-style:normal;font-size:13px;font-weight:700;color:var(--muted)}
 .carte>summary::after{content:"›";font-size:22px;color:var(--muted);transition:transform .2s}
 .carte[open]>summary::after{transform:rotate(90deg)}
-.cl{display:flex;flex-direction:column;border-top:1px solid var(--line)}
-.cr{display:grid;grid-template-columns:minmax(0,1fr) 84px;align-items:center;gap:10px;padding:6px 8px 6px 12px;border-bottom:1px solid var(--line)}
-.cr:last-child{border-bottom:0}
-.cr label,.cr>span{font-weight:700;font-size:15px}
-.cr input{width:100%;height:46px;border-radius:10px;border:1.5px solid var(--line);background:var(--sunken);text-align:center;font-weight:800;font-size:18px;font-variant-numeric:tabular-nums}
-.cr input:focus{border-color:var(--c);outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 25%,transparent)}
-.cr.sm{grid-template-columns:minmax(0,1fr) 84px 84px}
-.cr.sm label{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--muted)}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px;padding:10px 12px 12px;border-top:1px solid var(--line)}
+.cc{display:flex;flex-direction:column;gap:4px;min-width:0}.cc.w{grid-column:1/-1}
+.cc label{font-size:13px;font-weight:700;color:var(--muted);line-height:1.15}
+.cc input{width:100%;height:48px;border-radius:12px;border:1.5px solid var(--line);background:var(--sunken);text-align:center;font-weight:800;font-size:18px;font-variant-numeric:tabular-nums}
+.cc input:focus{border-color:var(--c);outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 25%,transparent)}
+.cg .ct{grid-column:1/-1;font-size:13px;font-weight:800;color:var(--c);margin-top:6px}
+.f.wide{grid-column:1/-1}
 .hbtn{display:block;margin:10px auto 0;min-height:44px;padding:0 16px;border-radius:12px;border:1px solid var(--line);background:var(--sunken);font-weight:700;font-size:14px;color:var(--fg)}
 .hl{display:flex;flex-direction:column;gap:10px;max-height:60vh;overflow:auto}
 .hl div{padding:10px 12px;border-radius:12px;background:var(--sunken);border:1px solid var(--line)}
@@ -377,13 +369,7 @@ html.vue-plats #vPlats{display:block} html.vue-plats #vMois{display:none}
 
   <div class="kpis" id="kpis"></div>
   <section class="rep" id="rep" aria-label="Le CA du mois en détail"></section>
-  <section class="rep" id="ventes" aria-label="Burgers et plats du jour du mois"></section>
-  <button class="chartbtn" id="chartBtn" type="button" aria-expanded="false">📈 Graphique du CA jour par jour <span class="cv">▾</span></button>
-  <div class="chartbox" id="chartBox" hidden>
-    <div class="chopt"><label class="sw"><input type="checkbox" id="split" autocomplete="off"><span class="tg"></span>Séparer midi et soir</label><span class="lg" id="lg" hidden><span><i style="background:var(--midi)"></i>Midi</span><span><i style="background:var(--soir)"></i>Soir</span></span></div>
-    <div class="tipr"><button class="arrow" id="cPrev" type="button" aria-label="Jour précédent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><div class="tip" id="tip" aria-live="polite">Touche le graphique pour voir le détail d'un jour.</div><button class="arrow" id="cNext" type="button" aria-label="Jour suivant"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button></div>
-    <div id="chart"></div></div>
-
+  <section class="rep" id="ventes" aria-label="Ce qui a été vendu ce mois-ci"></section>
   <section class="day" aria-label="Saisie du jour">
     <div class="dayhead">
       <button class="arrow" id="dPrev" aria-label="Jour précédent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
@@ -395,26 +381,21 @@ html.vue-plats #vPlats{display:block} html.vue-plats #vMois{display:none}
         <div class="fields">
           <div class="f"><label for="clients_midi_sp">🍽️ Sur place</label><div class="in"><input id="clients_midi_sp" data-k="clients_midi_sp" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
           <div class="f"><label for="clients_midi_emp">🥡 À emporter</label><div class="in"><input id="clients_midi_emp" data-k="clients_midi_emp" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
-          <div class="f"><label for="ca_midi">CA</label><div class="in"><input id="ca_midi" class="eur" data-k="ca_midi" inputmode="decimal" autocomplete="off" placeholder="–"><span>€</span></div></div>
-          <div class="f"><label for="plats_midi">🍲 Plats du jour</label><div class="in"><input id="plats_midi" data-k="plats_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
+          <div class="f wide"><label for="ca_midi">CA</label><div class="in"><input id="ca_midi" class="eur" data-k="ca_midi" inputmode="decimal" autocomplete="off" placeholder="–"><span>€</span></div></div>
         </div>
-        <div class="bgs"><span class="bgt">🍔 Burgers vendus</span><div class="fields four"><div class="f"><label for="bb_boeuf_midi">Bœuf</label><div class="in"><input id="bb_boeuf_midi" data-k="bb_boeuf_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div></div><div class="f"><label for="bb_poulet_midi">Poulet</label><div class="in"><input id="bb_poulet_midi" data-k="bb_poulet_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div></div><div class="f"><label for="bb_vege_midi">Végé</label><div class="in"><input id="bb_vege_midi" data-k="bb_vege_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div></div><div class="f"><label for="bb_pulled_midi">Pulled pork</label><div class="in"><input id="bb_pulled_midi" data-k="bb_pulled_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div></div></div></div>
-        <div class="fields"><div class="f"><label for="burgers_midi">⭐ Burger du mois</label><div class="in"><input id="burgers_midi" data-k="burgers_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div></div></div>
-        <details class="carte" data-sv="midi"><summary><span>📋 Plats de la carte</span><em id="cn_midi"></em></summary><div class="cl"><div class="cr sm"><span>Smash burger</span><label>Simple<input id="bb_smash1_midi" data-k="bb_smash1_midi" inputmode="numeric" autocomplete="off" placeholder="–"></label><label>Double<input id="bb_smash2_midi" data-k="bb_smash2_midi" inputmode="numeric" autocomplete="off" placeholder="–"></label></div><div class="cr"><label for="pc_curry_midi">Curry</label><input id="pc_curry_midi" data-k="pc_curry_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cr"><label for="pc_escalope_midi">Escalope de porc panée</label><input id="pc_escalope_midi" data-k="pc_escalope_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cr"><label for="pc_salade_midi">Salade du moment</label><input id="pc_salade_midi" data-k="pc_salade_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cr"><label for="pc_focaccia_midi">Focaccia</label><input id="pc_focaccia_midi" data-k="pc_focaccia_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cr"><label for="pc_enfant_midi">Menu enfant</label><input id="pc_enfant_midi" data-k="pc_enfant_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cr"><label for="pc_poutine_midi">Poutine</label><input id="pc_poutine_midi" data-k="pc_poutine_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cr"><label for="pc_frites_midi">Frites vosgiennes</label><input id="pc_frites_midi" data-k="pc_frites_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cr"><label for="pc_popcorn_midi">Popcorn de poulet</label><input id="pc_popcorn_midi" data-k="pc_popcorn_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div></div></details></div>
+        <details class="carte" data-sv="midi"><summary><span>🍽️ Plats vendus</span><em id="cn_midi"></em></summary><div class="cg"><div class="cc w"><label for="plats_midi">🍲 Plats du jour</label><input id="plats_midi" data-k="plats_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><span class="ct">🍔 Burgers</span><div class="cc"><label for="bb_boeuf_midi">Bœuf</label><input id="bb_boeuf_midi" data-k="bb_boeuf_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="bb_poulet_midi">Poulet</label><input id="bb_poulet_midi" data-k="bb_poulet_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="bb_vege_midi">Végé</label><input id="bb_vege_midi" data-k="bb_vege_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="bb_pulled_midi">Pulled pork</label><input id="bb_pulled_midi" data-k="bb_pulled_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="bb_smash1_midi">Smash simple</label><input id="bb_smash1_midi" data-k="bb_smash1_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="bb_smash2_midi">Smash double</label><input id="bb_smash2_midi" data-k="bb_smash2_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="burgers_midi">⭐ Burger du mois</label><input id="burgers_midi" data-k="burgers_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><span class="ct">📋 Carte</span><div class="cc"><label for="pc_curry_midi">Curry</label><input id="pc_curry_midi" data-k="pc_curry_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_escalope_midi">Escalope panée</label><input id="pc_escalope_midi" data-k="pc_escalope_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_salade_midi">Salade du moment</label><input id="pc_salade_midi" data-k="pc_salade_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_focaccia_midi">Focaccia</label><input id="pc_focaccia_midi" data-k="pc_focaccia_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_enfant_midi">Menu enfant</label><input id="pc_enfant_midi" data-k="pc_enfant_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_poutine_midi">Poutine</label><input id="pc_poutine_midi" data-k="pc_poutine_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_frites_midi">Frites vosgiennes</label><input id="pc_frites_midi" data-k="pc_frites_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_popcorn_midi">Popcorn de poulet</label><input id="pc_popcorn_midi" data-k="pc_popcorn_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div></div></details></div>
       <div class="grp soir"><h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>Soir</h4>
         <div class="fields">
           <div class="f"><label for="clients_soir_sp">🍽️ Sur place</label><div class="in"><input id="clients_soir_sp" data-k="clients_soir_sp" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
           <div class="f"><label for="clients_soir_emp">🥡 À emporter</label><div class="in"><input id="clients_soir_emp" data-k="clients_soir_emp" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
-          <div class="f"><label for="ca_jour">🧾 Total journée</label><div class="in"><input id="ca_jour" class="eur" data-k="ca_jour" inputmode="decimal" autocomplete="off" placeholder="–"><span>€</span></div></div>
-          <div class="f"><label for="plats_soir">🍲 Plats du jour</label><div class="in"><input id="plats_soir" data-k="plats_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
+          <div class="f wide"><label for="ca_jour">🧾 Total journée</label><div class="in"><input id="ca_jour" class="eur" data-k="ca_jour" inputmode="decimal" autocomplete="off" placeholder="–"><span>€</span></div></div>
         </div>
-        <div class="bgs"><span class="bgt">🍔 Burgers vendus</span><div class="fields four"><div class="f"><label for="bb_boeuf_soir">Bœuf</label><div class="in"><input id="bb_boeuf_soir" data-k="bb_boeuf_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div></div><div class="f"><label for="bb_poulet_soir">Poulet</label><div class="in"><input id="bb_poulet_soir" data-k="bb_poulet_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div></div><div class="f"><label for="bb_vege_soir">Végé</label><div class="in"><input id="bb_vege_soir" data-k="bb_vege_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div></div><div class="f"><label for="bb_pulled_soir">Pulled pork</label><div class="in"><input id="bb_pulled_soir" data-k="bb_pulled_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div></div></div></div>
-        <div class="fields"><div class="f"><label for="burgers_soir">⭐ Burger du mois</label><div class="in"><input id="burgers_soir" data-k="burgers_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div></div></div>
-        <details class="carte" data-sv="soir"><summary><span>📋 Plats de la carte</span><em id="cn_soir"></em></summary><div class="cl"><div class="cr sm"><span>Smash burger</span><label>Simple<input id="bb_smash1_soir" data-k="bb_smash1_soir" inputmode="numeric" autocomplete="off" placeholder="–"></label><label>Double<input id="bb_smash2_soir" data-k="bb_smash2_soir" inputmode="numeric" autocomplete="off" placeholder="–"></label></div><div class="cr"><label for="pc_curry_soir">Curry</label><input id="pc_curry_soir" data-k="pc_curry_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cr"><label for="pc_escalope_soir">Escalope de porc panée</label><input id="pc_escalope_soir" data-k="pc_escalope_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cr"><label for="pc_salade_soir">Salade du moment</label><input id="pc_salade_soir" data-k="pc_salade_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cr"><label for="pc_focaccia_soir">Focaccia</label><input id="pc_focaccia_soir" data-k="pc_focaccia_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cr"><label for="pc_enfant_soir">Menu enfant</label><input id="pc_enfant_soir" data-k="pc_enfant_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cr"><label for="pc_poutine_soir">Poutine</label><input id="pc_poutine_soir" data-k="pc_poutine_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cr"><label for="pc_frites_soir">Frites vosgiennes</label><input id="pc_frites_soir" data-k="pc_frites_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cr"><label for="pc_popcorn_soir">Popcorn de poulet</label><input id="pc_popcorn_soir" data-k="pc_popcorn_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div></div></details><div class="soirc" id="soirCalc" aria-live="polite"></div>
+        <div class="soirc" id="soirCalc" aria-live="polite"></div>
         <div class="themeb" id="themeBox" hidden><h5 id="thName"></h5>
           <div class="f" id="thPersF"><label for="theme_pers">Personnes venues pour la soirée</label><div class="thrw"><div class="in"><input id="theme_pers" data-k="theme_pers" inputmode="numeric" autocomplete="off" placeholder="–"></div><span class="px" id="thPx"></span></div></div>
           <div class="f" id="thCaF"><label for="ca_theme">Chiffre de la soirée</label><div class="in"><input id="ca_theme" class="eur" data-k="ca_theme" inputmode="decimal" autocomplete="off" placeholder="–"><span>€</span></div></div>
-          <div class="thr" id="thRes" aria-live="polite"></div></div></div>
+          <div class="thr" id="thRes" aria-live="polite"></div></div>
+        <details class="carte" data-sv="soir"><summary><span>🍽️ Plats vendus</span><em id="cn_soir"></em></summary><div class="cg"><div class="cc w"><label for="plats_soir">🍲 Plats du jour</label><input id="plats_soir" data-k="plats_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><span class="ct">🍔 Burgers</span><div class="cc"><label for="bb_boeuf_soir">Bœuf</label><input id="bb_boeuf_soir" data-k="bb_boeuf_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="bb_poulet_soir">Poulet</label><input id="bb_poulet_soir" data-k="bb_poulet_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="bb_vege_soir">Végé</label><input id="bb_vege_soir" data-k="bb_vege_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="bb_pulled_soir">Pulled pork</label><input id="bb_pulled_soir" data-k="bb_pulled_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="bb_smash1_soir">Smash simple</label><input id="bb_smash1_soir" data-k="bb_smash1_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="bb_smash2_soir">Smash double</label><input id="bb_smash2_soir" data-k="bb_smash2_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="burgers_soir">⭐ Burger du mois</label><input id="burgers_soir" data-k="burgers_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><span class="ct">📋 Carte</span><div class="cc"><label for="pc_curry_soir">Curry</label><input id="pc_curry_soir" data-k="pc_curry_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_escalope_soir">Escalope panée</label><input id="pc_escalope_soir" data-k="pc_escalope_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_salade_soir">Salade du moment</label><input id="pc_salade_soir" data-k="pc_salade_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_focaccia_soir">Focaccia</label><input id="pc_focaccia_soir" data-k="pc_focaccia_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_enfant_soir">Menu enfant</label><input id="pc_enfant_soir" data-k="pc_enfant_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_poutine_soir">Poutine</label><input id="pc_poutine_soir" data-k="pc_poutine_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_frites_soir">Frites vosgiennes</label><input id="pc_frites_soir" data-k="pc_frites_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_popcorn_soir">Popcorn de poulet</label><input id="pc_popcorn_soir" data-k="pc_popcorn_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div></div></details></div>
       <div class="grp autre"><h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>Refusés</h4>
         <div class="fields one">
           <div class="f"><label for="refuses">Clients refusés (faute de place)</label><div class="in"><input id="refuses" data-k="refuses" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
@@ -423,6 +404,11 @@ html.vue-plats #vPlats{display:block} html.vue-plats #vMois{display:none}
     <div class="daytot" id="dayTot"></div>
     <button class="hbtn" id="hBtn" type="button" hidden></button>
   </section>
+
+  <section class="chartbox" id="chartBox" aria-label="CA jour par jour"><h3 class="cht">📈 CA jour par jour</h3>
+    <div class="chopt"><label class="sw"><input type="checkbox" id="split" autocomplete="off"><span class="tg"></span>Séparer midi et soir</label><span class="lg" id="lg" hidden><span><i style="background:var(--midi)"></i>Midi</span><span><i style="background:var(--soir)"></i>Soir</span></span></div>
+    <div class="tipr"><button class="arrow" id="cPrev" type="button" aria-label="Jour précédent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><div class="tip" id="tip" aria-live="polite">Touche le graphique pour voir le détail d'un jour.</div><button class="arrow" id="cNext" type="button" aria-label="Jour suivant"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button></div>
+    <div id="chart"></div></section>
 
   <section class="tblcard">
     <header><h3 id="tTitle">Tableau du mois</h3>
@@ -647,9 +633,9 @@ function renderTheme(){
   const r=$("#thRes");r.className="thr"+cls;r.innerHTML=h;
 }
 ["#ca_midi","#ca_jour","#theme_pers","#ca_theme"].forEach(id=>$(id).addEventListener("input",()=>{renderSoir();renderTheme()}));
-/* Dépliant de la carte : combien de plats notés (vu même fermé) ; ouvert ou fermé gardé sur le téléphone */
+/* Dépliant des plats vendus : combien de plats notés (vu même fermé) ; ouvert ou fermé gardé sur le téléphone */
 function renderCarte(){["midi","soir"].forEach(sv=>{
-  const ks=[...CARTE.map(([c])=>"pc_"+c+"_"+sv),"bb_smash1_"+sv,"bb_smash2_"+sv];
+  const ks=["plats_"+sv,...BG.map(([b])=>"bb_"+b+"_"+sv),"burgers_"+sv,...CARTE.map(([c])=>"pc_"+c+"_"+sv)];
   const n=add(...ks.map(k=>{const v=parseNum($("#"+k).value,false);return v===undefined?null:v}));
   $("#cn_"+sv).textContent=n?n+" vendu"+(n>1?"s":""):"à remplir"})}
 document.querySelectorAll(".carte").forEach(d=>{
@@ -665,7 +651,7 @@ function renderTotals(){
   const cp=compare();
   const kp=[["CA du mois",s.total==null?"–":eur(s.total),[s.presta?`dont ${eur(s.presta)} de prestations`:"",cp.ca].filter(Boolean).join("<br>")],["Clients du mois",s.clients==null?"–":int(s.clients),[s.emp?`dont ${int(s.emp)} à emporter`:"",cp.cl].filter(Boolean).join("<br>")],["Ticket moyen",s.ca&&s.clients?eur(Math.round(s.ca/s.clients*100)/100):"–",""],["Burgers vendus",s.bg==null?"–":int(s.bg),s.burgers?`dont ${int(s.burgers)} burger du mois`:""]];
   $("#kpis").innerHTML=kp.map(([a,b,c])=>`<div class="kpi"><small>${a}</small><b class="num">${b}</b>${c?`<em>${c}</em>`:""}</div>`).join("");
-  $("#tbl").innerHTML=tableHTML(true);$("#cmp").innerHTML=compactHTML();if(!$("#chartBox").hidden)drawChart();renderRep();
+  $("#tbl").innerHTML=tableHTML(true);$("#cmp").innerHTML=compactHTML();drawChart();renderRep();
 }
 /* Le CA du mois en détail + la liste des prestations (case « En caisse » pour ne pas oublier de les taper dans la caisse) */
 function prestaItem(e){
@@ -680,16 +666,14 @@ function prestaItem(e){
 }
 /* Burgers et plats du jour du mois : total par type et part de chaque type dans les burgers vendus */
 function renderVentes(){
-  const s=monthSums();const rows=[...BG.map(([b,l])=>[l,add(s["bb_"+b+"_midi"],s["bb_"+b+"_soir"])]),["⭐ Burger du mois",s.burgers]];
-  const mx=Math.max(1,...rows.map(r=>r[1]||0)),tot=s.bg;
-  const cr=CARTE.map(([c,l])=>[l,add(s["pc_"+c+"_midi"],s["pc_"+c+"_soir"])]),cmx=Math.max(1,...cr.map(r=>r[1]||0));
-  $("#ventes").innerHTML=`<h3>🍔 Ce qui a été vendu</h3>
-    ${rows.map(([l,v])=>`<div class="rl" style="--c:var(--accent)"><span>${l}</span><span class="v">${v==null?"–":int(v)}${v&&tot?` <small style="color:var(--muted);font-weight:700">· ${Math.round(v/tot*100)} %</small>`:""}</span><span class="tr"><i style="width:${v?Math.max(1,v/mx*100):0}%"></i></span></div>`).join("")}
-    <div class="rl tot"><span>Burgers vendus</span><span class="v">${tot==null?"–":int(tot)}</span>${tot?`<small>Midi ${int(s.bg_midi||0)} · Soir ${int(s.bg_soir||0)}</small>`:""}</div>
-    <div class="rl tot" style="border-top-width:1px"><span>🍲 Plats du jour</span><span class="v">${s.plats==null?"–":int(s.plats)}</span>${s.plats?`<small>Midi ${int(s.plats_midi||0)} · Soir ${int(s.plats_soir||0)}</small>`:""}</div>
-    <h4 class="vh">📋 Plats de la carte</h4>
-    ${cr.map(([l,v])=>`<div class="rl" style="--c:var(--soir)"><span>${l}</span><span class="v">${v==null?"–":int(v)}${v&&s.carte?` <small style="color:var(--muted);font-weight:700">· ${Math.round(v/s.carte*100)} %</small>`:""}</span><span class="tr"><i style="width:${v?Math.max(1,v/cmx*100):0}%"></i></span></div>`).join("")}
-    <div class="rl tot"><span>Plats de la carte</span><span class="v">${s.carte==null?"–":int(s.carte)}</span></div>`;
+  const s=monthSums(),t2=k=>add(s[k+"_midi"],s[k+"_soir"]);
+  const rows=[["🍲 Plats du jour",t2("plats")],...BG.map(([b,l])=>["🍔 "+l,t2("bb_"+b)]),["⭐ Burger du mois",s.burgers],...CARTE.map(([c,l])=>[l,t2("pc_"+c)])];
+  const tot=add(...rows.map(r=>r[1])),mx=Math.max(1,...rows.map(r=>r[1]||0));
+  rows.sort((a,b)=>(b[1]??-1)-(a[1]??-1));   // le plus vendu en haut ; rien noté = en bas
+  const tm=add(s.plats_midi,s.bg_midi,...CARTE.map(([c])=>s["pc_"+c+"_midi"])),ts=add(s.plats_soir,s.bg_soir,...CARTE.map(([c])=>s["pc_"+c+"_soir"]));
+  $("#ventes").innerHTML=`<h3>🍽️ Ce qui a été vendu</h3>
+    ${rows.map(([l,v])=>`<div class="rl" style="--c:var(--accent)"><span>${l}</span><span class="v">${v==null?"–":int(v)}${v&&tot?` <small class="pc">· ${Math.round(v/tot*100)} %</small>`:""}</span><span class="tr"><i style="width:${v?Math.max(1,v/mx*100):0}%"></i></span></div>`).join("")}
+    <div class="rl rtot"><span>Total vendu</span><span class="v">${tot==null?"–":int(tot)}</span>${tot?`<small>Midi ${int(tm||0)} · Soir ${int(ts||0)}</small>`:""}</div>`;
 }
 function renderRep(){renderVentes();
   const s=monthSums();const list=[];for(let d=1;d<=daysIn(S.y,S.m);d++)list.push(...evsOf(key(S.y,S.m,d)));
@@ -699,7 +683,7 @@ function renderRep(){renderVentes();
   const oubli=list.filter(e=>paye(e)&&!e.en_caisse&&e.jour<=TODAY).length;
   $("#rep").innerHTML=`<h3>Le CA du mois en détail</h3>
     ${rows.map(([l,v,c])=>`<div class="rl" style="--c:${c}"><span>${l}</span><span class="v">${v==null?"–":eur(v)}</span><span class="tr"><i style="width:${v?Math.max(1,v/mx*100):0}%"></i></span></div>`).join("")}
-    <div class="rl tot"><span>Total du mois</span><span class="v">${s.total==null?"–":eur(s.total)}</span>${s.presta?`<small>Caisse ${s.ca==null?"–":eur(s.ca)} + prestations payées à part ${eur(s.presta)}</small>`:""}</div>
+    <div class="rl rtot"><span>Total du mois</span><span class="v">${s.total==null?"–":eur(s.total)}</span>${s.presta?`<small>Caisse ${s.ca==null?"–":eur(s.ca)} + prestations payées à part ${eur(s.presta)}</small>`:""}</div>
     <div class="prs"><h4>Privatisations, traiteur et soirées</h4>
     ${oubli?`<div class="prw">⚠️ ${oubli} prestation${oubli>1?"s":""} pas encore entrée${oubli>1?"s":""} dans la caisse</div>`:""}
     ${list.length?list.map(prestaItem).join(""):`<p class="vide">Rien ce mois-ci. On les ajoute dans l'onglet Événements.</p>`}</div>`;
@@ -811,9 +795,7 @@ $("#chart").addEventListener("pointermove",e=>{if(!chartDown)return;const d=dayA
 ["pointerup","pointercancel","pointerleave"].forEach(t=>$("#chart").addEventListener(t,()=>chartDown=false));
 $("#cPrev").onclick=()=>chartPick((chartSel||now.getDate()+1)-1);
 $("#cNext").onclick=()=>chartPick((chartSel||0)+1);
-addEventListener("resize",()=>{if(!$("#chartBox").hidden)drawChart()});
-$("#chartBtn").onclick=()=>{const b=$("#chartBox");b.hidden=!b.hidden;$("#chartBtn").setAttribute("aria-expanded",!b.hidden);try{localStorage.setItem("chiffres2b-graph",b.hidden?"0":"1")}catch{}if(!b.hidden)drawChart()};
-try{if(localStorage.getItem("chiffres2b-graph")==="1"){$("#chartBox").hidden=false;$("#chartBtn").setAttribute("aria-expanded","true")}}catch{}
+addEventListener("resize",drawChart);
 $("#split").addEventListener("change",drawChart);
 
 /* ---------- Saisie : enregistrée pendant qu'on tape (après une petite pause) et en quittant la case ---------- */
