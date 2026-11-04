@@ -7,7 +7,7 @@ Tous les textes visibles sont en français.
 ## Pages
 - `index.html` : **Commande** (fournisseurs, prix, envoi par message). Onglet prioritaire : ne jamais le dégrader.
 - `accueil.html` (Aujourd'hui), `hygiene.html`, `menus.html`, `chiffres.html` (CA midi/soir, graphique), `evenements.html`.
-- `fidelite.html` : cartes de fidélité (profil Julien seulement pour l'instant) ; `carte.html` : page publique du client (jeton secret après #).
+- `fidelite.html` : cartes de fidélité (profil Julien seulement pour l'instant) ; `carte.html` : page publique du client (jeton secret après #). Règles : pas de limite de tampons (50 max d'un coup contre les fautes de frappe), 10 = 1 burger offert ; niveaux Bronze/Argent/Or à 1/3/6 cartes finies, chacun donne un cadeau une fois (boisson, frites, dessert — libellés dans les deux pages, `fid_cadeau`), et en Or chaque nouvelle carte démarre avec 1 tampon (`bonus`).
 - `profil.js` : choix du profil, barre du haut, notifications, partagé par toutes les pages.
 - `sw.js` : service worker (hors connexion, mise à jour d'un bloc).
 

@@ -175,6 +175,31 @@ body{margin:0;min-height:100vh;color:var(--fg);font-family:var(--body);font-size
 .how p{display:flex;gap:10px;margin:6px 4px 0;color:var(--muted);font-weight:600;font-size:13.5px}
 .how p em{font-style:normal;flex:none}
 .how p b{color:var(--fg);font-weight:700}
+/* Le chemin des récompenses : tout ce qu'on peut gagner, visible d'un coup d'œil */
+.road{position:relative;margin-top:14px;padding:18px 16px 8px;border-radius:24px;border:1px solid var(--line);background:linear-gradient(180deg,var(--surface2),var(--surface))}
+.road h3{margin:0;font-family:var(--display);font-size:20px;font-weight:800;letter-spacing:-.3px;color:var(--gold3)}
+.road>p{margin:3px 0 12px;font-size:14px;font-weight:600;color:var(--muted)}
+.wait{display:flex;align-items:center;gap:12px;margin:0 0 12px;padding:12px 14px;border-radius:18px;color:#1a1205;
+  background:linear-gradient(180deg,#ffe7a3,#f2a516);box-shadow:0 10px 24px -12px rgba(242,165,22,.8);animation:waitp 2.4s ease-in-out infinite}
+.wait em{font-style:normal;font-size:28px}.wait b{display:block;font-family:var(--display);font-size:17px;font-weight:800}.wait small{display:block;font-weight:700;font-size:13px;opacity:.8}
+@keyframes waitp{50%{transform:scale(1.02);box-shadow:0 14px 30px -10px rgba(242,165,22,.95)}}
+.step{position:relative;display:flex;gap:12px;padding:0 0 16px}
+.step:not(:last-child)::before{content:"";position:absolute;left:21px;top:44px;bottom:2px;width:2px;background:rgba(255,211,107,.16)}
+.step.done:not(:last-child)::before{background:linear-gradient(var(--gold),rgba(242,179,58,.35))}
+.med{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:21px;border:1.5px solid rgba(255,211,107,.2);background:rgba(255,255,255,.03);filter:grayscale(1);opacity:.55}
+.step.done .med,.step.cur .med{filter:none;opacity:1}
+.step.done .med{background:radial-gradient(circle at 35% 30%,var(--mc1),var(--mc2));border-color:transparent;box-shadow:0 6px 16px -6px var(--mc2)}
+.step.cur .med{border:2px solid var(--gold2);box-shadow:0 0 0 4px rgba(255,211,107,.12)}
+.st1{--mc1:#ffd8bd;--mc2:#b8692f}.st2{--mc1:#ffffff;--mc2:#8d99a6}.st3{--mc1:#fff1c2;--mc2:#d99a0b}
+.sx{flex:1;min-width:0;padding-top:2px}
+.sx b{display:flex;align-items:baseline;gap:8px;font-family:var(--display);font-size:16.5px;font-weight:800;color:var(--fg)}
+.sx b i{font-style:normal;font-family:var(--body);font-size:12px;font-weight:700;color:var(--muted)}
+.sx span{display:block;margin-top:2px;font-size:14.5px;font-weight:700;color:var(--gold2)}
+.step:not(.done):not(.cur) .sx span{color:var(--muted)}
+.sx small{display:block;margin-top:2px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.sx .pg{height:6px;border-radius:3px;margin-top:7px;background:rgba(255,211,107,.14);overflow:hidden}
+.sx .pg i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,#f2a516,#ffd36b)}
+.tag{flex:none;align-self:flex-start;margin-top:4px;font-size:11px;font-weight:800;letter-spacing:.04em;padding:3px 8px;border-radius:999px;color:var(--ok);border:1px solid rgba(79,208,138,.4)}
 .toastlvl{position:fixed;left:50%;top:max(20px,env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:60;padding:12px 18px;border-radius:16px;background:#17120b;color:#fff3d6;
   font-weight:800;font-size:16px;box-shadow:0 14px 30px -12px rgba(0,0,0,.6);border:1px solid rgba(255,211,107,.4);animation:tdrop 3.4s ease both;white-space:nowrap}
 @keyframes tdrop{0%{opacity:0;transform:translate(-50%,-20px)}10%,85%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-10px)}}
@@ -186,7 +211,7 @@ body{margin:0;min-height:100vh;color:var(--fg);font-family:var(--body);font-size
 .conf{position:fixed;inset:0;pointer-events:none;z-index:50;overflow:hidden}
 .conf i{position:absolute;top:-20px;width:9px;height:14px;border-radius:2px;animation:fall var(--t) cubic-bezier(.25,.6,.4,1) both;animation-delay:var(--d)}
 @keyframes fall{to{transform:translate(var(--x),110vh) rotate(var(--r));opacity:.9}}
-@media (prefers-reduced-motion:reduce){.card.enter,.slot.gift.near,.show,.ticket .big,.coin.wig,.card::after,.coin.new,.ring,.spark,.slot.gift.ready,.welc.pop span,.welc.pop span::after,.bday .e,.live i,.left b.bump,.card.shake{animation:none!important}.conf{display:none}}
+@media (prefers-reduced-motion:reduce){.card.enter,.slot.gift.near,.show,.ticket .big,.coin.wig,.card::after,.coin.new,.ring,.spark,.slot.gift.ready,.welc.pop span,.welc.pop span::after,.wait,.bday .e,.live i,.left b.bump,.card.shake{animation:none!important}.conf{display:none}}
 </style>
 </head>
 <body>
@@ -206,6 +231,7 @@ body{margin:0;min-height:100vh;color:var(--fg);font-family:var(--body);font-size
     </div></div>
     <div class="bday" id="bday" hidden></div>
     <div class="msg" id="msg"></div>
+    <div class="road" id="road"></div>
     <button type="button" class="show" id="showGo" hidden><span data-ic="gift"></span>Montrer mon burger offert</button>
     <div class="kp">
       <div><i data-ic="burger"></i><small>Burgers</small><b id="kb">0</b></div>
@@ -219,7 +245,7 @@ body{margin:0;min-height:100vh;color:var(--fg);font-family:var(--body);font-size
       <p><em>🍔</em><span><b>1 burger acheté = 1 tampon</b>, sans limite, en donnant ton numéro.</span></p>
       <p><em>🎁</em><span><b>10 tampons = 1 burger offert</b>, celui que tu veux.</span></p>
       <p><em>🎂</em><span>Ton anniversaire : un produit offert avec ta commande, pendant 30 jours.</span></p>
-      <p><em>🏅</em><span>Niveaux : 🥉 Habitué à 1 carte terminée, 🥈 Gourmand à 3, 🥇 VIP à 5.</span></p>
+      <p><em>🏅</em><span>Niveaux : 🥉 Bronze à 10 burgers, 🥈 Argent à 30, 🥇 Or à 60. Chaque niveau donne un cadeau, avec une commande.</span></p>
       <p><em>📌</em><span>Garde cette page en favori : tes tampons arrivent en direct.</span></p>
     </details>
     <div class="live"><i></i>Carte à jour en direct</div>
@@ -245,7 +271,10 @@ const IC={
   burger:SV(`<path d="M4 10.5C4 6.5 7.6 4 12 4s8 2.5 8 6.5z"/><path d="M9 7.2h.01M12.5 6.4h.01M15.5 7.4h.01"/><path d="M3 13.6c1.5 1 2.5-.8 4 .2s2.5-.8 4 .2 2.5-.8 4 .2 2.5-.8 4 .2 1.5-.4 1.5-.4"/><path d="M4 16.5h16a0 0 0 0 1 0 0 2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z"/>`,1.8),
   gift:SV(`<rect x="3.5" y="9" width="17" height="11.5" rx="2"/><path d="M2.5 9h19v-1.5a1 1 0 0 0-1-1h-17a1 1 0 0 0-1 1zM12 6.5v14"/><path d="M12 6.5c-1.5-3.5-6-3.5-5.2-.8.5 1.5 3.4.8 5.2.8zM12 6.5c1.5-3.5 6-3.5 5.2-.8-.5 1.5-3.4.8-5.2.8z"/>`,1.8),
   cal:SV(`<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01"/>`,1.9)};
-const NIV=[[5,"vip","🥇 VIP"],[3,"argent","🥈 Gourmand"],[1,"bronze","🥉 Habitué"],[0,"","Classique"]];
+const NIV=[[6,"vip","🥇 Or"],[3,"argent","🥈 Argent"],[1,"bronze","🥉 Bronze"],[0,"","Membre"]];
+// Cadeau donné une fois en atteignant chaque niveau (à récupérer avec une commande)
+const CAD={1:["🥤","Une boisson offerte"],2:["🍟","Des frites offertes"],3:["🍰","Un dessert offert"]};
+const PAL=[[1,"🥉","Bronze",10],[2,"🥈","Argent",30],[3,"🥇","Or",60]];
 const niv=o=>NIV.find(n=>o>=n[0]);
 const JOURS=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
 let PRENOM="";
@@ -256,14 +285,16 @@ function draw(c){
   let from=shown?(shown.offerts===c.offerts?shown.full:0):(vu&&vu.offerts===c.offerts?Math.min(vu.solde,10):0);
   if(from>full)from=0;
   drawOpen(c.ouvert);
-  if(shown&&shown.full===full&&shown.offerts===c.offerts&&shown.anniv===c.anniv)return;
+  if(shown&&shown.full===full&&shown.offerts===c.offerts&&shown.anniv===c.anniv&&shown.cad===String(c.cadeaux))return;
   PRENOM=c.prenom;
   $("#nom").textContent=c.prenom;
   const n=niv(c.offerts),card=$("#card");
   ["bronze","argent","vip"].forEach(k=>card.classList.toggle(k,k===n[1]));
   const lv=$("#lvl");lv.textContent=n[2];
   const nx=NIV.slice().reverse().find(x=>x[0]>c.offerts);
-  $("#next").textContent=nx?`Encore ${nx[0]-c.offerts} carte${nx[0]-c.offerts>1?"s":""} complète${nx[0]-c.offerts>1?"s":""} pour devenir ${nx[2]}`:"Tu es au plus haut niveau. Merci pour ta fidélité !";
+  const manque=nx?Math.max(0,(nx[0]-c.offerts)*10-s):0,ncad=nx&&CAD[{"bronze":1,"argent":2,"vip":3}[nx[1]]];
+  $("#next").textContent=nx?(manque?`Encore ${manque} burger${manque>1?"s":""} pour passer ${nx[2]} : ${ncad[0]} ${ncad[1].toLowerCase()}`:`Prends ton burger offert et tu passes ${nx[2]} !`):"🥇 Tu es Or : chaque nouvelle carte démarre avec 1 tampon offert";
+  road(c,s);
   // Nouveau niveau atteint depuis la dernière visite : le badge éclate et un petit bandeau félicite
   const avant=shown?shown.offerts:vu?vu.offerts:c.offerts;
   if(niv(avant)!==n&&c.offerts>avant&&!calme){lv.classList.remove("up");void lv.offsetWidth;lv.classList.add("up");
@@ -311,10 +342,23 @@ function draw(c){
   if(c.anniv)b.innerHTML=`<span class="e">🎂</span><b>Joyeux anniversaire ${c.prenom.replace(/[<>&"]/g,"")} !</b><span>Pour ton anniversaire, un produit t'est offert avec ta prochaine commande, jusqu'au ${dmF(c.anniv_fin)}.</span>`;
   $("#kb").textContent=c.burgers;$("#ko").textContent=c.offerts;
   $("#kl").textContent=c.derniere?new Date(c.derniere).toLocaleDateString("fr-FR",{day:"numeric",month:"short"}):"—";
-  shown={full,offerts:c.offerts,anniv:c.anniv};
+  shown={full,offerts:c.offerts,anniv:c.anniv,cad:String(c.cadeaux)};
   setVu({solde:s,offerts:c.offerts});
 }
 // Ouvert aujourd'hui ? (jours d'ouverture de l'appli du restaurant)
+// Le chemin des récompenses : les 3 niveaux, leur cadeau, où en est le client
+function road(c,s){const o=c.offerts,cad=c.cadeaux||[],tot=o*10+Math.min(s,10);
+  const attend=cad.map(k=>CAD[k]);
+  let h=`<h3>Plus tu viens, plus tu gagnes</h3><p>Tous les 10 burgers, un burger offert. Et à chaque niveau, un cadeau en plus.</p>`;
+  if(attend.length)h+=`<div class="wait"><em>${attend[0][0]}</em><div><b>${attend.map(x=>x[1]).join(" + ")} pour toi !</b><small>Dis-le au serveur à ta prochaine commande</small></div></div>`;
+  let cur=false;
+  h+=PAL.map(([k,m,nom,b])=>{const done=o>=[0,1,3,6][k],isCur=!done&&!cur;if(isCur)cur=true;
+    const pct=isCur?Math.round(Math.min(1,tot/b)*100):0,reste=Math.max(0,b-tot);
+    const tag=done&&!cad.includes(k)?`<span class="tag">GAGNÉ ✓</span>`:"";
+    return `<div class="step st${k}${done?" done":""}${isCur?" cur":""}"><div class="med">${m}</div><div class="sx">
+      <b>${nom}<i>${b} burgers</i></b><span>${CAD[k][0]} ${CAD[k][1]}${k===3?" + 1 tampon offert sur chaque nouvelle carte":""}</span>
+      ${isCur?`<div class="pg"><i style="width:${pct}%"></i></div><small>${reste?`Encore ${reste} burger${reste>1?"s":""}`:"Prends ton burger offert pour débloquer"}</small>`:""}</div>${tag}</div>`}).join("");
+  $("#road").innerHTML=h}
 function drawOpen(o){if(!o)return;const h=new Date().getHours(),el=$("#openT");$("#open").hidden=false;
   const vert=`<i></i>`,rouge=`<i></i>`;
   const midi=o.midi&&h<14,soir=o.soir&&h<22;$("#open").classList.toggle("ferme",!(midi||soir));
