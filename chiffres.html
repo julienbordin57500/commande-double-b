@@ -181,15 +181,14 @@ td.pt{font-size:13px} td.pt.fut{color:var(--muted)} .compact i.p{color:var(--fg)
 .seg button[aria-pressed="true"][data-s="midi"]{background:var(--midi-soft);color:var(--midi)}
 .seg button[aria-pressed="true"][data-s="soir"]{background:var(--soir-soft);color:var(--soir)}
 .seg button em{font-style:normal;font-size:13px;font-weight:700;opacity:.8}
-.pq{height:46px;flex:none;border-radius:12px;border:1.5px solid var(--line);background:var(--sunken);padding:0 14px;font:inherit;font-size:16px;color:var(--fg)}
-.pq:focus{outline:none;border-color:var(--c)}
 .prl{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:6px;overscroll-behavior:contain;padding-bottom:4px}
 .prh{font-size:13px;font-weight:800;color:var(--muted);margin:6px 2px 0}
 .prw{display:grid;grid-template-columns:minmax(0,1fr) 46px 56px 46px;gap:5px;align-items:center;padding:3px 3px 3px 4px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface)}
 .prw.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 10%,var(--surface))}
 .prw.fl{animation:pfl 1.2s ease-out}
 @keyframes pfl{0%,40%{box-shadow:0 0 0 3px var(--c)}}
-.prw .n{min-height:46px;border:0;background:none;color:var(--fg);font:inherit;font-size:15px;font-weight:700;text-align:left;display:flex;align-items:center;gap:8px;line-height:1.15;padding:0 6px}
+.prw .n{min-height:46px;color:var(--fg);font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px;line-height:1.15;padding:0 6px;cursor:pointer;user-select:none}
+.prt{border:0;background:none;padding:4px 2px;font:inherit;font-size:12px;font-weight:700;color:var(--danger);text-decoration:underline}
 .prw .n small{display:block;font-size:12px;font-weight:600;color:var(--muted)}
 .prw .m,.prw .p{height:46px;border-radius:10px;border:1px solid var(--line);background:var(--sunken);color:var(--fg);font-size:24px;font-weight:800;line-height:1}
 .prw .p{background:var(--c);border-color:var(--c);color:var(--bg)}
@@ -495,7 +494,7 @@ const daysIn=(y,m)=>new Date(y,m+1,0).getDate();
 const wd=(y,m,d)=>new Date(y,m,d).toLocaleDateString("fr-FR",{weekday:"long"});
 const monthName=(y,m)=>new Date(y,m,1).toLocaleDateString("fr-FR",{month:"long",year:"numeric"});
 const now=new Date();
-const S={y:now.getFullYear(),m:now.getMonth(),d:now.getDate(),data:{},evs:[],pending:0,loaded:null};
+const S={y:now.getFullYear(),m:now.getMonth(),d:now.getDate(),data:{},evs:[],pending:0,loaded:null,extras:(()=>{try{return JSON.parse(localStorage.getItem("chiffres2b-extras")||"[]")}catch{return []}})()};
 
 /* ---------- Nombres ---------- */
 // clients_midi / clients_soir : anciens totaux (saisis avant la séparation sur place / à emporter), comptés comme « sur place »
@@ -602,6 +601,7 @@ async function load(){
   try{
     const pm=new Date(S.y,S.m-1,1),ly=new Date(S.y-1,S.m,1);
     const evP=rpc("evenements_liste",{p_debut:key(ly.getFullYear(),ly.getMonth(),1),p_fin:key(S.y,S.m,daysIn(S.y,S.m))}).catch(()=>null);   // prestations : de l'an dernier à ce mois-ci (comparaisons)
+    rpc("plats_extra_liste").then(x=>{if(Array.isArray(x)){S.extras=x;try{localStorage.setItem("chiffres2b-extras",JSON.stringify(x))}catch{}}}).catch(()=>{});
     const [d,dp,dl,ev]=await Promise.all([rpc("suivi_mois",{p_mois:mk}),rpc("suivi_mois",{p_mois:key(pm.getFullYear(),pm.getMonth(),1)}).catch(()=>({})),rpc("suivi_mois",{p_mois:key(ly.getFullYear(),ly.getMonth(),1)}).catch(()=>({})),evP]);
     if(mk!==key(S.y,S.m,1))return;
     S.data=d||{};S.prev=dp||{};S.ly=dl||{};if(ev&&!CAI.size)S.evs=ev;try{localStorage.setItem(CC+mk,JSON.stringify({d:S.data,p:S.prev,l:S.ly,e:S.evs}))}catch{}
@@ -751,60 +751,60 @@ $("#rep").addEventListener("change",async e=>{
 });
 /* Fenêtre des plats vendus : on choisit Midi ou Soir, on tape les quantités de tous les plats d'un coup
    (− / + ou le chiffre), et un seul « Valider » enregistre tout. Toucher un nom = +1.
-   Chaque ligne = une case : impossible de compter un plat deux fois. Mettre 0 = supprimer (confirmation au Valider). */
+   Chaque ligne = une case : impossible de compter un plat deux fois. Mettre 0 = supprimer (confirmation au Valider).
+   Plats hors carte : ajoutés une fois avec « ＋ », ils restent dans la liste les jours suivants (table plats_extra) jusqu'à « Retirer ». */
 const pvN=t=>String(t).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
 function pvOpen(sv,focus){
   const dk=key(S.y,S.m,S.d),row=S.data[dk]||{};
   sv=sv||(new Date().getHours()<16?"midi":"soir");
-  const D={midi:{},soir:{}},NEW={midi:[],soir:[]};   // quantités changées (pas encore enregistrées) et plats hors carte ajoutés
+  const D={midi:{},soir:{}};   // quantités changées, pas encore enregistrées
   const base=(s2,id)=>{if(id[0]==="c")return val(row,id.slice(2)+"_"+s2)||0;const l=libres(row,s2).find(x=>"l:"+x.id===id);return l?l.qte:0};
-  const cur=(s2,id)=>id in D[s2]?D[s2][id]:id[0]==="n"?NEW[s2][+id.slice(2)].q:base(s2,id);
-  const items=s2=>[...DISH.map(d=>({id:"c:"+d.k,e:d.e,l:d.l})),...libres(row,s2).map(x=>({id:"l:"+x.id,e:"✨",l:x.nom,px:x.prix})),...NEW[s2].map((x,i)=>({id:"n:"+i,e:"✨",l:x.nom,px:x.prix}))];
+  const cur=(s2,id)=>id in D[s2]?D[s2][id]:base(s2,id);
+  const items=s2=>[...DISH.map(d=>({id:"c:"+d.k,e:d.e,l:d.l})),...libres(row,s2).map(x=>({id:"l:"+x.id,e:"✨",l:x.nom,px:x.prix,x:(S.extras.find(e=>pvN(e.nom)===pvN(x.nom))||{}).id})),
+    ...S.extras.filter(e=>!libres(row,s2).some(x=>pvN(x.nom)===pvN(e.nom))).map(e=>({id:"x:"+e.id,e:"✨",l:e.nom,px:e.prix,x:e.id}))];   // hors carte : vendus ce jour + liste permanente
   const tot=s2=>items(s2).reduce((a,x)=>a+cur(s2,x.id),0);
-  const changes=()=>["midi","soir"].flatMap(s2=>items(s2).filter(x=>cur(s2,x.id)!==(x.id[0]==="n"?0:base(s2,x.id))).map(x=>({...x,sv:s2,q:cur(s2,x.id),b:x.id[0]==="n"?0:base(s2,x.id)})));
-  const known={};for(let d=1;d<=daysIn(S.y,S.m);d++)libres(S.data[key(S.y,S.m,d)]).forEach(x=>{known[pvN(x.nom)]={nom:x.nom,prix:x.prix}});
+  const changes=()=>["midi","soir"].flatMap(s2=>items(s2).filter(x=>cur(s2,x.id)!==base(s2,x.id)).map(x=>({...x,sv:s2,q:cur(s2,x.id),b:base(s2,x.id)})));
   const m=document.createElement("div");m.className="psh";
   m.innerHTML=`<div class="pbox" role="dialog" aria-modal="true" aria-label="Plats vendus">
     <div class="pbh"><b>🍽️ Plats vendus</b><button type="button" data-x aria-label="Fermer">✕</button></div>
     <div class="seg"><button type="button" data-s="midi">☀️ Midi <em></em></button><button type="button" data-s="soir">🌙 Soir <em></em></button></div>
-    <input class="pq" type="search" placeholder="🔍 Chercher un plat" autocomplete="off" enterkeyhint="done">
     <div class="prl"></div>
-    <div class="pft"><small></small><button class="btn pgo" type="button" data-go>✓ Valider</button></div>
-    <datalist id="pvKnown">${Object.values(known).map(k=>`<option value="${esc(k.nom)}">`).join("")}</datalist></div>`;
+    <div class="pft"><small></small><button class="btn pgo" type="button" data-go>✓ Valider</button></div></div>`;
   const $m=x=>m.querySelector(x),box=$m(".pbox");
-  const rowHTML=x=>{const q=cur(sv,x.id);return `<div class="prw${q?" on":""}" data-id="${x.id}" data-f="${esc(pvN(x.l))}"><button type="button" class="n" data-add><span>${x.e}</span><span>${esc(x.l)}${x.e==="✨"?`<small>Hors carte${x.px!=null?" · "+eur(+x.px):""}</small>`:""}</span></button>
+  const rowHTML=x=>{const q=cur(sv,x.id);return `<div class="prw${q?" on":""}" data-id="${x.id}" ><div class="n" data-add><span>${x.e}</span><span>${esc(x.l)}${x.e==="✨"?`<small>Hors carte${x.px!=null?" · "+eur(+x.px):""}${x.x?` · <button type="button" class="prt" data-rm="${x.x}">Retirer</button>`:""}</small>`:""}</span></div>
     <button type="button" class="m" data-d="-1" aria-label="Un de moins">−</button><input inputmode="numeric" value="${q||""}" placeholder="0" aria-label="Quantité ${esc(x.l)}"><button type="button" class="p" data-d="1" aria-label="Un de plus">＋</button></div>`};
   function draw(){
     box.className="pbox "+sv;
     m.querySelectorAll("[data-s]").forEach(b=>{b.setAttribute("aria-pressed",b.dataset.s===sv);const t=tot(b.dataset.s);b.querySelector("em").textContent=t?"· "+t:""});
     const it=items(sv),grp=(t,a)=>a.length?`<div class="prh">${t}</div>`+a.map(rowHTML).join(""):"";
     $m(".prl").innerHTML=grp("Plats du jour et burgers",it.filter(x=>x.id[0]==="c"&&!x.id.startsWith("c:pc_")))+grp("Carte",it.filter(x=>x.id.startsWith("c:pc_")))+grp("Hors carte",it.filter(x=>x.id[0]!=="c"))
-      +`<div class="pnew"><b>✨ Plat hors carte (suggestion du jour…)</b><input data-nn list="pvKnown" placeholder="Nom du plat" maxlength="60" autocomplete="off"><input data-np inputmode="decimal" placeholder="Prix €" autocomplete="off"><button type="button" data-new>＋ Ajouter ce plat</button></div>`;
-    filt();foot();
+      +`<div class="pnew"><b>✨ Plat hors carte (suggestion…) : il restera dans la liste</b><input data-nn placeholder="Nom du plat" maxlength="60" autocomplete="off"><input data-np inputmode="decimal" placeholder="Prix €" autocomplete="off"><button type="button" data-new>＋ Ajouter ce plat</button></div>`;
+    foot();
   }
-  function filt(){const t=pvN($m(".pq").value);m.querySelectorAll(".prw").forEach(r=>r.hidden=!!t&&!r.dataset.f.includes(t));
-    m.querySelectorAll(".prh").forEach(h=>{let n=h.nextElementSibling,v=false;while(n&&n.classList.contains("prw")){if(!n.hidden)v=true;n=n.nextElementSibling}h.hidden=!v});
-    if(t&&![...m.querySelectorAll(".prw")].some(r=>!r.hidden)){const nn=$m("[data-nn]");nn.value=$m(".pq").value.trim()}}
   function foot(){const c=changes();$m(".pft small").textContent=c.length?`${c.length} changement${c.length>1?"s":""} à enregistrer`:"Touche ＋ ou tape le nombre, puis Valider";
     m.querySelectorAll("[data-s]").forEach(b=>{const t=tot(b.dataset.s);b.querySelector("em").textContent=t?"· "+t:""})}
-  function setQ(r,q){q=Math.max(0,Math.min(500,q|0));const id=r.dataset.id;if(id[0]==="n")NEW[sv][+id.slice(2)].q=q;else D[sv][id]=q;
+  function setQ(r,q){q=Math.max(0,Math.min(500,q|0));D[sv][r.dataset.id]=q;
     const inp=r.querySelector("input");if(document.activeElement!==inp)inp.value=q||"";r.classList.toggle("on",q>0);foot()}
   const close=()=>m.remove();
   const tryClose=()=>changes().length?confirmBox("Quitter sans enregistrer ?","Les quantités tapées seront perdues.","Quitter",close):close();
-  m.addEventListener("click",e=>{if(e.target===m)return tryClose();const b=e.target.closest("button");if(!b)return;
+  m.addEventListener("click",async e=>{if(e.target===m)return tryClose();const b=e.target.closest("button,[data-add]");if(!b)return;
     const r=b.closest(".prw");
     if(b.hasAttribute("data-x"))tryClose();
     else if(b.dataset.s){sv=b.dataset.s;draw()}
     else if(r&&b.dataset.d)setQ(r,cur(sv,r.dataset.id)+ +b.dataset.d);
     else if(r&&b.hasAttribute("data-add"))setQ(r,cur(sv,r.dataset.id)+1);
+    else if(b.dataset.rm){const x=items(sv).find(x=>x.x===b.dataset.rm);
+      confirmBox(`Retirer « ${x.l} » de la liste ?`,"Il ne sera plus proposé. Les ventes déjà notées restent comptées.","Retirer",async()=>{
+        try{S.extras=await rpc("plat_extra_retirer",{p_id:b.dataset.rm})||[];draw();toast("Retiré de la liste ✓")}catch(err){if(!lost(err))toast("Pas de connexion")}})}
     else if(b.hasAttribute("data-new")){
       const nom=$m("[data-nn]").value.trim().replace(/\s+/g," ").slice(0,60);if(!nom){toast("Tape le nom du plat");$m("[data-nn]").focus();return}
-      let prix=parseNum($m("[data-np]").value,true);if(prix===undefined||(prix!=null&&prix>1000)){toast("Prix non valable");return}
-      const k=pvN(nom),ex=items(sv).find(x=>pvN(x.l)===k);   // déjà dans la liste : on ajoute 1, jamais de doublon
-      if(ex){draw();const rr=m.querySelector(`.prw[data-id="${ex.id}"]`);setQ(rr,cur(sv,ex.id)+1);rr.scrollIntoView({block:"center"});rr.classList.add("fl");return}
-      if(prix==null&&known[k])prix=known[k].prix;
-      NEW[sv].push({nom,prix,q:1});$m(".pq").value="";draw();
-      const rr=m.querySelector(`.prw[data-id="n:${NEW[sv].length-1}"]`);rr.scrollIntoView({block:"center"});rr.classList.add("fl")}
+      const prix=parseNum($m("[data-np]").value,true);if(prix===undefined||(prix!=null&&prix>1000)){toast("Prix non valable");return}
+      const k=pvN(nom),ex=items(sv).find(x=>pvN(x.l)===k&&(x.x||x.id[0]==="c"));   // déjà dans la liste : on ajoute 1, jamais de doublon
+      if(ex){const rr=m.querySelector(`.prw[data-id="${ex.id}"]`);setQ(rr,cur(sv,ex.id)+1);rr.scrollIntoView({block:"center"});rr.classList.add("fl");$m("[data-nn]").value="";$m("[data-np]").value="";return}
+      b.disabled=true;
+      try{S.extras=await rpc("plat_extra_ajouter",{p_nom:nom,p_prix:prix,p_par:who()})||S.extras}catch(err){b.disabled=false;if(!lost(err))toast("Pas de connexion : plat pas ajouté");return}
+      draw();const it=items(sv).find(x=>pvN(x.l)===k);const rr=it&&m.querySelector(`.prw[data-id="${it.id}"]`);
+      if(rr){setQ(rr,cur(sv,it.id)+1);rr.scrollIntoView({block:"center"});rr.classList.add("fl")}}
     else if(b.hasAttribute("data-go")){
       const c=changes();if(!c.length)return close();
       const del=c.filter(x=>!x.q&&x.b);
@@ -812,8 +812,7 @@ function pvOpen(sv,focus){
       if(del.length)confirmBox(`Supprimer ${del.length>1?"ces "+del.length+" ventes":"cette vente"} ?`,del.map(x=>`${esc(x.l)} (${x.sv==="midi"?"midi":"soir"})`).join(", "),"Oui, supprimer",go);else go()}
   });
   m.addEventListener("input",e=>{if(e.target.matches(".prw input")){const v=e.target.value.replace(/\D/g,"");if(v!==e.target.value)e.target.value=v;setQ(e.target.closest(".prw"),+v||0)}
-    else if(e.target.matches(".pq"))filt();
-    else if(e.target.matches("[data-nn]")){const k=known[pvN(e.target.value)];if(k&&k.prix!=null&&!$m("[data-np]").value)$m("[data-np]").value=String(k.prix).replace(".",",")}});
+});
   m.addEventListener("focusin",e=>{if(e.target.matches(".prw input"))setTimeout(()=>e.target.select(),0)});
   document.body.appendChild(m);draw();
   if(focus){const r=m.querySelector(`.prw[data-id="${focus}"]`);if(r){r.scrollIntoView({block:"center"});r.classList.add("fl")}}
