@@ -243,7 +243,7 @@ body{margin:0;min-height:100vh;color:var(--fg);font-family:var(--body);font-size
       <a href="https://maps.google.com/?q=Double+B,+59+avenue+Foch,+57730+Folschviller" target="_blank" rel="noopener" aria-label="Itinéraire">Y aller</a></div>
     <details class="how"><summary>ℹ️ Les règles de la carte</summary>
       <p><em>🍔</em><span><b>1 burger acheté = 1 tampon</b>, sans limite, en donnant ton numéro.</span></p>
-      <p><em>🎁</em><span><b>10 tampons = 1 burger offert</b>, celui que tu veux.</span></p>
+      <p><em>🎁</em><span><b>10 tampons = un burger offert</b>, avec ta commande.</span></p>
       <p><em>🎂</em><span>Ton anniversaire : un produit offert avec ta commande, pendant 30 jours.</span></p>
       <p><em>🏅</em><span>Niveaux : 🥉 Bronze à 10 burgers, 🥈 Argent à 30, 🥇 Or à 60. Chaque niveau donne un cadeau, avec une commande.</span></p>
       <p><em>📌</em><span>Garde cette page en favori : tes tampons arrivent en direct.</span></p>
@@ -273,7 +273,7 @@ const IC={
   cal:SV(`<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01"/>`,1.9)};
 const NIV=[[6,"vip","🥇 Or"],[3,"argent","🥈 Argent"],[1,"bronze","🥉 Bronze"],[0,"","Membre"]];
 // Cadeau donné une fois en atteignant chaque niveau (à récupérer avec une commande)
-const CAD={1:["🥤","Une boisson offerte"],2:["🍟","Des frites offertes"],3:["🍰","Un dessert offert"]};
+const CAD={1:["🥤","Une boisson offerte"],2:["🍟","Une frite offerte"],3:["🍰","Un dessert offert"]};
 const PAL=[[1,"🥉","Bronze",10],[2,"🥈","Argent",30],[3,"🥇","Or",60]];
 const niv=o=>NIV.find(n=>o>=n[0]);
 const JOURS=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];

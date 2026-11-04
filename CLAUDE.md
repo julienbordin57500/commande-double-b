@@ -6,8 +6,8 @@ Tous les textes visibles sont en français.
 
 ## Pages
 - `index.html` : **Commande** (fournisseurs, prix, envoi par message). Onglet prioritaire : ne jamais le dégrader.
-- `accueil.html` (Aujourd'hui), `hygiene.html`, `menus.html`, `chiffres.html` (CA midi/soir, graphique), `evenements.html`.
-- `fidelite.html` : cartes de fidélité (profil Julien seulement pour l'instant) ; `carte.html` : page publique du client (jeton secret après #). Règles : pas de limite de tampons (50 max d'un coup contre les fautes de frappe), 10 = 1 burger offert ; niveaux Bronze/Argent/Or à 1/3/6 cartes finies, chacun donne un cadeau une fois (boisson, frites, dessert — libellés dans les deux pages, `fid_cadeau`), et en Or chaque nouvelle carte démarre avec 1 tampon (`bonus`).
+- `accueil.html` (Aujourd'hui), `hygiene.html`, `menus.html`, `chiffres.html` (CA midi/soir, graphique ; plats vendus = liste par service avec ＋ Ajouter : plats de la carte dans leurs cases `plats_/bb_/burgers_/pc_`, plats hors carte dans la table `suivi_libres` via `vente_libre_enregistrer`/`vente_libre_supprimer` ; ils ne touchent jamais au CA, qui vient seulement de la caisse), `evenements.html`.
+- `fidelite.html` : cartes de fidélité (profil Julien seulement pour l'instant) ; `carte.html` : page publique du client (jeton secret après #). Règles : pas de limite de tampons (50 max d'un coup contre les fautes de frappe), 10 = un burger offert (le moins cher de la commande : écrit seulement sur l'écran équipe) ; niveaux Bronze/Argent/Or à 1/3/6 cartes finies, chacun donne un cadeau une fois (une boisson, une frite, un dessert : textes au singulier — libellés dans les deux pages, `fid_cadeau`), et en Or chaque nouvelle carte démarre avec 1 tampon (`bonus`).
 - `prospection.html` : **prospection traiteur B2B** (profils Julien, Eric, Thierry ; carte sur Aujourd'hui). Voir la section plus bas.
 - `desinscription.html` : page publique ouverte par le lien en bas des mails de prospection (jeton secret `?j=`).
 - `profil.js` : choix du profil, barre du haut, notifications, partagé par toutes les pages.

@@ -151,20 +151,56 @@ td.pt{font-size:13px} td.pt.fut{color:var(--muted)} .compact i.p{color:var(--fg)
 .grp.midi{--c:var(--midi);--soft:var(--midi-soft)} .grp.soir{--c:var(--soir);--soft:var(--soir-soft)} .grp.autre{--c:var(--mamie);--soft:var(--mamie-soft)}
 .fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .fields.one{grid-template-columns:1fr}
-/* Plats vendus : un dépliant par service (plats du jour, burgers, carte), fermé par défaut, sur 2 colonnes */
-.carte{margin-top:10px;border-radius:12px;background:var(--surface);border:1.5px solid color-mix(in srgb,var(--c) 30%,transparent)}
-.carte>summary{list-style:none;cursor:pointer;min-height:50px;padding:0 12px;display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px;user-select:none}
-.carte>summary::-webkit-details-marker{display:none}
-.carte>summary span{flex:1}
-.carte>summary em{font-style:normal;font-size:13px;font-weight:700;color:var(--muted)}
-.carte>summary::after{content:"›";font-size:22px;color:var(--muted);transition:transform .2s}
-.carte[open]>summary::after{transform:rotate(90deg)}
-.cg{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px;padding:10px 12px 12px;border-top:1px solid var(--line)}
-.cc{display:flex;flex-direction:column;gap:4px;min-width:0}.cc.w{grid-column:1/-1}
-.cc label{font-size:13px;font-weight:700;color:var(--muted);line-height:1.15}
-.cc input{width:100%;height:48px;border-radius:12px;border:1.5px solid var(--line);background:var(--sunken);text-align:center;font-weight:800;font-size:18px;font-variant-numeric:tabular-nums}
-.cc input:focus{border-color:var(--c);outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 25%,transparent)}
-.cg .ct{grid-column:1/-1;font-size:13px;font-weight:800;color:var(--c);margin-top:6px}
+/* Plats vendus : une liste par service, ＋ Ajouter, toucher une ligne pour la modifier */
+.pv{margin-top:12px;padding:12px;border-radius:16px;background:var(--surface);border:1px solid var(--line)}
+.pvh{display:flex;align-items:center;gap:10px}
+.pvh h4{flex:1;margin:0;font-family:var(--display);font-size:18px;font-weight:800}
+.pvadd{height:50px;padding:0 20px;font-size:17px;font-weight:800;border-radius:14px;box-shadow:0 2px 0 color-mix(in srgb,var(--accent) 55%,#000)}
+.pvc{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+@media (max-width:640px){.pvc{grid-template-columns:1fr}}
+.pvs h5{margin:0 0 6px;font-size:14px;font-weight:800;color:var(--c);display:flex;gap:6px;align-items:baseline}
+.pvs h5 em{font-style:normal;font-size:13px;font-weight:700;color:var(--muted)}
+.pvs.midi{--c:var(--midi)} .pvs.soir{--c:var(--soir)}
+.pvl{display:flex;flex-direction:column;gap:6px}
+.pvr{display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:8px;min-height:50px;padding:6px 12px;border-radius:12px;border:1px solid var(--line);border-left:4px solid var(--c);background:var(--sunken);color:var(--fg);text-align:left;font:inherit;font-size:16px;font-weight:700;cursor:pointer}
+.pvr:active{transform:scale(.99)}
+.pvr .e{font-size:20px;text-align:center}
+.pvr small{display:block;font-size:12px;font-weight:600;color:var(--muted)}
+.pvr b{font-family:var(--display);font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--c)}
+.pve{margin:0;padding:12px;border-radius:12px;border:1.5px dashed var(--line);color:var(--muted);font-size:14px;font-weight:600;text-align:center}
+/* Fenêtre d'ajout / modification (monte du bas) */
+.psh{position:fixed;inset:0;z-index:40;background:rgba(10,8,4,.55);display:flex;align-items:flex-end;justify-content:center}
+.pbox{background:var(--surface);width:100%;max-width:520px;max-height:92vh;border-radius:22px 22px 0 0;display:flex;flex-direction:column;padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px));gap:10px;animation:pup .22s ease-out}
+@keyframes pup{from{transform:translateY(40px);opacity:0}}
+.pbh{display:flex;align-items:center;gap:8px}
+.pbh b{flex:1;font-family:var(--display);font-size:20px;font-weight:800}
+.pbh button{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--sunken);color:var(--fg);font-size:18px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:14px;background:var(--sunken);border:1px solid var(--line)}
+.seg button{height:44px;border:0;border-radius:10px;background:none;color:var(--muted);font:inherit;font-size:16px;font-weight:800}
+.seg button[aria-pressed="true"][data-s="midi"]{background:var(--midi-soft);color:var(--midi)}
+.seg button[aria-pressed="true"][data-s="soir"]{background:var(--soir-soft);color:var(--soir)}
+.pq{height:50px;border-radius:12px;border:1.5px solid var(--line);background:var(--sunken);padding:0 14px;font:inherit;font-size:17px;color:var(--fg)}
+.pq:focus{outline:none;border-color:var(--accent)}
+.pls{flex:1;min-height:120px;overflow:auto;display:grid;grid-template-columns:1fr 1fr;gap:6px;align-content:start;overscroll-behavior:contain}
+.pch{min-height:48px;padding:6px 10px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;font-size:15px;font-weight:700;text-align:left;display:flex;align-items:center;gap:6px;line-height:1.15}
+.pch[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 2px var(--accent) inset}
+.pch.new{grid-column:1/-1;border-style:dashed;color:var(--accent-ink);background:var(--accent-soft)}
+.pch small{font-weight:600;color:var(--muted)}
+.plib{display:grid;grid-template-columns:minmax(0,1fr) 130px;gap:8px;align-items:center;padding:10px;border-radius:12px;background:var(--accent-soft)}
+.plib span{font-weight:800;font-size:15px;line-height:1.2}
+.plib span small{display:block;font-weight:600;font-size:12px;color:var(--muted)}
+.plib .in{position:relative}
+.plib input{width:100%;height:48px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);text-align:center;font:inherit;font-size:18px;font-weight:800;padding-right:22px;color:var(--fg)}
+.plib .in i{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-style:normal;font-weight:700;color:var(--muted)}
+.pqt{display:grid;grid-template-columns:52px 64px 52px minmax(0,1fr);gap:6px;align-items:center}
+.pqt>button{height:52px;border-radius:12px;border:1px solid var(--line);background:var(--sunken);color:var(--fg);font-size:24px;font-weight:800}
+.pqt output{text-align:center;font-family:var(--display);font-size:28px;font-weight:800;font-variant-numeric:tabular-nums}
+.pqc{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.pqc button{height:52px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;font-size:17px;font-weight:800}
+.pqc button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.pgo{height:56px;font-size:18px;font-weight:800;border-radius:14px}
+.pgo:disabled{opacity:.45}
+.pdel{height:48px;border-radius:12px;border:1px solid var(--line);background:none;color:var(--danger);font:inherit;font-size:16px;font-weight:700}
 .f.wide{grid-column:1/-1}
 .hbtn{display:block;margin:10px auto 0;min-height:44px;padding:0 16px;border-radius:12px;border:1px solid var(--line);background:var(--sunken);font-weight:700;font-size:14px;color:var(--fg)}
 .hl{display:flex;flex-direction:column;gap:10px;max-height:60vh;overflow:auto}
@@ -382,8 +418,7 @@ html.vue-plats #vPlats{display:block} html.vue-plats #vMois{display:none}
           <div class="f"><label for="clients_midi_sp">🍽️ Sur place</label><div class="in"><input id="clients_midi_sp" data-k="clients_midi_sp" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
           <div class="f"><label for="clients_midi_emp">🥡 À emporter</label><div class="in"><input id="clients_midi_emp" data-k="clients_midi_emp" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
           <div class="f wide"><label for="ca_midi">CA</label><div class="in"><input id="ca_midi" class="eur" data-k="ca_midi" inputmode="decimal" autocomplete="off" placeholder="–"><span>€</span></div></div>
-        </div>
-        <details class="carte" data-sv="midi"><summary><span>🍽️ Plats vendus</span><em id="cn_midi"></em></summary><div class="cg"><div class="cc w"><label for="plats_midi">🍲 Plats du jour</label><input id="plats_midi" data-k="plats_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><span class="ct">🍔 Burgers</span><div class="cc"><label for="bb_boeuf_midi">Bœuf</label><input id="bb_boeuf_midi" data-k="bb_boeuf_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="bb_poulet_midi">Poulet</label><input id="bb_poulet_midi" data-k="bb_poulet_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="bb_vege_midi">Végé</label><input id="bb_vege_midi" data-k="bb_vege_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="bb_pulled_midi">Pulled pork</label><input id="bb_pulled_midi" data-k="bb_pulled_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="bb_smash1_midi">Smash simple</label><input id="bb_smash1_midi" data-k="bb_smash1_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="bb_smash2_midi">Smash double</label><input id="bb_smash2_midi" data-k="bb_smash2_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="burgers_midi">⭐ Burger du mois</label><input id="burgers_midi" data-k="burgers_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><span class="ct">📋 Carte</span><div class="cc"><label for="pc_curry_midi">Curry</label><input id="pc_curry_midi" data-k="pc_curry_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_escalope_midi">Escalope panée</label><input id="pc_escalope_midi" data-k="pc_escalope_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_salade_midi">Salade du moment</label><input id="pc_salade_midi" data-k="pc_salade_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_focaccia_midi">Focaccia</label><input id="pc_focaccia_midi" data-k="pc_focaccia_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_enfant_midi">Menu enfant</label><input id="pc_enfant_midi" data-k="pc_enfant_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_poutine_midi">Poutine</label><input id="pc_poutine_midi" data-k="pc_poutine_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_frites_midi">Frites vosgiennes</label><input id="pc_frites_midi" data-k="pc_frites_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_popcorn_midi">Popcorn de poulet</label><input id="pc_popcorn_midi" data-k="pc_popcorn_midi" inputmode="numeric" autocomplete="off" placeholder="–"></div></div></details></div>
+        </div></div>
       <div class="grp soir"><h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>Soir</h4>
         <div class="fields">
           <div class="f"><label for="clients_soir_sp">🍽️ Sur place</label><div class="in"><input id="clients_soir_sp" data-k="clients_soir_sp" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
@@ -394,13 +429,14 @@ html.vue-plats #vPlats{display:block} html.vue-plats #vMois{display:none}
         <div class="themeb" id="themeBox" hidden><h5 id="thName"></h5>
           <div class="f" id="thPersF"><label for="theme_pers">Personnes venues pour la soirée</label><div class="thrw"><div class="in"><input id="theme_pers" data-k="theme_pers" inputmode="numeric" autocomplete="off" placeholder="–"></div><span class="px" id="thPx"></span></div></div>
           <div class="f" id="thCaF"><label for="ca_theme">Chiffre de la soirée</label><div class="in"><input id="ca_theme" class="eur" data-k="ca_theme" inputmode="decimal" autocomplete="off" placeholder="–"><span>€</span></div></div>
-          <div class="thr" id="thRes" aria-live="polite"></div></div>
-        <details class="carte" data-sv="soir"><summary><span>🍽️ Plats vendus</span><em id="cn_soir"></em></summary><div class="cg"><div class="cc w"><label for="plats_soir">🍲 Plats du jour</label><input id="plats_soir" data-k="plats_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><span class="ct">🍔 Burgers</span><div class="cc"><label for="bb_boeuf_soir">Bœuf</label><input id="bb_boeuf_soir" data-k="bb_boeuf_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="bb_poulet_soir">Poulet</label><input id="bb_poulet_soir" data-k="bb_poulet_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="bb_vege_soir">Végé</label><input id="bb_vege_soir" data-k="bb_vege_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="bb_pulled_soir">Pulled pork</label><input id="bb_pulled_soir" data-k="bb_pulled_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="bb_smash1_soir">Smash simple</label><input id="bb_smash1_soir" data-k="bb_smash1_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="bb_smash2_soir">Smash double</label><input id="bb_smash2_soir" data-k="bb_smash2_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="burgers_soir">⭐ Burger du mois</label><input id="burgers_soir" data-k="burgers_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><span class="ct">📋 Carte</span><div class="cc"><label for="pc_curry_soir">Curry</label><input id="pc_curry_soir" data-k="pc_curry_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_escalope_soir">Escalope panée</label><input id="pc_escalope_soir" data-k="pc_escalope_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_salade_soir">Salade du moment</label><input id="pc_salade_soir" data-k="pc_salade_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_focaccia_soir">Focaccia</label><input id="pc_focaccia_soir" data-k="pc_focaccia_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_enfant_soir">Menu enfant</label><input id="pc_enfant_soir" data-k="pc_enfant_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_poutine_soir">Poutine</label><input id="pc_poutine_soir" data-k="pc_poutine_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_frites_soir">Frites vosgiennes</label><input id="pc_frites_soir" data-k="pc_frites_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div><div class="cc"><label for="pc_popcorn_soir">Popcorn de poulet</label><input id="pc_popcorn_soir" data-k="pc_popcorn_soir" inputmode="numeric" autocomplete="off" placeholder="–"></div></div></details></div>
+          <div class="thr" id="thRes" aria-live="polite"></div></div></div>
       <div class="grp autre"><h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>Refusés</h4>
         <div class="fields one">
           <div class="f"><label for="refuses">Clients refusés (faute de place)</label><div class="in"><input id="refuses" data-k="refuses" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
         </div></div>
     </div>
+    <div class="pv" aria-label="Plats vendus ce jour-là"><div class="pvh"><h4>🍽️ Plats vendus</h4><button class="btn pvadd" id="pvAdd" type="button">＋ Ajouter</button></div>
+      <div class="pvc"><div class="pvs midi"><h5>☀️ Midi <em id="cn_midi"></em></h5><div class="pvl" id="pvl_midi"></div></div><div class="pvs soir"><h5>🌙 Soir <em id="cn_soir"></em></h5><div class="pvl" id="pvl_soir"></div></div></div></div>
     <div class="daytot" id="dayTot"></div>
     <button class="hbtn" id="hBtn" type="button" hidden></button>
   </section>
@@ -464,7 +500,14 @@ const S={y:now.getFullYear(),m:now.getMonth(),d:now.getDate(),data:{},evs:[],pen
 const BG=[["boeuf","Bœuf"],["poulet","Poulet"],["vege","Végétarien"],["pulled","Pulled pork"],["smash1","Smash simple"],["smash2","Smash double"]];   // smash : dans le dépliant de la carte
 /* Plats de la carte (dépliant) : pc_<plat>_<service> */
 const CARTE=[["curry","Curry"],["escalope","Escalope de porc panée"],["salade","Salade du moment"],["focaccia","Focaccia"],["enfant","Menu enfant"],["poutine","Poutine"],["frites","Frites vosgiennes"],["popcorn","Popcorn de poulet"]];
-const FIELDS=["clients_midi_sp","clients_midi_emp","ca_midi","plats_midi",...BG.map(([b])=>"bb_"+b+"_midi"),"burgers_midi",...CARTE.map(([c])=>"pc_"+c+"_midi"),"clients_soir_sp","clients_soir_emp","ca_jour","plats_soir",...BG.map(([b])=>"bb_"+b+"_soir"),"burgers_soir",...CARTE.map(([c])=>"pc_"+c+"_soir"),"theme_pers","ca_theme","refuses"];
+const FIELDS=["clients_midi_sp","clients_midi_emp","ca_midi","clients_soir_sp","clients_soir_emp","ca_jour","theme_pers","ca_theme","refuses"];
+/* Plats vendus. Plats de la carte : un nombre par plat et par service, dans la même case qu'avant (plats_, bb_, burgers_, pc_) :
+   une seule ligne par plat, ajouter deux fois additionne. Plats hors carte (suggestion du jour…) : liste « libres » du jour,
+   table suivi_libres, même règle côté serveur (même nom + même service = une ligne).
+   Les plats vendus ne touchent JAMAIS au CA : le CA vient seulement de la caisse (midi, total de la journée). */
+const DISH=[{k:"plats",e:"🍲",l:"Plat du jour"},...BG.map(([b,l])=>({k:"bb_"+b,e:"🍔",l:"Burger "+l.toLowerCase()})),{k:"burgers",e:"⭐",l:"Burger du mois"},...CARTE.map(([c,l])=>({k:"pc_"+c,e:"📋",l}))];
+const libres=(r,sv)=>(r&&Array.isArray(r.libres)?r.libres:[]).filter(x=>!sv||x.service===sv);
+const libQ=(r,sv)=>add(...libres(r,sv).map(x=>x.qte));
 const EUR=new Set(["ca_midi","ca_soir","ca_jour","ca_theme"]);
 const nf0=new Intl.NumberFormat("fr-FR",{maximumFractionDigits:0});
 const nf2=new Intl.NumberFormat("fr-FR",{minimumFractionDigits:0,maximumFractionDigits:2});
@@ -513,7 +556,7 @@ function themeSplit(dk,r,soir){
 }
 const prestaCA=dk=>dk>TODAY?null:add(...evsOf(dk).filter(paye).map(prixEv));
 const bgs=(r,sv)=>add(...BG.map(([b])=>val(r,"bb_"+b+"_"+sv)));            // les burgers de la carte (4 types + smash)
-const carte=(r,sv)=>add(...CARTE.map(([c])=>val(r,"pc_"+c+"_"+sv)));        // les autres plats de la carte
+const carte=(r,sv)=>add(...CARTE.map(([c])=>val(r,"pc_"+c+"_"+sv)),libQ(r,sv));   // les autres plats de la carte + hors carte
 const bgAll=(r,sv)=>add(bgs(r,sv),val(r,"burgers_"+sv));                         // + burger du mois
 function totals(r){const cm=add(sp(r,"midi"),emp(r,"midi")),cs=add(sp(r,"soir"),emp(r,"soir"));
   return {cm,cs,clients:add(cm,cs),sp:add(sp(r,"midi"),sp(r,"soir")),emp:add(emp(r,"midi"),emp(r,"soir")),ca:jourCA(r),burgers:add(val(r,"burgers_midi"),val(r,"burgers_soir")),
@@ -532,7 +575,7 @@ function compare(){
 }
 function monthSums(){
   const s={midi_sp:null,midi_emp:null,soir_sp:null,soir_emp:null,ca_midi:null,ca_soir:null,burgers_midi:null,burgers_soir:null,refuses:null,clients:null,sp:null,emp:null,ca:null,burgers:null,
-    soir_n:null,theme:null,priv:null,trait:null,plats:null,bg:null,carte:null,bg_midi:null,bg_soir:null};
+    soir_n:null,theme:null,priv:null,trait:null,plats:null,bg:null,carte:null,bg_midi:null,bg_soir:null,lib_midi:null,lib_soir:null};
   const NK=["plats_midi","plats_soir",...["midi","soir"].flatMap(sv=>[...BG.map(([b])=>"bb_"+b+"_"+sv),...CARTE.map(([c])=>"pc_"+c+"_"+sv)])];NK.forEach(k=>s[k]=null);
   for(let d=1;d<=daysIn(S.y,S.m);d++){const dk=key(S.y,S.m,d);
     if(dk<=TODAY)evsOf(dk).filter(paye).forEach(e=>{const k=e.type==="traiteur"?"trait":"priv";s[k]=add(s[k],prixEv(e))});
@@ -541,7 +584,7 @@ function monthSums(){
     s.midi_sp=add(s.midi_sp,sp(r,"midi"));s.midi_emp=add(s.midi_emp,emp(r,"midi"));s.soir_sp=add(s.soir_sp,sp(r,"soir"));s.soir_emp=add(s.soir_emp,emp(r,"soir"));
     ["ca_midi","burgers_midi","burgers_soir","refuses"].forEach(k=>s[k]=add(s[k],val(r,k)));s.ca_soir=add(s.ca_soir,soirCA(r));
     ["clients","sp","emp","ca","burgers","plats","bg","carte"].forEach(k=>s[k]=add(s[k],t[k]));
-    NK.forEach(k=>s[k]=add(s[k],val(r,k)));s.bg_midi=add(s.bg_midi,bgAll(r,"midi"));s.bg_soir=add(s.bg_soir,bgAll(r,"soir"))}
+    NK.forEach(k=>s[k]=add(s[k],val(r,k)));s.bg_midi=add(s.bg_midi,bgAll(r,"midi"));s.bg_soir=add(s.bg_soir,bgAll(r,"soir"));s.lib_midi=add(s.lib_midi,libQ(r,"midi"));s.lib_soir=add(s.lib_soir,libQ(r,"soir"))}
   s.presta=add(s.priv,s.trait);s.total=add(s.ca,s.presta);   // total du mois = caisse + prestations payées à part
   return s;
 }
@@ -633,17 +676,22 @@ function renderTheme(){
   const r=$("#thRes");r.className="thr"+cls;r.innerHTML=h;
 }
 ["#ca_midi","#ca_jour","#theme_pers","#ca_theme"].forEach(id=>$(id).addEventListener("input",()=>{renderSoir();renderTheme()}));
-/* Dépliant des plats vendus : combien de plats notés (vu même fermé) ; ouvert ou fermé gardé sur le téléphone */
-function renderCarte(){["midi","soir"].forEach(sv=>{
-  const ks=["plats_"+sv,...BG.map(([b])=>"bb_"+b+"_"+sv),"burgers_"+sv,...CARTE.map(([c])=>"pc_"+c+"_"+sv)];
-  const n=add(...ks.map(k=>{const v=parseNum($("#"+k).value,false);return v===undefined?null:v}));
-  $("#cn_"+sv).textContent=n?n+" vendu"+(n>1?"s":""):"à remplir"})}
-document.querySelectorAll(".carte").forEach(d=>{
-  try{if(localStorage.getItem("chiffres2b-carte-"+d.dataset.sv)==="1")d.open=true}catch{}
-  d.addEventListener("toggle",()=>{try{localStorage.setItem("chiffres2b-carte-"+d.dataset.sv,d.open?"1":"0")}catch{}});
-  d.addEventListener("input",renderCarte)});
+/* Plats vendus du jour : une ligne par plat, le plus vendu en haut ; toucher une ligne pour la modifier */
+function pvItems(row,sv){
+  const c=DISH.map(d=>({d,sv,q:val(row,d.k+"_"+sv)})).filter(x=>x.q);
+  const l=libres(row,sv).map(x=>({id:x.id,nom:x.nom,prix:x.prix,sv,q:x.qte}));
+  return [...c,...l].sort((a,b)=>b.q-a.q)}
+function renderPV(){const row=S.data[key(S.y,S.m,S.d)]||{};PVI={};
+  ["midi","soir"].forEach(sv=>{const it=pvItems(row,sv),n=add(...it.map(x=>x.q));
+    $("#cn_"+sv).textContent=n?n+" vendu"+(n>1?"s":""):"";
+    $("#pvl_"+sv).innerHTML=it.length?it.map((x,i)=>{PVI[sv+i]=x;
+      return `<button type="button" class="pvr" data-i="${sv+i}"><span class="e">${x.d?x.d.e:"✨"}</span><span class="n">${esc(x.d?x.d.l:x.nom)}${x.d?"":`<small>Hors carte${x.prix!=null?" · "+eur(+x.prix):""}</small>`}</span><b>× ${int(x.q)}</b></button>`}).join("")
+      :`<p class="pve">Rien de noté</p>`})}
+let PVI={};
+document.querySelector(".pv").addEventListener("click",e=>{const b=e.target.closest(".pvr");if(b&&PVI[b.dataset.i])pvOpen(PVI[b.dataset.i])});
+$("#pvAdd").onclick=()=>pvOpen(null);
 function renderTotals(){
-  renderSoir();renderTheme();renderCarte();const row=S.data[key(S.y,S.m,S.d)]||{};const t=totals(row);
+  renderSoir();renderTheme();renderPV();const row=S.data[key(S.y,S.m,S.d)]||{};const t=totals(row);
   const pj=evsOf(key(S.y,S.m,S.d)).map(e=>`<span>${PRESTA[e.type].e} ${esc(PRESTA[e.type].l)} <b>${esc(e.client)}</b>${paye(e)&&prixEv(e)!=null?` : <b class="num">${eur(prixEv(e))}</b> <small>(à part de la caisse)</small>`:""}</span>`).join("");
   $("#dayTot").innerHTML=pj+`<span>Clients <b class="num">${t.clients==null?"–":int(t.clients)}</b>${t.emp?` <small>(dont ${int(t.emp)} à emporter)</small>`:""}</span><span>CA de la journée <b class="num">${t.ca==null?"–":eur(t.ca)}</b></span><span>Plats du jour <b class="num">${t.plats==null?"–":int(t.plats)}</b></span>${t.carte!=null?`<span>Plats de la carte <b class="num">${int(t.carte)}</b></span>`:""}<span>Burgers <b class="num">${t.bg==null?"–":int(t.bg)}</b>${t.burgers?` <small>(dont ${int(t.burgers)} du mois)</small>`:""}</span>`;
   const nc=(S.corr||{})[key(S.y,S.m,S.d)];$("#hBtn").hidden=!nc;$("#hBtn").textContent=`🕘 ${nc} correction${nc>1?"s":""} ce jour-là : voir l'historique`;
@@ -667,10 +715,11 @@ function prestaItem(e){
 /* Burgers et plats du jour du mois : total par type et part de chaque type dans les burgers vendus */
 function renderVentes(){
   const s=monthSums(),t2=k=>add(s[k+"_midi"],s[k+"_soir"]);
-  const rows=[["🍲 Plats du jour",t2("plats")],...BG.map(([b,l])=>["🍔 "+l,t2("bb_"+b)]),["⭐ Burger du mois",s.burgers],...CARTE.map(([c,l])=>[l,t2("pc_"+c)])];
+  const LB={};for(let d=1;d<=daysIn(S.y,S.m);d++)libres(S.data[key(S.y,S.m,d)]).forEach(x=>{const n=x.nom.toLowerCase();LB[n]=LB[n]||["✨ "+esc(x.nom),0];LB[n][1]+=x.qte});
+  const rows=[["🍲 Plats du jour",t2("plats")],...BG.map(([b,l])=>["🍔 "+l,t2("bb_"+b)]),["⭐ Burger du mois",s.burgers],...CARTE.map(([c,l])=>[l,t2("pc_"+c)]),...Object.values(LB)];
   const tot=add(...rows.map(r=>r[1])),mx=Math.max(1,...rows.map(r=>r[1]||0));
   rows.sort((a,b)=>(b[1]??-1)-(a[1]??-1));   // le plus vendu en haut ; rien noté = en bas
-  const tm=add(s.plats_midi,s.bg_midi,...CARTE.map(([c])=>s["pc_"+c+"_midi"])),ts=add(s.plats_soir,s.bg_soir,...CARTE.map(([c])=>s["pc_"+c+"_soir"]));
+  const tm=add(s.plats_midi,s.bg_midi,...CARTE.map(([c])=>s["pc_"+c+"_midi"]),s.lib_midi),ts=add(s.plats_soir,s.bg_soir,...CARTE.map(([c])=>s["pc_"+c+"_soir"]),s.lib_soir);
   $("#ventes").innerHTML=`<h3>🍽️ Ce qui a été vendu</h3>
     ${rows.map(([l,v])=>`<div class="rl" style="--c:var(--accent)"><span>${l}</span><span class="v">${v==null?"–":int(v)}${v&&tot?` <small class="pc">· ${Math.round(v/tot*100)} %</small>`:""}</span><span class="tr"><i style="width:${v?Math.max(1,v/mx*100):0}%"></i></span></div>`).join("")}
     <div class="rl rtot"><span>Total vendu</span><span class="v">${tot==null?"–":int(tot)}</span>${tot?`<small>Midi ${int(tm||0)} · Soir ${int(ts||0)}</small>`:""}</div>`;
@@ -697,6 +746,80 @@ $("#rep").addEventListener("change",async e=>{
   catch(err){if(lost(err))return;Object.assign(ev,old);renderRep();toast("Pas enregistré : vérifie la connexion")}
   finally{CAI.delete(ev.id)}
 });
+/* Ajouter ou modifier une vente. o = la vente touchée (null = ajout).
+   Service par défaut : midi avant 16 h, soir après. Quantité 1 par défaut. */
+const pvN=t=>String(t).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
+function pvOpen(o){
+  const dk=key(S.y,S.m,S.d);
+  let sv=o?o.sv:(new Date().getHours()<16?"midi":"soir"),q=o?o.q:1,sel=o?(o.d?{d:o.d}:{nom:o.nom,prix:o.prix}):null,txt="";
+  const known=()=>{const m={};for(let d=1;d<=daysIn(S.y,S.m);d++)libres(S.data[key(S.y,S.m,d)]).forEach(x=>{m[pvN(x.nom)]={nom:x.nom,prix:x.prix}});return Object.values(m)};
+  const m=document.createElement("div");m.className="psh";
+  m.innerHTML=`<div class="pbox" role="dialog" aria-modal="true" aria-label="${o?"Modifier la vente":"Ajouter un plat vendu"}">
+    <div class="pbh"><b>${o?"Modifier la vente":"Ajouter un plat vendu"}</b><button type="button" data-x aria-label="Fermer">✕</button></div>
+    <div class="seg"><button type="button" data-s="midi">☀️ Midi</button><button type="button" data-s="soir">🌙 Soir</button></div>
+    <input class="pq" type="search" placeholder="🔍 Chercher ou taper un plat" autocomplete="off" enterkeyhint="done">
+    <div class="pls"></div>
+    <div class="plib" hidden><span></span><div class="in"><input inputmode="decimal" placeholder="Prix" autocomplete="off" aria-label="Prix de vente"><i>€</i></div></div>
+    <div class="pqt"><button type="button" data-q="-1" aria-label="Un de moins">−</button><output aria-live="polite"></output><button type="button" data-q="1" aria-label="Un de plus">＋</button>
+      <div class="pqc">${[1,2,3,4,5].map(n=>`<button type="button" data-n="${n}">${n}</button>`).join("")}</div></div>
+    <button class="btn pgo" type="button" data-go></button>
+    ${o?`<button class="pdel" type="button" data-del>🗑️ Supprimer cette vente</button>`:""}</div>`;
+  const $m=x=>m.querySelector(x),pr=$m(".plib input");
+  if(sel&&sel.prix!=null)pr.value=String(sel.prix).replace(".",",");
+  function draw(){
+    m.querySelectorAll("[data-s]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.s===sv));
+    const t=pvN(txt),hit=x=>!t||pvN(x).includes(t);
+    const kn=known().filter(k=>hit(k.nom)),ds=DISH.filter(d=>hit(d.l));
+    const exact=t&&(DISH.some(d=>pvN(d.l)===t)||kn.some(k=>pvN(k.nom)===t));
+    $m(".pls").innerHTML=(t&&!exact?`<button type="button" class="pch new" data-new>✨ Ajouter « ${esc(txt.trim())} » <small>(hors carte)</small></button>`:"")
+      +ds.map(d=>`<button type="button" class="pch" data-d="${d.k}" aria-pressed="${!!(sel&&sel.d===d)}"><span>${d.e}</span>${esc(d.l)}</button>`).join("")
+      +kn.map(k=>`<button type="button" class="pch" data-l="${esc(k.nom)}" aria-pressed="${!!(sel&&!sel.d&&pvN(sel.nom)===pvN(k.nom))}"><span>✨</span>${esc(k.nom)}${k.prix!=null?` <small>${esc(eur(+k.prix))}</small>`:""}</button>`).join("")
+      ||`<p class="pve" style="grid-column:1/-1">Aucun plat trouvé</p>`;
+    const lib=$m(".plib");lib.hidden=!(sel&&!sel.d);if(!lib.hidden)lib.querySelector("span").innerHTML=`✨ ${esc(sel.nom)}<small>Plat hors carte · prix de vente</small>`;
+    $m("output").textContent=q;m.querySelectorAll("[data-n]").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.n===q));
+    const g=$m("[data-go]");g.disabled=!sel;
+    g.textContent=!sel?"Choisis un plat":`✓ ${o?"Enregistrer":"Ajouter"} · ${q} × ${sel.d?sel.d.l:sel.nom}`;
+  }
+  const close=()=>m.remove();
+  m.addEventListener("click",e=>{const b=e.target.closest("button");if(e.target===m||(b&&b.hasAttribute("data-x")))return close();if(!b)return;
+    if(b.dataset.s){sv=b.dataset.s}
+    else if(b.dataset.q){q=Math.max(1,Math.min(500,q+ +b.dataset.q))}
+    else if(b.dataset.n){q=+b.dataset.n}
+    else if(b.dataset.d){sel={d:DISH.find(d=>d.k===b.dataset.d)}}
+    else if(b.hasAttribute("data-l")){const k=known().find(k=>pvN(k.nom)===pvN(b.dataset.l));sel={nom:k.nom,prix:k.prix};pr.value=k.prix!=null?String(k.prix).replace(".",","):""}
+    else if(b.hasAttribute("data-new")){sel={nom:txt.trim().replace(/\s+/g," ").slice(0,60),prix:null};pr.value="";setTimeout(()=>pr.focus(),50)}
+    else if(b.hasAttribute("data-go")){
+      let prix=null;if(!sel.d){prix=parseNum(pr.value,true);if(prix===undefined||(prix!=null&&prix>1000)){toast("Prix non valable");return}}
+      close();pvSave(dk,o,{sv,q,d:sel.d,nom:sel.nom,prix});return}
+    else if(b.hasAttribute("data-del")){confirmDel(()=>{close();pvSave(dk,o,null)});return}
+    draw()});
+  $m(".pq").addEventListener("input",e=>{txt=e.target.value;draw()});
+  document.body.appendChild(m);draw();
+}
+function confirmDel(yes){
+  const c=document.createElement("div");c.className="modal";
+  c.innerHTML=`<div class="box"><b style="font-size:19px">Supprimer cette vente ?</b><p style="margin:0;color:var(--muted)">Les totaux seront recalculés tout de suite.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn soft" type="button" data-n>Annuler</button><button class="btn del" type="button" data-y>Oui, supprimer</button></div></div>`;
+  c.addEventListener("click",e=>{if(e.target===c||e.target.closest("[data-n]"))c.remove();else if(e.target.closest("[data-y]")){c.remove();yes()}});
+  document.body.appendChild(c)}
+/* Enregistrer : o = ancienne vente (null = ajout), n = nouvelle (null = suppression).
+   Plat de la carte : on écrit le nouveau nombre dans sa case (l'ancienne case est vidée si le plat ou le service change).
+   Hors carte : le serveur renvoie la liste du jour, qui remplace celle du téléphone. Les totaux sont toujours recalculés depuis ces valeurs. */
+async function pvSave(dk,o,n){
+  const row=()=>S.data[dk]||{};
+  try{
+    if(o&&o.d&&n&&n.d&&o.d===n.d&&o.sv===n.sv){save(dk,n.d.k+"_"+n.sv,n.q)}
+    else{
+      if(o&&o.d)save(dk,o.d.k+"_"+o.sv,null);
+      if(o&&o.id&&!(n&&!n.d))libSet(dk,await rpc("vente_libre_supprimer",{p_id:o.id}));
+      if(n&&n.d){const k=n.d.k+"_"+n.sv;save(dk,k,(val(row(),k)||0)+n.q)}
+      if(n&&!n.d)libSet(dk,await rpc("vente_libre_enregistrer",{p_id:o&&o.id||null,p_jour:dk,p_service:n.sv,p_nom:n.nom,p_prix:n.prix,p_qte:n.q,p_par:who()}));
+    }
+    toast(!n?"Vente supprimée ✓":o?"Vente modifiée ✓":`Ajouté ✓ · ${n.q} × ${n.d?n.d.l:n.nom}`);
+  }catch(e){if(!lost(e))toast("Pas enregistré : vérifie la connexion");load()}
+}
+function libSet(dk,list){S.data[dk]={...(S.data[dk]||{})};if(list&&list.length)S.data[dk].libres=list;else delete S.data[dk].libres;renderTotals()}
+
 function render(){
   $("#mName").textContent=monthName(S.y,S.m);
   const isToday=S.y===now.getFullYear()&&S.m===now.getMonth()&&S.d===now.getDate();
@@ -724,7 +847,7 @@ function tableHTML(live){
   return `<thead><tr class="g"><th class="d" rowspan="2">Date</th><th class="gm" colspan="${live?7:6}">Midi</th><th class="gs" colspan="${live?7:6}">Soir</th><th colspan="2">Journée</th><th rowspan="2">Prestations</th><th rowspan="2">Refusés</th></tr>
     <tr><th class="gm">Sur place</th><th class="gm">Emporter</th><th class="gm">CA</th><th class="gm">Plats</th><th class="gm">Burgers</th><th class="gm">B. mois</th>${live?`<th class="gm">Carte</th>`:""}<th class="gs">Sur place</th><th class="gs">Emporter</th><th class="gs">CA</th><th class="gs">Plats</th><th class="gs">Burgers</th><th class="gs">B. mois</th>${live?`<th class="gs">Carte</th>`:""}<th>Clients</th><th>CA total</th></tr></thead>
     <tbody>${body}</tbody>
-    <tfoot><tr><td class="d">TOTAL</td>${f("x",s.midi_sp)}${f("x",s.midi_emp)}${f("ca_midi",s.ca_midi)}${f("x",s.plats_midi)}${f("x",add(...BG.map(([b])=>s["bb_"+b+"_midi"])))}${f("x",s.burgers_midi)}${live?f("x",add(...CARTE.map(([c])=>s["pc_"+c+"_midi"]))):""}${f("x",s.soir_sp)}${f("x",s.soir_emp)}${f("ca_soir",s.ca_soir)}${f("x",s.plats_soir)}${f("x",add(...BG.map(([b])=>s["bb_"+b+"_soir"])))}${f("x",s.burgers_soir)}${live?f("x",add(...CARTE.map(([c])=>s["pc_"+c+"_soir"]))):""}${f("x",s.clients)}${f("ca_midi",s.ca)}${f("ca_midi",s.presta)}${f("x",s.refuses)}</tr></tfoot>`;
+    <tfoot><tr><td class="d">TOTAL</td>${f("x",s.midi_sp)}${f("x",s.midi_emp)}${f("ca_midi",s.ca_midi)}${f("x",s.plats_midi)}${f("x",add(...BG.map(([b])=>s["bb_"+b+"_midi"])))}${f("x",s.burgers_midi)}${live?f("x",add(...CARTE.map(([c])=>s["pc_"+c+"_midi"]),s.lib_midi)):""}${f("x",s.soir_sp)}${f("x",s.soir_emp)}${f("ca_soir",s.ca_soir)}${f("x",s.plats_soir)}${f("x",add(...BG.map(([b])=>s["bb_"+b+"_soir"])))}${f("x",s.burgers_soir)}${live?f("x",add(...CARTE.map(([c])=>s["pc_"+c+"_soir"]),s.lib_soir)):""}${f("x",s.clients)}${f("ca_midi",s.ca)}${f("ca_midi",s.presta)}${f("x",s.refuses)}</tr></tfoot>`;
 }
 
 /* Tableau compact pour téléphone : 4 colonnes, sans défilement de côté */
@@ -743,7 +866,7 @@ function compactHTML(){
   const s=monthSums();
   return `<colgroup><col class="c0"><col><col><col></colgroup>
     <thead><tr><th class="d">Jour</th><th class="gm">Midi</th><th class="gs">Soir</th><th>Journée</th></tr></thead><tbody>${body}</tbody>
-    <tfoot><tr><td class="d">Total</td>${svc(s.ca_midi,s.midi_sp,s.midi_emp,s.bg_midi,"","",s.plats_midi,add(...CARTE.map(([c])=>s["pc_"+c+"_midi"])))}${svc(s.ca_soir,s.soir_sp,s.soir_emp,s.bg_soir,"","",s.plats_soir,add(...CARTE.map(([c])=>s["pc_"+c+"_soir"])))}${dayCell(s,s.refuses,s.presta?"+ "+eur(s.presta)+" presta.":"")}</tr></tfoot>`;
+    <tfoot><tr><td class="d">Total</td>${svc(s.ca_midi,s.midi_sp,s.midi_emp,s.bg_midi,"","",s.plats_midi,add(...CARTE.map(([c])=>s["pc_"+c+"_midi"]),s.lib_midi))}${svc(s.ca_soir,s.soir_sp,s.soir_emp,s.bg_soir,"","",s.plats_soir,add(...CARTE.map(([c])=>s["pc_"+c+"_soir"]),s.lib_soir))}${dayCell(s,s.refuses,s.presta?"+ "+eur(s.presta)+" presta.":"")}</tr></tfoot>`;
 }
 
 /* Graphique : CA de chaque jour, côte à côte. « Séparer midi et soir » (décoché au départ) donne deux graphiques

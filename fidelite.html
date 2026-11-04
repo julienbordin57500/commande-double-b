@@ -385,7 +385,7 @@ function show(c,anim){
   $("#fLv").hidden=!c.niveau;$("#fLv").textContent=NIVN[c.niveau]||"";
   // Ce qu'il y a à lui donner, tout en haut : impossible de l'oublier
   const t=[];
-  if(s>=10)t.push(`<div class="td go"><em>🎁</em><span><b>Burger offert disponible</b><small>Il a ${s} tampons · on en retire 10</small></span><button type="button" data-t="offrir">Offrir</button></div>`);
+  if(s>=10)t.push(`<div class="td go"><em>🎁</em><span><b>Burger offert disponible</b><small>Le moins cher de sa commande · on retire 10 tampons</small></span><button type="button" data-t="offrir">Offrir</button></div>`);
   (c.cadeaux||[]).forEach(k=>t.push(`<div class="td"><em>${CADX[k][0]}</em><span><b>Cadeau ${CADX[k][1]} : ${CADX[k][2]}</b><small>Une seule fois, avec sa commande</small></span><button type="button" data-t="cad" data-k="${k}">Donné ✓</button></div>`));
   if(c.anniv_dispo)t.push(`<div class="td"><em>🎂</em><span><b>Anniversaire : un produit offert</b><small>Avec sa commande, jusqu'au ${dmF(c.anniv_fin)}${c.sms?` · ${c.sms.statut==="envoye"?"SMS envoyé ✓":"SMS à envoyer (Bilan)"}`:""}</small></span><button type="button" data-t="anniv">Donné ✓</button></div>`);
   $("#fTodo").hidden=!t.length;$("#fTodo").innerHTML=`<div class="tdh">À lui donner</div>`+t.join("");
@@ -403,7 +403,7 @@ function doneMsg(c,n,pre=""){const h=c.historique.find(x=>x.sorte==="burger"&&!x
   $("#fUndo").hidden=!LAST;$("#fDone").hidden=false;
   // Le bandeau reste visible au-dessus de la barre du bas
   requestAnimationFrame(()=>{const r=$("#fDone").getBoundingClientRect(),lim=innerHeight-100;if(r.bottom>lim)scrollBy({top:r.bottom-lim,behavior:"smooth"})})}
-const CADX={1:["🥤","Bronze","une boisson"],2:["🍟","Argent","des frites"],3:["🍰","Or","un dessert"]},NIVN=["","🥉 Bronze","🥈 Argent","🥇 Or"];
+const CADX={1:["🥤","Bronze","une boisson"],2:["🍟","Argent","une frite"],3:["🍰","Or","un dessert"]},NIVN=["","🥉 Bronze","🥈 Argent","🥇 Or"];
 let Q=1;
 function qSet(n){Q=Math.max(1,Math.min(50,n));$("#qN").textContent=Q;$("#qGo").textContent=`✓ Valider · +${Q} tampon${Q>1?"s":""}`;
   document.querySelectorAll("#qC button").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.n===Q)))}
@@ -414,7 +414,7 @@ qSet(1);
 $("#fUndo").onclick=async()=>{if(!LAST||busy)return;busy=true;
   try{show(await rpc("fid_annuler",{p_mvt:LAST,p_par:who()}));$("#fDone").hidden=true;toast("Annulé ✓")}catch(e){fail(e)}finally{busy=false}};
 $("#fTodo").addEventListener("click",e=>{const b=e.target.closest("button[data-t]");if(!b||!CUR)return;const t=b.dataset.t;
-  if(t==="offrir")confirmBox("🎁 Offrir le burger ?",`${esc(CUR.prenom)} a ${CUR.solde} tampons. On en retire 10.`,"Oui, burger offert",()=>act("fid_offrir",{p_par:who()},"Burger offert ✓ · bon appétit !"));
+  if(t==="offrir")confirmBox("🎁 Offrir le burger ?",`${esc(CUR.prenom)} a ${CUR.solde} tampons. On offre le burger le moins cher de sa commande et on retire 10 tampons.`,"Oui, burger offert",()=>act("fid_offrir",{p_par:who()},"Burger offert ✓ · bon appétit !"));
   else if(t==="cad"){const k=+b.dataset.k;act("fid_cadeau",{p_palier:k,p_par:who()},`Cadeau ${CADX[k][1]} noté ✓`)}
   else act("fid_anniv",{p_par:who()},"Cadeau d'anniversaire noté ✓")});
 $("#fHist").addEventListener("click",e=>{const b=e.target.closest("[data-x]");if(!b||busy)return;
