@@ -168,9 +168,10 @@ td.pt{font-size:13px} td.pt.fut{color:var(--muted)} .compact i.p{color:var(--fg)
 .pvr small{display:block;font-size:12px;font-weight:600;color:var(--muted)}
 .pvr b{font-family:var(--display);font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--c)}
 .pve{margin:0;padding:12px;border-radius:12px;border:1.5px dashed var(--line);color:var(--muted);font-size:14px;font-weight:600;text-align:center}
-/* Fenêtre d'ajout / modification (monte du bas) */
+/* Fenêtre des plats vendus (monte du bas) : tous les plats du service, − / + sur chaque ligne, un seul Valider */
 .psh{position:fixed;inset:0;z-index:40;background:rgba(10,8,4,.55);display:flex;align-items:flex-end;justify-content:center}
-.pbox{background:var(--surface);width:100%;max-width:520px;max-height:92vh;border-radius:22px 22px 0 0;display:flex;flex-direction:column;padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px));gap:10px;animation:pup .22s ease-out}
+.pbox{--c:var(--midi);background:var(--surface);width:100%;max-width:520px;height:92vh;height:92dvh;border-radius:22px 22px 0 0;display:flex;flex-direction:column;padding:14px 14px calc(12px + env(safe-area-inset-bottom,0px));gap:8px;animation:pup .22s ease-out}
+.pbox.soir{--c:var(--soir)}
 @keyframes pup{from{transform:translateY(40px);opacity:0}}
 .pbh{display:flex;align-items:center;gap:8px}
 .pbh b{flex:1;font-family:var(--display);font-size:20px;font-weight:800}
@@ -179,28 +180,30 @@ td.pt{font-size:13px} td.pt.fut{color:var(--muted)} .compact i.p{color:var(--fg)
 .seg button{height:44px;border:0;border-radius:10px;background:none;color:var(--muted);font:inherit;font-size:16px;font-weight:800}
 .seg button[aria-pressed="true"][data-s="midi"]{background:var(--midi-soft);color:var(--midi)}
 .seg button[aria-pressed="true"][data-s="soir"]{background:var(--soir-soft);color:var(--soir)}
-.pq{height:50px;border-radius:12px;border:1.5px solid var(--line);background:var(--sunken);padding:0 14px;font:inherit;font-size:17px;color:var(--fg)}
-.pq:focus{outline:none;border-color:var(--accent)}
-.pls{flex:1;min-height:120px;overflow:auto;display:grid;grid-template-columns:1fr 1fr;gap:6px;align-content:start;overscroll-behavior:contain}
-.pch{min-height:48px;padding:6px 10px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;font-size:15px;font-weight:700;text-align:left;display:flex;align-items:center;gap:6px;line-height:1.15}
-.pch[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 2px var(--accent) inset}
-.pch.new{grid-column:1/-1;border-style:dashed;color:var(--accent-ink);background:var(--accent-soft)}
-.pch small{font-weight:600;color:var(--muted)}
-.plib{display:grid;grid-template-columns:minmax(0,1fr) 130px;gap:8px;align-items:center;padding:10px;border-radius:12px;background:var(--accent-soft)}
-.plib span{font-weight:800;font-size:15px;line-height:1.2}
-.plib span small{display:block;font-weight:600;font-size:12px;color:var(--muted)}
-.plib .in{position:relative}
-.plib input{width:100%;height:48px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);text-align:center;font:inherit;font-size:18px;font-weight:800;padding-right:22px;color:var(--fg)}
-.plib .in i{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-style:normal;font-weight:700;color:var(--muted)}
-.pqt{display:grid;grid-template-columns:52px 64px 52px minmax(0,1fr);gap:6px;align-items:center}
-.pqt>button{height:52px;border-radius:12px;border:1px solid var(--line);background:var(--sunken);color:var(--fg);font-size:24px;font-weight:800}
-.pqt output{text-align:center;font-family:var(--display);font-size:28px;font-weight:800;font-variant-numeric:tabular-nums}
-.pqc{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
-.pqc button{height:52px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;font-size:17px;font-weight:800}
-.pqc button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.seg button em{font-style:normal;font-size:13px;font-weight:700;opacity:.8}
+.pq{height:46px;flex:none;border-radius:12px;border:1.5px solid var(--line);background:var(--sunken);padding:0 14px;font:inherit;font-size:16px;color:var(--fg)}
+.pq:focus{outline:none;border-color:var(--c)}
+.prl{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:6px;overscroll-behavior:contain;padding-bottom:4px}
+.prh{font-size:13px;font-weight:800;color:var(--muted);margin:6px 2px 0}
+.prw{display:grid;grid-template-columns:minmax(0,1fr) 46px 56px 46px;gap:5px;align-items:center;padding:3px 3px 3px 4px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface)}
+.prw.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 10%,var(--surface))}
+.prw.fl{animation:pfl 1.2s ease-out}
+@keyframes pfl{0%,40%{box-shadow:0 0 0 3px var(--c)}}
+.prw .n{min-height:46px;border:0;background:none;color:var(--fg);font:inherit;font-size:15px;font-weight:700;text-align:left;display:flex;align-items:center;gap:8px;line-height:1.15;padding:0 6px}
+.prw .n small{display:block;font-size:12px;font-weight:600;color:var(--muted)}
+.prw .m,.prw .p{height:46px;border-radius:10px;border:1px solid var(--line);background:var(--sunken);color:var(--fg);font-size:24px;font-weight:800;line-height:1}
+.prw .p{background:var(--c);border-color:var(--c);color:var(--bg)}
+.prw input{width:100%;height:46px;border-radius:10px;border:1.5px solid var(--line);background:var(--sunken);text-align:center;font:inherit;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--fg);padding:0}
+.prw.on input{border-color:var(--c);color:var(--c)}
+.prw input:focus{outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 30%,transparent)}
+.pnew{display:grid;grid-template-columns:minmax(0,1fr) 88px;gap:6px;padding:8px;border-radius:12px;border:1.5px dashed color-mix(in srgb,var(--c) 45%,var(--line));background:var(--sunken)}
+.pnew b{grid-column:1/-1;font-size:14px;font-weight:800}
+.pnew input{height:46px;min-width:0;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);padding:0 10px;font:inherit;font-size:16px;color:var(--fg)}
+.pnew input:focus{outline:none;border-color:var(--c)}
+.pnew button{grid-column:1/-1;height:46px;border-radius:10px;border:0;background:var(--c);color:var(--bg);font:inherit;font-size:16px;font-weight:800}
+.pft{flex:none;display:flex;flex-direction:column;gap:4px;padding-top:6px;border-top:1px solid var(--line)}
+.pft small{text-align:center;font-size:13px;font-weight:700;color:var(--muted)}
 .pgo{height:56px;font-size:18px;font-weight:800;border-radius:14px}
-.pgo:disabled{opacity:.45}
-.pdel{height:48px;border-radius:12px;border:1px solid var(--line);background:none;color:var(--danger);font:inherit;font-size:16px;font-weight:700}
 .f.wide{grid-column:1/-1}
 .hbtn{display:block;margin:10px auto 0;min-height:44px;padding:0 16px;border-radius:12px;border:1px solid var(--line);background:var(--sunken);font-weight:700;font-size:14px;color:var(--fg)}
 .hl{display:flex;flex-direction:column;gap:10px;max-height:60vh;overflow:auto}
@@ -688,8 +691,8 @@ function renderPV(){const row=S.data[key(S.y,S.m,S.d)]||{};PVI={};
       return `<button type="button" class="pvr" data-i="${sv+i}"><span class="e">${x.d?x.d.e:"✨"}</span><span class="n">${esc(x.d?x.d.l:x.nom)}${x.d?"":`<small>Hors carte${x.prix!=null?" · "+eur(+x.prix):""}</small>`}</span><b>× ${int(x.q)}</b></button>`}).join("")
       :`<p class="pve">Rien de noté</p>`})}
 let PVI={};
-document.querySelector(".pv").addEventListener("click",e=>{const b=e.target.closest(".pvr");if(b&&PVI[b.dataset.i])pvOpen(PVI[b.dataset.i])});
-$("#pvAdd").onclick=()=>pvOpen(null);
+document.querySelector(".pv").addEventListener("click",e=>{const b=e.target.closest(".pvr"),x=b&&PVI[b.dataset.i];if(x)pvOpen(x.sv,x.d?"c:"+x.d.k:"l:"+x.id)});
+$("#pvAdd").onclick=()=>pvOpen();
 function renderTotals(){
   renderSoir();renderTheme();renderPV();const row=S.data[key(S.y,S.m,S.d)]||{};const t=totals(row);
   const pj=evsOf(key(S.y,S.m,S.d)).map(e=>`<span>${PRESTA[e.type].e} ${esc(PRESTA[e.type].l)} <b>${esc(e.client)}</b>${paye(e)&&prixEv(e)!=null?` : <b class="num">${eur(prixEv(e))}</b> <small>(à part de la caisse)</small>`:""}</span>`).join("");
@@ -746,77 +749,94 @@ $("#rep").addEventListener("change",async e=>{
   catch(err){if(lost(err))return;Object.assign(ev,old);renderRep();toast("Pas enregistré : vérifie la connexion")}
   finally{CAI.delete(ev.id)}
 });
-/* Ajouter ou modifier une vente. o = la vente touchée (null = ajout).
-   Service par défaut : midi avant 16 h, soir après. Quantité 1 par défaut. */
+/* Fenêtre des plats vendus : on choisit Midi ou Soir, on tape les quantités de tous les plats d'un coup
+   (− / + ou le chiffre), et un seul « Valider » enregistre tout. Toucher un nom = +1.
+   Chaque ligne = une case : impossible de compter un plat deux fois. Mettre 0 = supprimer (confirmation au Valider). */
 const pvN=t=>String(t).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
-function pvOpen(o){
-  const dk=key(S.y,S.m,S.d);
-  let sv=o?o.sv:(new Date().getHours()<16?"midi":"soir"),q=o?o.q:1,sel=o?(o.d?{d:o.d}:{nom:o.nom,prix:o.prix}):null,txt="";
-  const known=()=>{const m={};for(let d=1;d<=daysIn(S.y,S.m);d++)libres(S.data[key(S.y,S.m,d)]).forEach(x=>{m[pvN(x.nom)]={nom:x.nom,prix:x.prix}});return Object.values(m)};
+function pvOpen(sv,focus){
+  const dk=key(S.y,S.m,S.d),row=S.data[dk]||{};
+  sv=sv||(new Date().getHours()<16?"midi":"soir");
+  const D={midi:{},soir:{}},NEW={midi:[],soir:[]};   // quantités changées (pas encore enregistrées) et plats hors carte ajoutés
+  const base=(s2,id)=>{if(id[0]==="c")return val(row,id.slice(2)+"_"+s2)||0;const l=libres(row,s2).find(x=>"l:"+x.id===id);return l?l.qte:0};
+  const cur=(s2,id)=>id in D[s2]?D[s2][id]:id[0]==="n"?NEW[s2][+id.slice(2)].q:base(s2,id);
+  const items=s2=>[...DISH.map(d=>({id:"c:"+d.k,e:d.e,l:d.l})),...libres(row,s2).map(x=>({id:"l:"+x.id,e:"✨",l:x.nom,px:x.prix})),...NEW[s2].map((x,i)=>({id:"n:"+i,e:"✨",l:x.nom,px:x.prix}))];
+  const tot=s2=>items(s2).reduce((a,x)=>a+cur(s2,x.id),0);
+  const changes=()=>["midi","soir"].flatMap(s2=>items(s2).filter(x=>cur(s2,x.id)!==(x.id[0]==="n"?0:base(s2,x.id))).map(x=>({...x,sv:s2,q:cur(s2,x.id),b:x.id[0]==="n"?0:base(s2,x.id)})));
+  const known={};for(let d=1;d<=daysIn(S.y,S.m);d++)libres(S.data[key(S.y,S.m,d)]).forEach(x=>{known[pvN(x.nom)]={nom:x.nom,prix:x.prix}});
   const m=document.createElement("div");m.className="psh";
-  m.innerHTML=`<div class="pbox" role="dialog" aria-modal="true" aria-label="${o?"Modifier la vente":"Ajouter un plat vendu"}">
-    <div class="pbh"><b>${o?"Modifier la vente":"Ajouter un plat vendu"}</b><button type="button" data-x aria-label="Fermer">✕</button></div>
-    <div class="seg"><button type="button" data-s="midi">☀️ Midi</button><button type="button" data-s="soir">🌙 Soir</button></div>
-    <input class="pq" type="search" placeholder="🔍 Chercher ou taper un plat" autocomplete="off" enterkeyhint="done">
-    <div class="pls"></div>
-    <div class="plib" hidden><span></span><div class="in"><input inputmode="decimal" placeholder="Prix" autocomplete="off" aria-label="Prix de vente"><i>€</i></div></div>
-    <div class="pqt"><button type="button" data-q="-1" aria-label="Un de moins">−</button><output aria-live="polite"></output><button type="button" data-q="1" aria-label="Un de plus">＋</button>
-      <div class="pqc">${[1,2,3,4,5].map(n=>`<button type="button" data-n="${n}">${n}</button>`).join("")}</div></div>
-    <button class="btn pgo" type="button" data-go></button>
-    ${o?`<button class="pdel" type="button" data-del>🗑️ Supprimer cette vente</button>`:""}</div>`;
-  const $m=x=>m.querySelector(x),pr=$m(".plib input");
-  if(sel&&sel.prix!=null)pr.value=String(sel.prix).replace(".",",");
+  m.innerHTML=`<div class="pbox" role="dialog" aria-modal="true" aria-label="Plats vendus">
+    <div class="pbh"><b>🍽️ Plats vendus</b><button type="button" data-x aria-label="Fermer">✕</button></div>
+    <div class="seg"><button type="button" data-s="midi">☀️ Midi <em></em></button><button type="button" data-s="soir">🌙 Soir <em></em></button></div>
+    <input class="pq" type="search" placeholder="🔍 Chercher un plat" autocomplete="off" enterkeyhint="done">
+    <div class="prl"></div>
+    <div class="pft"><small></small><button class="btn pgo" type="button" data-go>✓ Valider</button></div>
+    <datalist id="pvKnown">${Object.values(known).map(k=>`<option value="${esc(k.nom)}">`).join("")}</datalist></div>`;
+  const $m=x=>m.querySelector(x),box=$m(".pbox");
+  const rowHTML=x=>{const q=cur(sv,x.id);return `<div class="prw${q?" on":""}" data-id="${x.id}" data-f="${esc(pvN(x.l))}"><button type="button" class="n" data-add><span>${x.e}</span><span>${esc(x.l)}${x.e==="✨"?`<small>Hors carte${x.px!=null?" · "+eur(+x.px):""}</small>`:""}</span></button>
+    <button type="button" class="m" data-d="-1" aria-label="Un de moins">−</button><input inputmode="numeric" value="${q||""}" placeholder="0" aria-label="Quantité ${esc(x.l)}"><button type="button" class="p" data-d="1" aria-label="Un de plus">＋</button></div>`};
   function draw(){
-    m.querySelectorAll("[data-s]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.s===sv));
-    const t=pvN(txt),hit=x=>!t||pvN(x).includes(t);
-    const kn=known().filter(k=>hit(k.nom)),ds=DISH.filter(d=>hit(d.l));
-    const exact=t&&(DISH.some(d=>pvN(d.l)===t)||kn.some(k=>pvN(k.nom)===t));
-    $m(".pls").innerHTML=(t&&!exact?`<button type="button" class="pch new" data-new>✨ Ajouter « ${esc(txt.trim())} » <small>(hors carte)</small></button>`:"")
-      +ds.map(d=>`<button type="button" class="pch" data-d="${d.k}" aria-pressed="${!!(sel&&sel.d===d)}"><span>${d.e}</span>${esc(d.l)}</button>`).join("")
-      +kn.map(k=>`<button type="button" class="pch" data-l="${esc(k.nom)}" aria-pressed="${!!(sel&&!sel.d&&pvN(sel.nom)===pvN(k.nom))}"><span>✨</span>${esc(k.nom)}${k.prix!=null?` <small>${esc(eur(+k.prix))}</small>`:""}</button>`).join("")
-      ||`<p class="pve" style="grid-column:1/-1">Aucun plat trouvé</p>`;
-    const lib=$m(".plib");lib.hidden=!(sel&&!sel.d);if(!lib.hidden)lib.querySelector("span").innerHTML=`✨ ${esc(sel.nom)}<small>Plat hors carte · prix de vente</small>`;
-    $m("output").textContent=q;m.querySelectorAll("[data-n]").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.n===q));
-    const g=$m("[data-go]");g.disabled=!sel;
-    g.textContent=!sel?"Choisis un plat":`✓ ${o?"Enregistrer":"Ajouter"} · ${q} × ${sel.d?sel.d.l:sel.nom}`;
+    box.className="pbox "+sv;
+    m.querySelectorAll("[data-s]").forEach(b=>{b.setAttribute("aria-pressed",b.dataset.s===sv);const t=tot(b.dataset.s);b.querySelector("em").textContent=t?"· "+t:""});
+    const it=items(sv),grp=(t,a)=>a.length?`<div class="prh">${t}</div>`+a.map(rowHTML).join(""):"";
+    $m(".prl").innerHTML=grp("Plats du jour et burgers",it.filter(x=>x.id[0]==="c"&&!x.id.startsWith("c:pc_")))+grp("Carte",it.filter(x=>x.id.startsWith("c:pc_")))+grp("Hors carte",it.filter(x=>x.id[0]!=="c"))
+      +`<div class="pnew"><b>✨ Plat hors carte (suggestion du jour…)</b><input data-nn list="pvKnown" placeholder="Nom du plat" maxlength="60" autocomplete="off"><input data-np inputmode="decimal" placeholder="Prix €" autocomplete="off"><button type="button" data-new>＋ Ajouter ce plat</button></div>`;
+    filt();foot();
   }
+  function filt(){const t=pvN($m(".pq").value);m.querySelectorAll(".prw").forEach(r=>r.hidden=!!t&&!r.dataset.f.includes(t));
+    m.querySelectorAll(".prh").forEach(h=>{let n=h.nextElementSibling,v=false;while(n&&n.classList.contains("prw")){if(!n.hidden)v=true;n=n.nextElementSibling}h.hidden=!v});
+    if(t&&![...m.querySelectorAll(".prw")].some(r=>!r.hidden)){const nn=$m("[data-nn]");nn.value=$m(".pq").value.trim()}}
+  function foot(){const c=changes();$m(".pft small").textContent=c.length?`${c.length} changement${c.length>1?"s":""} à enregistrer`:"Touche ＋ ou tape le nombre, puis Valider";
+    m.querySelectorAll("[data-s]").forEach(b=>{const t=tot(b.dataset.s);b.querySelector("em").textContent=t?"· "+t:""})}
+  function setQ(r,q){q=Math.max(0,Math.min(500,q|0));const id=r.dataset.id;if(id[0]==="n")NEW[sv][+id.slice(2)].q=q;else D[sv][id]=q;
+    const inp=r.querySelector("input");if(document.activeElement!==inp)inp.value=q||"";r.classList.toggle("on",q>0);foot()}
   const close=()=>m.remove();
-  m.addEventListener("click",e=>{const b=e.target.closest("button");if(e.target===m||(b&&b.hasAttribute("data-x")))return close();if(!b)return;
-    if(b.dataset.s){sv=b.dataset.s}
-    else if(b.dataset.q){q=Math.max(1,Math.min(500,q+ +b.dataset.q))}
-    else if(b.dataset.n){q=+b.dataset.n}
-    else if(b.dataset.d){sel={d:DISH.find(d=>d.k===b.dataset.d)}}
-    else if(b.hasAttribute("data-l")){const k=known().find(k=>pvN(k.nom)===pvN(b.dataset.l));sel={nom:k.nom,prix:k.prix};pr.value=k.prix!=null?String(k.prix).replace(".",","):""}
-    else if(b.hasAttribute("data-new")){sel={nom:txt.trim().replace(/\s+/g," ").slice(0,60),prix:null};pr.value="";setTimeout(()=>pr.focus(),50)}
+  const tryClose=()=>changes().length?confirmBox("Quitter sans enregistrer ?","Les quantités tapées seront perdues.","Quitter",close):close();
+  m.addEventListener("click",e=>{if(e.target===m)return tryClose();const b=e.target.closest("button");if(!b)return;
+    const r=b.closest(".prw");
+    if(b.hasAttribute("data-x"))tryClose();
+    else if(b.dataset.s){sv=b.dataset.s;draw()}
+    else if(r&&b.dataset.d)setQ(r,cur(sv,r.dataset.id)+ +b.dataset.d);
+    else if(r&&b.hasAttribute("data-add"))setQ(r,cur(sv,r.dataset.id)+1);
+    else if(b.hasAttribute("data-new")){
+      const nom=$m("[data-nn]").value.trim().replace(/\s+/g," ").slice(0,60);if(!nom){toast("Tape le nom du plat");$m("[data-nn]").focus();return}
+      let prix=parseNum($m("[data-np]").value,true);if(prix===undefined||(prix!=null&&prix>1000)){toast("Prix non valable");return}
+      const k=pvN(nom),ex=items(sv).find(x=>pvN(x.l)===k);   // déjà dans la liste : on ajoute 1, jamais de doublon
+      if(ex){draw();const rr=m.querySelector(`.prw[data-id="${ex.id}"]`);setQ(rr,cur(sv,ex.id)+1);rr.scrollIntoView({block:"center"});rr.classList.add("fl");return}
+      if(prix==null&&known[k])prix=known[k].prix;
+      NEW[sv].push({nom,prix,q:1});$m(".pq").value="";draw();
+      const rr=m.querySelector(`.prw[data-id="n:${NEW[sv].length-1}"]`);rr.scrollIntoView({block:"center"});rr.classList.add("fl")}
     else if(b.hasAttribute("data-go")){
-      let prix=null;if(!sel.d){prix=parseNum(pr.value,true);if(prix===undefined||(prix!=null&&prix>1000)){toast("Prix non valable");return}}
-      close();pvSave(dk,o,{sv,q,d:sel.d,nom:sel.nom,prix});return}
-    else if(b.hasAttribute("data-del")){confirmDel(()=>{close();pvSave(dk,o,null)});return}
-    draw()});
-  $m(".pq").addEventListener("input",e=>{txt=e.target.value;draw()});
+      const c=changes();if(!c.length)return close();
+      const del=c.filter(x=>!x.q&&x.b);
+      const go=()=>{close();pvSave(dk,c)};
+      if(del.length)confirmBox(`Supprimer ${del.length>1?"ces "+del.length+" ventes":"cette vente"} ?`,del.map(x=>`${esc(x.l)} (${x.sv==="midi"?"midi":"soir"})`).join(", "),"Oui, supprimer",go);else go()}
+  });
+  m.addEventListener("input",e=>{if(e.target.matches(".prw input")){const v=e.target.value.replace(/\D/g,"");if(v!==e.target.value)e.target.value=v;setQ(e.target.closest(".prw"),+v||0)}
+    else if(e.target.matches(".pq"))filt();
+    else if(e.target.matches("[data-nn]")){const k=known[pvN(e.target.value)];if(k&&k.prix!=null&&!$m("[data-np]").value)$m("[data-np]").value=String(k.prix).replace(".",",")}});
+  m.addEventListener("focusin",e=>{if(e.target.matches(".prw input"))setTimeout(()=>e.target.select(),0)});
   document.body.appendChild(m);draw();
+  if(focus){const r=m.querySelector(`.prw[data-id="${focus}"]`);if(r){r.scrollIntoView({block:"center"});r.classList.add("fl")}}
 }
-function confirmDel(yes){
-  const c=document.createElement("div");c.className="modal";
-  c.innerHTML=`<div class="box"><b style="font-size:19px">Supprimer cette vente ?</b><p style="margin:0;color:var(--muted)">Les totaux seront recalculés tout de suite.</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn soft" type="button" data-n>Annuler</button><button class="btn del" type="button" data-y>Oui, supprimer</button></div></div>`;
+function confirmBox(t,txt,yesL,yes){
+  const c=document.createElement("div");c.className="modal";c.style.zIndex=50;
+  c.innerHTML=`<div class="box"><b style="font-size:19px">${esc(t)}</b><p style="margin:0;color:var(--muted)">${txt}</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn soft" type="button" data-n>Annuler</button><button class="btn del" type="button" data-y>${esc(yesL)}</button></div></div>`;
   c.addEventListener("click",e=>{if(e.target===c||e.target.closest("[data-n]"))c.remove();else if(e.target.closest("[data-y]")){c.remove();yes()}});
   document.body.appendChild(c)}
-/* Enregistrer : o = ancienne vente (null = ajout), n = nouvelle (null = suppression).
-   Plat de la carte : on écrit le nouveau nombre dans sa case (l'ancienne case est vidée si le plat ou le service change).
-   Hors carte : le serveur renvoie la liste du jour, qui remplace celle du téléphone. Les totaux sont toujours recalculés depuis ces valeurs. */
-async function pvSave(dk,o,n){
-  const row=()=>S.data[dk]||{};
-  try{
-    if(o&&o.d&&n&&n.d&&o.d===n.d&&o.sv===n.sv){save(dk,n.d.k+"_"+n.sv,n.q)}
-    else{
-      if(o&&o.d)save(dk,o.d.k+"_"+o.sv,null);
-      if(o&&o.id&&!(n&&!n.d))libSet(dk,await rpc("vente_libre_supprimer",{p_id:o.id}));
-      if(n&&n.d){const k=n.d.k+"_"+n.sv;save(dk,k,(val(row(),k)||0)+n.q)}
-      if(n&&!n.d)libSet(dk,await rpc("vente_libre_enregistrer",{p_id:o&&o.id||null,p_jour:dk,p_service:n.sv,p_nom:n.nom,p_prix:n.prix,p_qte:n.q,p_par:who()}));
-    }
-    toast(!n?"Vente supprimée ✓":o?"Vente modifiée ✓":`Ajouté ✓ · ${n.q} × ${n.d?n.d.l:n.nom}`);
-  }catch(e){if(!lost(e))toast("Pas enregistré : vérifie la connexion");load()}
+/* Enregistrer les changements. Plat de la carte : le nombre va dans sa case (0 = case vidée).
+   Hors carte : modifié, supprimé ou ajouté sur le serveur, qui renvoie la liste du jour. Les totaux sont recalculés depuis ces valeurs. */
+async function pvSave(dk,c){
+  let err=false;
+  c.filter(x=>x.id[0]==="c").forEach(x=>save(dk,x.id.slice(2)+"_"+x.sv,x.q||null));
+  for(const x of c.filter(x=>x.id[0]!=="c")){
+    try{
+      if(x.id[0]==="l"){const id=x.id.slice(2);libSet(dk,x.q?await rpc("vente_libre_enregistrer",{p_id:id,p_jour:dk,p_service:x.sv,p_nom:x.l,p_prix:x.px??null,p_qte:x.q,p_par:who()}):await rpc("vente_libre_supprimer",{p_id:id}))}
+      else if(x.q)libSet(dk,await rpc("vente_libre_enregistrer",{p_id:null,p_jour:dk,p_service:x.sv,p_nom:x.l,p_prix:x.px??null,p_qte:x.q,p_par:who()}));
+    }catch(e){if(lost(e))return;err=true}
+  }
+  renderTotals();
+  if(err){toast("Plat hors carte pas enregistré : vérifie la connexion");load()}else toast("Enregistré ✓");
 }
 function libSet(dk,list){S.data[dk]={...(S.data[dk]||{})};if(list&&list.length)S.data[dk].libres=list;else delete S.data[dk].libres;renderTotals()}
 
