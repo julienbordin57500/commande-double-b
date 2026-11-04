@@ -47,7 +47,7 @@ header.top{display:flex;align-items:center;gap:14px}
 .sync::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--muted);margin-right:6px;vertical-align:1px}
 .sync.ok::before{background:var(--go)} .sync.err::before{background:var(--danger)}
 
-.tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:14px;margin:16px 0 4px;position:sticky;top:6px;z-index:5}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:14px;margin:16px 0 4px;position:sticky;top:6px;z-index:5}
 .tabs button{min-height:46px;border-radius:10px;border:0;background:transparent;font-weight:800;font-size:14px;color:var(--muted);line-height:1.1;padding:2px;position:relative}
 .tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
 .tabs .nb{position:absolute;top:3px;right:5px;min-width:19px;height:19px;border-radius:10px;background:var(--danger);color:#fff;font-size:11.5px;display:grid;place-items:center;padding:0 5px}
@@ -157,15 +157,14 @@ iframe.prev{width:100%;height:62vh;border:1px solid var(--line);border-radius:12
   </header>
 
   <nav class="tabs" role="tablist">
-    <button role="tab" data-v="bilan" aria-selected="true">Bilan</button>
-    <button role="tab" data-v="envoi">Envoi<span class="nb" id="nbEnv" hidden></span></button>
+    <button role="tab" data-v="envoi" aria-selected="true">À envoyer<span class="nb" id="nbEnv" hidden></span></button>
     <button role="tab" data-v="liste">Prospects</button>
-    <button role="tab" data-v="import">Importer</button>
-    <button role="tab" data-v="modeles">Mails</button>
+    <button role="tab" data-v="bilan">Bilan</button>
+    <button role="tab" data-v="plus">⚙️ Réglages</button>
   </nav>
 
   <!-- ===== Bilan ===== -->
-  <section data-p="bilan">
+  <section data-p="bilan" hidden>
     <div class="panel todo">
       <div class="t"><b id="todoT">…</b><div class="hint" id="todoS" style="margin:4px 0 0"></div></div>
       <button class="btn" type="button" id="goEnv">Commencer ›</button>
@@ -177,7 +176,7 @@ iframe.prev{width:100%;height:62vh;border:1px solid var(--line);border-radius:12
     </div>
     <div class="panel">
       <h2>Nos réalisations</h2>
-      <p class="hint">Les photos mises dans les mails. On les change dans « Mails &amp; photos ».</p>
+      <p class="hint">Les photos mises dans les mails. On les change dans « Réglages ».</p>
       <div class="strip" id="strip"></div>
     </div>
   </section>
@@ -185,9 +184,8 @@ iframe.prev{width:100%;height:62vh;border:1px solid var(--line);border-radius:12
   <!-- ===== Envoi du jour ===== -->
   <section data-p="envoi" hidden>
     <div class="panel">
-      <h2>Envoi du jour</h2>
-      <p class="hint">Les relances prévues d'abord, puis les nouveaux contacts les plus proches. Pour chacun : <b>Préparer dans Outlook</b>, coller, envoyer, puis <b>C'est envoyé</b>.</p>
-      <div class="list" id="queue"></div>
+      <div class="row" style="justify-content:space-between"><h2>Mail suivant</h2><a class="btn small soft" href="plaquette-traiteur.pdf" download="Plaquette traiteur Double B.pdf">📎 Télécharger la plaquette</a></div>
+      <div id="queue"></div>
     </div>
   </section>
 
@@ -210,7 +208,7 @@ iframe.prev{width:100%;height:62vh;border:1px solid var(--line);border-radius:12
   </section>
 
   <!-- ===== Importer ===== -->
-  <section data-p="import" hidden>
+  <section data-p="plus" hidden>
     <div class="panel">
       <h2>Importer depuis la base SIRENE</h2>
       <p class="hint">Fichier officiel et gratuit des entreprises (INSEE). Seuls les établissements ouverts sont pris, sans les entrepreneurs individuels, ni ceux qui refusent la prospection, ni les restaurants. Les fiches déjà suivies ne sont jamais écrasées.</p>
@@ -228,7 +226,7 @@ iframe.prev{width:100%;height:62vh;border:1px solid var(--line);border-radius:12
   </section>
 
   <!-- ===== Mails & photos ===== -->
-  <section data-p="modeles" hidden>
+  <section data-p="plus" hidden>
     <div class="panel">
       <h2>Modèles de mails</h2>
       <p class="hint">Touche un modèle pour le modifier ou le voir tel que le client le reçoit.</p>
@@ -297,7 +295,7 @@ const TRANCHES={"00":"0 salarié","01":"1-2 salariés","02":"3-5 salariés","03"
 const PHRASE_BESOIN={ce:"pour les événements de votre CSE (fêtes de fin d'année, départs, arbres de Noël)",reunion:"pour vos réunions et formations",evenement:"pour vos inaugurations, vœux, portes ouvertes et cocktails clients",seminaire:"pour vos séminaires et journées d'équipe",repas:"pour les repas de vos équipes, livrés chauds sur place"};
 const PHRASE_CAT={cse:PHRASE_BESOIN.ce,administration:"pour vos vœux, inaugurations, réceptions et réunions",association:"pour vos assemblées, fêtes et événements",sante:"pour vos réunions d'équipe, départs et fêtes de fin d'année",enseignement:"pour vos réunions, fêtes de fin d'année et départs"};
 
-const S={prospects:[],envois:[],modeles:[],photos:[],reglages:{},view:"bilan",lim:40,fait:new Set()};
+const S={prospects:[],envois:[],modeles:[],photos:[],reglages:{},view:"envoi",lim:40,fait:new Set(),passe:new Set()};
 const vivants=()=>S.prospects.filter(p=>!p.desinscrit_le);
 
 async function load(){
@@ -311,7 +309,7 @@ function show(v){S.view=v;document.querySelectorAll(".tabs button").forEach(b=>b
   document.querySelectorAll("[data-p]").forEach(s=>s.hidden=s.dataset.p!==v);try{sessionStorage.setItem("prosp-vue",v)}catch{}scrollTo({top:0})}
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>show(b.dataset.v));
 $("#goEnv").onclick=()=>show("envoi");
-try{const v=sessionStorage.getItem("prosp-vue");if(v)show(v)}catch{}
+try{const v=sessionStorage.getItem("prosp-vue");if(["envoi","liste","bilan","plus"].includes(v))show(v)}catch{}
 
 /* ---------- Bilan ---------- */
 function stats(){
@@ -361,17 +359,22 @@ function queue(){
   const seen=new Set();return [...rel,...nv,...faits].filter(x=>!seen.has(x.p.id)&&seen.add(x.p.id));
 }
 function renderQueue(){
-  const q=queue(),el=$("#queue");
-  if(!q.length){el.innerHTML=`<div class="empty">${vivants().some(p=>p.email)?"Rien de prévu aujourd'hui. Les relances apparaîtront ici le moment venu.":"Pas encore de prospect avec une adresse mail. Va dans <b>Prospects</b> › <b>Chercher les adresses</b>."}</div>`;return}
-  el.innerHTML=q.map(({p,m,done})=>`<div class="send${done||S.fait.has(p.id)?" done":""}" data-id="${p.id}" data-m="${m}">
-    <div class="h"><div class="m"><b>${esc(p.nom)}</b><small>${esc(p.commune||"")}${p.distance_km!=null?` · ${(+p.distance_km).toLocaleString("fr-FR")} km`:""} · ${esc(p.email)}</small></div><span class="tag ${m==="accroche"?"a_contacter":"relance"}">${MODELE_NOM[m]}</span></div>
-    ${done||S.fait.has(p.id)?`<div class="hint" style="margin:8px 0 0">✓ Envoyé</div>`:`<div class="acts"><button class="btn small" data-a="prep">✉️ Préparer dans Outlook</button><button class="btn small soft" data-a="voir">Voir le mail</button><button class="btn small soft" data-a="fiche">Fiche</button></div>`}
-  </div>`).join("");
+  const q=queue().filter(x=>!x.done&&!S.fait.has(x.p.id)&&!S.passe.has(x.p.id)),el=$("#queue");
+  const faits=S.fait.size;
+  if(!q.length){el.innerHTML=`<div class="empty">${faits?`✓ ${faits} mail${faits>1?"s":""} envoyé${faits>1?"s":""} aujourd'hui. C'est tout pour aujourd'hui !`:vivants().some(p=>p.email)?"Rien à envoyer aujourd'hui. Les relances reviendront ici toutes seules.":"Pas encore de prospect avec une adresse mail : va dans <b>Prospects</b>."}</div>`;return}
+  const {p,m}=q[0];
+  el.innerHTML=`<div class="send" data-id="${p.id}" data-m="${m}">
+    <div class="hint" style="margin:0 0 8px">Mail ${faits+1} sur ${faits+q.length} aujourd'hui${m!=="accroche"?" · <b>relance</b>":""}</div>
+    <div class="h"><div class="m"><b style="font-size:19px">${esc(p.nom)}</b><small>${esc(p.commune||"")} · ${esc(p.email)}</small></div><span class="tag ${m==="accroche"?"a_contacter":"relance"}">${MODELE_NOM[m]}</span></div>
+    <div class="acts"><button class="btn" data-a="prep" style="flex:1">✉️ Préparer le mail dans Outlook</button></div>
+    <div class="row" style="margin-top:8px"><button class="btn small soft" data-a="voir">Voir le mail</button><button class="btn small soft" data-a="passe">Passer pour aujourd'hui</button><button class="btn small soft" data-a="fiche">Fiche</button></div>
+  </div>`;
 }
 $("#queue").addEventListener("click",async e=>{
-  const b=e.target.closest("button");if(!b)return;const c=b.closest(".send"),p=S.prospects.find(x=>x.id===c.dataset.id),m=c.dataset.m;
+  const b=e.target.closest("button");if(!b||!b.dataset.a)return;const c=b.closest(".send"),p=S.prospects.find(x=>x.id===c.dataset.id),m=c.dataset.m;
   if(b.dataset.a==="fiche")return openFiche(p);
   if(b.dataset.a==="voir")return preview(m,p);
+  if(b.dataset.a==="passe"){S.passe.add(p.id);renderQueue();return}
   if(b.dataset.a==="prep"){await prepare(p,m,c.querySelector(".acts"));}
 });
 // Copie le mail mis en forme (texte + photos) puis ouvre un nouveau message Outlook avec le destinataire et l'objet déjà remplis
@@ -382,7 +385,7 @@ async function prepare(p,m,zone){
   window.open(`https://outlook.live.com/mail/0/deeplink/compose?to=${encodeURIComponent(p.email)}&subject=${encodeURIComponent(mail.sujet)}`,"_blank","noopener");
   let st=zone.parentElement.querySelector(".steps");
   if(!st){st=document.createElement("div");st.className="steps";zone.after(st)}
-  st.innerHTML=`<b>Le mail est copié.</b><ol><li>Dans Outlook, clique dans le grand espace du message.</li><li>Colle : <b>⌘ + V</b> (Mac) ou <b>Ctrl + V</b> (PC), ou appui long › Coller.</li><li>Clique <b>Envoyer</b>, puis reviens ici.</li></ol>
+  st.innerHTML=`<b>Le mail est copié, Outlook s'ouvre.</b><ol><li>Clique dans le grand espace du message et colle : <b>⌘ + V</b>.</li><li>Joins la plaquette : glisse le PDF dans le message (ou trombone 📎).</li><li>Clique <b>Envoyer</b>, puis reviens ici.</li></ol>
     <div class="row"><button class="btn small go" data-ok>✓ C'est envoyé</button><button class="btn small soft" data-again>Recopier</button></div>`;
   st.querySelector("[data-again]").onclick=()=>prepare(p,m,zone);
   st.querySelector("[data-ok]").onclick=async ev=>{ev.target.disabled=true;
@@ -396,14 +399,27 @@ async function prepare(p,m,zone){
    le petit bandeau « restaurant » et un lien de désinscription personnel. */
 const BASE="https://julienbordin57500.github.io/commande-double-b/";
 function avisTexte(){const n=(S.reglages.note_google||"").trim();return n?`Nos clients nous donnent ${n}/5 sur Google.`:"Notre restaurant est très bien noté par ses clients sur Google."}
+const OCCASIONS={cse:"l'arbre de Noël, la fête du personnel ou un repas entre collègues",administration:"vos vœux, vos cérémonies, une inauguration ou un repas après le conseil",association:"votre assemblée générale, votre fête annuelle ou un repas entre bénévoles",
+  sante:"un pot de départ, une réunion d'équipe ou la fête de fin d'année du personnel",enseignement:"un pot de départ, une réunion d'équipe ou la fête de fin d'année"};
+const OCC_BESOIN={ce:OCCASIONS.cse,reunion:"votre prochaine réunion, une formation ou un comité de direction",evenement:"une inauguration, vos vœux ou une soirée clients",seminaire:"votre prochain séminaire ou une journée d'équipe",repas:"un déjeuner d'équipe, chaque semaine ou de temps en temps"};
+function occasions(p){return OCC_BESOIN[p.besoin]||OCCASIONS[p.categorie]||"votre prochain pot de départ, une réunion d'équipe ou une soirée clients"}
+// Phrase qui change toute seule avec le mois : jamais « fêtes de fin d'année » en janvier
+function saison(d=new Date()){const m=d.getMonth()+1;
+  if(m===11||m===12)return "Les fêtes de fin d'année approchent : c'est le bon moment pour en parler.";
+  if(m===1)return "Vœux de nouvelle année, galettes, premières réunions : c'est le bon moment pour en parler.";
+  if(m<=3)return "Assemblées générales, séminaires, départs : le printemps arrive vite, c'est le bon moment pour anticiper.";
+  if(m<=6)return "Fins de saison, départs en retraite, fêtes d'été : c'est le bon moment pour réserver vos dates.";
+  if(m<=8)return "La rentrée arrive vite : réunions de rentrée, séminaires… c'est le bon moment pour anticiper.";
+  return "La fin d'année se prépare dès maintenant : les dates de décembre partent vite.";}
 function phraseBesoin(p){return PHRASE_BESOIN[p.besoin]||PHRASE_CAT[p.categorie]||"pour vos réunions, vos événements et les repas de vos équipes"}
 function buildMail(cle,p){
   const M=S.modeles.find(x=>x.cle===cle)||{sujet:"",corps:""};const R=S.reglages;
   const tel=R.telephone||"06 13 10 05 03",mel=R.email||"doubleb57500@outlook.fr",sig=R.signature||"L'équipe du Double B";
   const desinsc=`${R.lien_desinscription||BASE+"desinscription.html"}?j=${p.jeton||""}`;
   const plaq=BASE+"plaquette-traiteur.pdf";
-  const fill=t=>t.replace(/\{besoin\}/g,phraseBesoin(p)).replace(/\{telephone\}/g,tel).replace(/\{avis\}/g,avisTexte()).replace(/\{nom\}/g,p.nom||"");
-  const corps=fill(M.corps||""),sujet=fill(M.sujet||"");
+  const fill=t=>t.replace(/\{besoin\}/g,phraseBesoin(p)).replace(/\{occasions\}/g,occasions(p)).replace(/\{saison\}/g,saison()).replace(/\{commune\}/g,p.commune||"chez vous").replace(/\{telephone\}/g,tel).replace(/\{avis\}/g,avisTexte()).replace(/\{nom\}/g,p.nom||"");
+  let corps=fill(M.corps||"");const sujet=fill(M.sujet||"");
+  let ps="";const k=corps.search(/\n\s*\nPS ?:/);if(k>=0){ps=corps.slice(k).trim();corps=corps.slice(0,k)}
   const P='style="margin:0 0 14px"';
   const photos=n=>{const l=S.photos.slice(0,n);if(!l.length)return "";
     const cells=l.map(f=>`<td style="padding:4px;width:50%" valign="top"><img src="${esc(f.url)}" alt="${esc(f.legende||"Réalisation du Double B")}" width="276" style="display:block;width:100%;max-width:276px;height:auto;border-radius:10px;border:0"></td>`);
@@ -423,10 +439,11 @@ function buildMail(cle,p){
 <p style="margin:0 0 18px"><img src="${BASE}logo-hd.png" alt="Double B" width="150" style="display:block;width:150px;height:auto;border:0"></p>
 ${html}
 <p style="margin:0 0 20px">${esc(sig)}<br><b>Le Double B</b> · restaurant et traiteur fait maison<br>59 avenue Foch, 57730 Folschviller<br>${esc(tel)} · <a href="mailto:${esc(mel)}" style="color:#b06d00">${esc(mel)}</a></p>
+${ps?`<p style="margin:0 0 18px;font-style:italic">${esc(ps)}</p>`:""}
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:560px;margin:0 0 16px"><tr><td style="background:#f7f1e6;border-radius:10px;padding:10px 14px;font-size:13px;line-height:1.45;color:#5c5446">🍽️ <b style="color:#2a1d00">Le Double B, c'est d'abord un restaurant.</b> Venez goûter notre cuisine maison, du lundi au vendredi, midi et soir, au 59 avenue Foch à Folschviller.</td></tr></table>
 <p style="margin:0;font-size:11.5px;line-height:1.45;color:#8a8275">Le Double B, SIREN ${esc(R.siren||"915 267 595")}, 59 avenue Foch, 57730 Folschviller. Ce message est envoyé à l'adresse de contact professionnelle de votre structure, au sujet de notre service traiteur pour les professionnels. Vous ne souhaitez plus rien recevoir ? <a href="${esc(desinsc)}" style="color:#8a8275">Se désinscrire en un clic</a> ou répondez « STOP ».</p>
 </div>`;
-  const text=corps.replace(/\[photos\s*\d+\]\n*/gi,"").replace(/\{plaquette\}/g,"Notre plaquette : "+plaq)+`\n\n${sig}\nLe Double B · restaurant et traiteur fait maison\n59 avenue Foch, 57730 Folschviller\n${tel} · ${mel}\n\nLe Double B, c'est d'abord un restaurant : venez goûter notre cuisine maison, du lundi au vendredi, midi et soir.\n\nPour ne plus rien recevoir : ${desinsc} ou répondez STOP.`;
+  const text=corps.replace(/\[photos\s*\d+\]\n*/gi,"").replace(/\{plaquette\}/g,"Notre plaquette : "+plaq)+`\n\n${sig}\nLe Double B · restaurant et traiteur fait maison\n59 avenue Foch, 57730 Folschviller\n${tel} · ${mel}\n\n${ps?ps+"\n\n":""}Le Double B, c'est d'abord un restaurant : venez goûter notre cuisine maison, du lundi au vendredi, midi et soir.\n\nPour ne plus rien recevoir : ${desinsc} ou répondez STOP.`;
   return {sujet,html:full,text};
 }
 function preview(cle,p){
@@ -626,7 +643,7 @@ function renderModeles(){
 $("#mlist").onclick=e=>{const b=e.target.closest(".it");if(!b)return;const M=S.modeles.find(x=>x.cle===b.dataset.k);
   const m=sheet(`<h3>${esc(M.nom)}</h3><label class="f">Objet<input type="text" id="mSu" value="${esc(M.sujet)}"></label>
     <label class="f">Texte<textarea id="mCo" style="min-height:300px">${esc(M.corps)}</textarea></label>
-    <div class="hint" style="margin:-4px 0 0">Mots remplacés tout seuls : <b>{besoin}</b> (selon la fiche), <b>{telephone}</b>, <b>{avis}</b> (note Google), <b>{plaquette}</b> (bouton vers la plaquette PDF). <b>[photos 2]</b> place 2 photos. Une ligne vide = nouveau paragraphe, « - » = liste. Signature, bandeau restaurant et désinscription sont ajoutés automatiquement.</div>
+    <div class="hint" style="margin:-4px 0 0">Mots remplacés tout seuls : <b>{commune}</b>, <b>{occasions}</b> (selon le type d'organisme ou le besoin noté), <b>{saison}</b> (phrase qui change avec le mois), <b>{telephone}</b>, <b>{avis}</b> (note Google). <b>[photos 2]</b> place 2 photos. Une ligne vide = nouveau paragraphe, « - » = liste. Signature, bandeau restaurant et désinscription sont ajoutés automatiquement.</div>
     <div class="row"><button class="btn" id="mOk" type="button" style="flex:1">Enregistrer</button><button class="btn soft" id="mPrev" type="button">Aperçu</button></div>`);
   m.querySelector("#mPrev").onclick=()=>{const old={...M};M.sujet=m.querySelector("#mSu").value;M.corps=m.querySelector("#mCo").value;preview(M.cle);M.sujet=old.sujet;M.corps=old.corps};
   m.querySelector("#mOk").onclick=async()=>{try{await rpc("prosp_modele_enregistrer",{p_cle:M.cle,p_sujet:m.querySelector("#mSu").value,p_corps:m.querySelector("#mCo").value});

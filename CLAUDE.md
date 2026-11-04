@@ -51,12 +51,15 @@ But : décrocher des contrats réguliers (entreprises, CSE, associations, mairie
   opposition à la prospection, restaurants (NAF 56), annexes techniques (liste `EXCL`). Un contact par organisme et par commune.
 - **Adresses** : fonction Edge `prospection` (source dans `supabase/functions/prospection/`) : annuaire officiel du service public
   (par SIRET), puis le site de l'organisme (3 pages max, robots.txt respecté). Seules les adresses **génériques** sont gardées (RGPD).
+- **Écran** : simplifié le 2026-11-04 (Julien trouvait l'outil trop complexe) : onglets À envoyer (un mail à la fois) / Prospects / Bilan / Réglages.
 - **Envoi** : pas de service d'envoi pour l'instant (choix de Julien, 2026-11-04) : le mail est copié en HTML puis Outlook web s'ouvre
   (destinataire + objet remplis) ; on colle, on envoie, on touche « C'est envoyé ». Relances : J+7 puis J+15 après le 1er contact,
   arrêtées dès « A répondu », un statut avancé ou une désinscription. Pas de pixel de suivi des ouvertures (CNIL) : on suit les réponses.
 - **Mails** : modèles modifiables (table `prosp_modeles`), jamais de prix (« devis gratuit », « sur mesure », pas de délai promis),
   jamais d'achats industriels. Signature « L'équipe du Double B », bandeau « d'abord un restaurant », SIREN et lien de désinscription
-  ajoutés par `buildMail` ; `{plaquette}` = bouton vers `plaquette-traiteur.pdf`. Jamais « de 15 à 100 personnes » (Julien : « on s'adapte »)
+  ajoutés par `buildMail` (le « PS : » du modèle passe sous la signature). Mots auto : `{commune}`, `{occasions}` (selon type/besoin),
+  `{saison}` (change avec le mois : jamais « fin d'année » en janvier). La plaquette est **jointe à la main** (PDF léger `plaquette-traiteur.pdf`,
+  bouton « Télécharger la plaquette »), plus de lien dans le texte (choix de Julien). Jamais « de 15 à 100 personnes » (Julien : « on s'adapte »)
   ni livraison promise (pas de livraison de base : « à emporter », livraison « on en parle »). Photos : `traiteur/photo-N.jpg`
   (table `prosp_photos`) ; celles ajoutées depuis l'onglet Mails vont dans le dossier public Supabase `prospection`.
 - **Plaquette** : `plaquette-traiteur.pdf` ; sa source (HTML + photos) est dans iCloud Double B › 03 - Communication › Traiteur.
