@@ -97,6 +97,7 @@ button:active{scale:.97}
 .plus{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:14px}
 .plus .btn{height:54px;font-size:17px;padding:0}
 .plus .btn.one{grid-column:1/-1;height:72px;font-size:21px}
+.plus .btn.many{grid-column:1/-1;font-size:15.5px}
 .plus-n{text-align:center;color:var(--muted);font-size:13.5px;font-weight:700;margin-top:8px}
 .two{display:grid;grid-template-columns:1fr 1.4fr;gap:8px}
 .pi{display:grid;grid-template-columns:1fr 92px;gap:8px}
@@ -172,7 +173,7 @@ body.fiche .wrap{padding-top:10px}
 <div class="wrap">
   <div class="pbar" id="pbar"></div><script src="profil.js"></script>
 
-  <header class="head"><h1>⭐ Fidélité</h1><p>1 burger = 1 tampon · 10 = 1 offert · 8 max par commande</p></header>
+  <header class="head"><h1>⭐ Fidélité</h1><p>1 burger = 1 tampon · 10 = 1 offert</p></header>
 
   <div id="locked" class="locked" hidden><b>🔒</b>Les cartes de fidélité sont réservées à Julien pour l'instant.</div>
 
@@ -220,8 +221,9 @@ body.fiche .wrap{padding-top:10px}
           <button type="button" class="btn one" data-n="1">+1 burger</button>
           <button type="button" class="btn ghost" data-n="2">+2</button><button type="button" class="btn ghost" data-n="3">+3</button><button type="button" class="btn ghost" data-n="4">+4</button>
           <button type="button" class="btn ghost" data-n="5">+5</button><button type="button" class="btn ghost" data-n="6">+6</button><button type="button" class="btn ghost" data-n="7">+7</button><button type="button" class="btn ghost" data-n="8">+8</button>
+          <button type="button" class="btn ghost many" id="fMany">Plus de 8 burgers…</button>
         </div>
-        <div class="plus-n">Un tampon par burger de la commande · 8 maximum par commande</div>
+        <div class="plus-n">Un tampon par burger de la commande</div>
         <div class="done" id="fDone" hidden><b id="fDoneT"></b><div class="dr"><button type="button" class="btn bad" id="fUndo">↩︎ Annuler</button><button type="button" class="btn" id="fNext">Client suivant ›</button></div></div>
         <button type="button" class="btn go gift-btn" id="fGift" hidden>🎁 Offrir son burger (−10 tampons)</button>
         <div class="par" id="fPar" hidden></div>
@@ -261,7 +263,7 @@ const lost=e=>{if(e&&e.code==="28000"){try{localStorage.removeItem("commande2b-c
 const who=()=>(window.Profil&&Profil.get())||null;
 function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2800)}
 // Messages clairs pour les refus du serveur
-const ERR={limite:"Maximum 16 tampons par jour sur une même carte (2 commandes)",nombre:"8 tampons maximum par commande",parrain:"Aucune carte avec le numéro du parrain",date:"Choisis le jour ET le mois de l'anniversaire","pas assez":"Pas encore 10 tampons","trop tard":"Trop tard pour annuler (15 minutes passées)",
+const ERR={nombre:"50 tampons maximum d'un coup : vérifie le nombre",parrain:"Aucune carte avec le numéro du parrain",date:"Choisis le jour ET le mois de l'anniversaire","pas assez":"Pas encore 10 tampons","trop tard":"Trop tard pour annuler (15 minutes passées)",
   solde:"Impossible : le burger offert a déjà utilisé ces tampons. Annule d'abord le burger offert.",numero:"Numéro de téléphone pas valable",prenom:"Écris le prénom",
   deja:"Ce numéro a déjà une carte",anniv:"Dessert d'anniversaire déjà donné ou plus valable"};
 const fail=e=>{if(lost(e))return;toast(ERR[e.message]||"Pas enregistré : vérifie la connexion")};
@@ -290,6 +292,7 @@ $("#tCli").onclick=()=>tab(false);$("#tBil").onclick=()=>tab(true);
 /* ---------- Clients récents (sur ce téléphone) : un toucher pour rouvrir ---------- */
 const REC=()=>{try{return JSON.parse(localStorage.getItem("2b-fid-recents")||"[]")}catch{return []}};
 function addRec(c){const l=REC().filter(x=>x.id!==c.id);l.unshift({id:c.id,n:nomF(c)});try{localStorage.setItem("2b-fid-recents",JSON.stringify(l.slice(0,6)))}catch{}}
+function delRec(id){try{localStorage.setItem("2b-fid-recents",JSON.stringify(REC().filter(x=>x.id!==id)))}catch{}}
 function drawRec(){const l=REC(),el=$("#rec");el.hidden=!l.length||!!$("#q").value.trim();
   el.innerHTML=`<span class="rl">Récemment</span>`+l.map(x=>`<button type="button" data-id="${x.id}">${esc(x.n)}</button>`).join("")}
 $("#rec").addEventListener("click",e=>{const b=e.target.closest("button[data-id]");if(b)openCli(b.dataset.id)});
@@ -324,7 +327,7 @@ let paT=0;$("#nPa").addEventListener("input",()=>{clearTimeout(paT);paT=setTimeo
     o.textContent=x?`✓ ${nomF(x)} · 1 tampon chacun au premier burger`:"Aucune carte avec ce numéro"}catch{}},300)});
 $("#res").addEventListener("click",e=>{const b=e.target.closest(".row");if(b)openCli(b.dataset.id)});
 // Nombre de burgers de la commande pour un nouveau client (le bouton dit exactement ce qui va se passer)
-let NB=1;const nbSet=n=>{NB=Math.max(0,Math.min(8,n));$("#nNb").textContent=NB;$("#nGo").textContent=NB?`Créer la carte + ${NB} burger${NB>1?"s":""}`:"Créer la carte"};
+let NB=1;const nbSet=n=>{NB=Math.max(0,Math.min(50,n));$("#nNb").textContent=NB;$("#nGo").textContent=NB?`Créer la carte + ${NB} burger${NB>1?"s":""}`:"Créer la carte"};
 $("#nMoins").onclick=()=>nbSet(NB-1);$("#nPlus").onclick=()=>nbSet(NB+1);nbSet(1);
 const smsVis=()=>{$("#nSmsL").hidden=!($("#nJ").value&&$("#nA").value)};$("#nJ").onchange=smsVis;$("#nA").onchange=smsVis;
 $("#nGo").onclick=async()=>{
@@ -350,7 +353,7 @@ $("#fBack").onclick=nextCli;$("#fNext").onclick=nextCli;
 
 /* ---------- Fiche client ---------- */
 let CUR=null,busy=false;
-async function openCli(id){try{show(await rpc("fid_fiche",{p_client:id}))}catch(e){fail(e)}}
+async function openCli(id){try{const c=await rpc("fid_fiche",{p_client:id});if(!c){delRec(id);drawRec();toast("Ce client a été effacé");return}show(c)}catch(e){fail(e)}}
 const LAB={bienvenue:["👋","Bienvenue"],burger:["🍔","Burger"],offert:["🎁","Burger offert"],anniv:["🎂","Dessert anniversaire"],parrainage:["👥","Parrainage"]};
 function show(c,anim){
   if(!c){toast("Client introuvable");showSearch();return}
@@ -389,6 +392,10 @@ document.querySelectorAll(".plus .btn").forEach(b=>b.onclick=async()=>{const n=+
   const avant=CUR&&CUR.solde;await act("fid_tamponner",{p_nb:n,p_par:who()});if(CUR&&CUR.solde!==avant)doneMsg(CUR,n)});
 $("#fUndo").onclick=async()=>{if(!LAST||busy)return;busy=true;
   try{show(await rpc("fid_annuler",{p_mvt:LAST,p_par:who()}));$("#fDone").hidden=true;toast("Annulé ✓")}catch(e){fail(e)}finally{busy=false}};
+$("#fMany").onclick=()=>{let n=9;const m=modal(`<h3>🍔 Combien de burgers ?</h3><div class="step" style="justify-content:center;margin:6px 0 14px"><button type="button" data-d="-1" aria-label="Un de moins">−</button><b id="mN">9</b><button type="button" data-d="1" aria-label="Un de plus">+</button></div><button type="button" class="btn" data-ok></button><button type="button" class="btn ghost" data-close>Annuler</button>`);
+  const up=()=>{m.querySelector("#mN").textContent=n;m.querySelector("[data-ok]").textContent=`Ajouter ${n} tampons`};up();
+  m.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{n=Math.max(1,Math.min(50,n+ +b.dataset.d));up()});
+  m.querySelector("[data-ok]").onclick=async()=>{m.remove();const avant=CUR&&CUR.solde;await act("fid_tamponner",{p_nb:n,p_par:who()});if(CUR&&CUR.solde!==avant)doneMsg(CUR,n)}};
 $("#fGift").onclick=()=>confirmBox("🎁 Offrir le burger ?",`${esc(CUR.prenom)} a ${CUR.solde} tampons. On en retire 10.`,"Oui, burger offert",()=>act("fid_offrir",{p_par:who()},"Burger offert ✓ · bon appétit !"));
 $("#fAnnivGo").onclick=()=>act("fid_anniv",{p_par:who()},"Dessert d'anniversaire noté ✓");
 $("#fHist").addEventListener("click",e=>{const b=e.target.closest("[data-x]");if(!b||busy)return;
@@ -424,9 +431,9 @@ $("#fEdit").onclick=()=>{const c=CUR;
   m.querySelector("#eA").value=c.anniv_jour?c.anniv_mois:"";m.querySelector("#eJ").value=c.anniv_jour||"";
   m.querySelector("#eGo").onclick=async()=>{const dd=date2(m.querySelector("#eJ"),m.querySelector("#eA"));if(!dd){toast(ERR.date);return}
     try{const r=await rpc("fid_modifier",{p_client:c.id,p_prenom:m.querySelector("#eP").value,p_initiale:m.querySelector("#eI").value,p_tel:digits(m.querySelector("#eT").value),
-      p_anniv_jour:dd[0],p_anniv_mois:dd[1],p_sms:m.querySelector("#eS").checked});m.remove();show(r);toast("Enregistré ✓")}catch(e){fail(e)}};
+      p_anniv_jour:dd[0],p_anniv_mois:dd[1],p_sms:m.querySelector("#eS").checked});m.remove();show(r);addRec(r);toast("Enregistré ✓")}catch(e){fail(e)}};
   m.querySelector("#eDel").onclick=()=>{m.remove();confirmBox("🗑️ Effacer "+esc(c.prenom)+" ?","Sa carte, ses tampons et son historique seront effacés pour de bon. À faire seulement si le client le demande.","Oui, tout effacer",async()=>{
-    try{await rpc("fid_effacer",{p_client:c.id});showSearch();toast("Client effacé")}catch(e){fail(e)}})}};
+    try{await rpc("fid_effacer",{p_client:c.id});delRec(c.id);showSearch();toast("Client effacé")}catch(e){fail(e)}})}};
 
 /* ---------- Bilan ---------- */
 async function bilan(){

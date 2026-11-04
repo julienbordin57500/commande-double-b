@@ -205,9 +205,8 @@ body{margin:0;min-height:100vh;color:var(--fg);font-family:var(--body);font-size
       <a href="tel:+33613100503" aria-label="Appeler le Double B">Appeler</a>
       <a href="https://maps.google.com/?q=Double+B,+59+avenue+Foch,+57730+Folschviller" target="_blank" rel="noopener" aria-label="Itinéraire">Y aller</a></div>
     <details class="how"><summary>ℹ️ Les règles de la carte</summary>
-      <p><em>🍔</em><span><b>1 burger acheté = 1 tampon</b>, en donnant ton numéro.</span></p>
+      <p><em>🍔</em><span><b>1 burger acheté = 1 tampon</b>, sans limite, en donnant ton numéro.</span></p>
       <p><em>🎁</em><span><b>10 tampons = 1 burger offert</b>, celui que tu veux.</span></p>
-      <p><em>🧾</em><span>8 tampons maximum par commande.</span></p>
       <p><em>🎂</em><span>Ton anniversaire : un dessert offert, valable 30 jours.</span></p>
       <p><em>🏅</em><span>Niveaux : 🥉 Habitué à 1 carte terminée, 🥈 Gourmand à 3, 🥇 VIP à 5.</span></p>
       <p><em>📌</em><span>Garde cette page en favori : tes tampons arrivent en direct.</span></p>
@@ -308,7 +307,7 @@ function drawOpen(o){if(!o)return;const h=new Date().getHours(),el=$("#openT");$
   else el.innerHTML=rouge+"Fermé pour le moment"}
 // Ticket plein écran : le client le montre au serveur (avec l'heure qui tourne : impossible de montrer une capture d'écran)
 $("#showGo").onclick=()=>{const t=document.createElement("div");t.className="ticket";t.setAttribute("role","dialog");
-  t.innerHTML=`<div class="big">${IC.burger}</div><h2>Burger offert !</h2><div class="who"></div><p>Montre cet écran au serveur avec ta commande.</p><div class="clock" id="clk"></div><button type="button">Fermer</button>`;
+  t.innerHTML=`<div class="big">${IC.burger}</div><h2>Burger offert !</h2><div class="who"></div><p>Donne ton numéro au serveur : il valide ton burger offert sur sa tablette.</p><div class="clock" id="clk"></div><button type="button">Fermer</button>`;
   t.querySelector(".who").textContent=PRENOM;document.body.appendChild(t);confetti();
   const tick=()=>{const e=t.querySelector("#clk");if(e)e.textContent=new Date().toLocaleString("fr-FR",{weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit",second:"2-digit"})};
   tick();const iv=setInterval(tick,1000);t.querySelector("button").onclick=()=>{clearInterval(iv);t.remove()}};
