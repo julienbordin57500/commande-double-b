@@ -401,6 +401,7 @@ function buildMail(cle,p){
   const M=S.modeles.find(x=>x.cle===cle)||{sujet:"",corps:""};const R=S.reglages;
   const tel=R.telephone||"06 13 10 05 03",mel=R.email||"doubleb57500@outlook.fr",sig=R.signature||"L'équipe du Double B";
   const desinsc=`${R.lien_desinscription||BASE+"desinscription.html"}?j=${p.jeton||""}`;
+  const plaq=BASE+"plaquette-traiteur.pdf";
   const fill=t=>t.replace(/\{besoin\}/g,phraseBesoin(p)).replace(/\{telephone\}/g,tel).replace(/\{avis\}/g,avisTexte()).replace(/\{nom\}/g,p.nom||"");
   const corps=fill(M.corps||""),sujet=fill(M.sujet||"");
   const P='style="margin:0 0 14px"';
@@ -416,7 +417,8 @@ function buildMail(cle,p){
     if(lines.length>1&&!/^- /.test(lines[0])&&!/[.:,!?]$/.test(lines[0])&&lines[1].startsWith("- "))
       return `<p style="margin:0 0 6px">${esc(lines[0])}</p><ul style="margin:0 0 14px;padding-left:22px">${lines.slice(1).map(l=>`<li style="margin:0 0 4px">${esc(l.replace(/^- /,""))}</li>`).join("")}</ul>`;
     if(lines.length>1&&!/[.:,!?]$/.test(lines[0])&&lines[0].length<60)return `<p ${P}><b style="color:#b06d00">${esc(lines[0])}</b><br>${esc(lines.slice(1).join(" "))}</p>`;
-    return `<p ${P}>${esc(lines.join(" "))}</p>`}).join("");
+    return `<p ${P}>${esc(lines.join(" "))}</p>`}).join("")
+    .replace(/\{plaquette\}/g,`<a href="${plaq}" style="display:inline-block;background:#f2a516;color:#2a1d00;font-weight:bold;text-decoration:none;padding:9px 16px;border-radius:8px">📄 Voir notre plaquette traiteur</a>`);
   const full=`<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#222222;max-width:600px">
 <p style="margin:0 0 18px"><img src="${BASE}logo-hd.png" alt="Double B" width="150" style="display:block;width:150px;height:auto;border:0"></p>
 ${html}
@@ -424,7 +426,7 @@ ${html}
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:560px;margin:0 0 16px"><tr><td style="background:#f7f1e6;border-radius:10px;padding:10px 14px;font-size:13px;line-height:1.45;color:#5c5446">🍽️ <b style="color:#2a1d00">Le Double B, c'est d'abord un restaurant.</b> Venez goûter notre cuisine maison, du lundi au vendredi, midi et soir, au 59 avenue Foch à Folschviller.</td></tr></table>
 <p style="margin:0;font-size:11.5px;line-height:1.45;color:#8a8275">Le Double B, SIREN ${esc(R.siren||"915 267 595")}, 59 avenue Foch, 57730 Folschviller. Ce message est envoyé à l'adresse de contact professionnelle de votre structure, au sujet de notre service traiteur pour les professionnels. Vous ne souhaitez plus rien recevoir ? <a href="${esc(desinsc)}" style="color:#8a8275">Se désinscrire en un clic</a> ou répondez « STOP ».</p>
 </div>`;
-  const text=corps.replace(/\[photos\s*\d+\]\n*/gi,"")+`\n\n${sig}\nLe Double B · restaurant et traiteur fait maison\n59 avenue Foch, 57730 Folschviller\n${tel} · ${mel}\n\nLe Double B, c'est d'abord un restaurant : venez goûter notre cuisine maison, du lundi au vendredi, midi et soir.\n\nPour ne plus rien recevoir : ${desinsc} ou répondez STOP.`;
+  const text=corps.replace(/\[photos\s*\d+\]\n*/gi,"").replace(/\{plaquette\}/g,"Notre plaquette : "+plaq)+`\n\n${sig}\nLe Double B · restaurant et traiteur fait maison\n59 avenue Foch, 57730 Folschviller\n${tel} · ${mel}\n\nLe Double B, c'est d'abord un restaurant : venez goûter notre cuisine maison, du lundi au vendredi, midi et soir.\n\nPour ne plus rien recevoir : ${desinsc} ou répondez STOP.`;
   return {sujet,html:full,text};
 }
 function preview(cle,p){
@@ -624,7 +626,7 @@ function renderModeles(){
 $("#mlist").onclick=e=>{const b=e.target.closest(".it");if(!b)return;const M=S.modeles.find(x=>x.cle===b.dataset.k);
   const m=sheet(`<h3>${esc(M.nom)}</h3><label class="f">Objet<input type="text" id="mSu" value="${esc(M.sujet)}"></label>
     <label class="f">Texte<textarea id="mCo" style="min-height:300px">${esc(M.corps)}</textarea></label>
-    <div class="hint" style="margin:-4px 0 0">Mots remplacés tout seuls : <b>{besoin}</b> (selon la fiche), <b>{telephone}</b>, <b>{avis}</b> (note Google). <b>[photos 2]</b> place 2 photos. Une ligne vide = nouveau paragraphe, « - » = liste. Signature, bandeau restaurant et désinscription sont ajoutés automatiquement.</div>
+    <div class="hint" style="margin:-4px 0 0">Mots remplacés tout seuls : <b>{besoin}</b> (selon la fiche), <b>{telephone}</b>, <b>{avis}</b> (note Google), <b>{plaquette}</b> (bouton vers la plaquette PDF). <b>[photos 2]</b> place 2 photos. Une ligne vide = nouveau paragraphe, « - » = liste. Signature, bandeau restaurant et désinscription sont ajoutés automatiquement.</div>
     <div class="row"><button class="btn" id="mOk" type="button" style="flex:1">Enregistrer</button><button class="btn soft" id="mPrev" type="button">Aperçu</button></div>`);
   m.querySelector("#mPrev").onclick=()=>{const old={...M};M.sujet=m.querySelector("#mSu").value;M.corps=m.querySelector("#mCo").value;preview(M.cle);M.sujet=old.sujet;M.corps=old.corps};
   m.querySelector("#mOk").onclick=async()=>{try{await rpc("prosp_modele_enregistrer",{p_cle:M.cle,p_sujet:m.querySelector("#mSu").value,p_corps:m.querySelector("#mCo").value});

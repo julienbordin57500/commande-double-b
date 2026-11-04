@@ -56,7 +56,10 @@ But : décrocher des contrats réguliers (entreprises, CSE, associations, mairie
   arrêtées dès « A répondu », un statut avancé ou une désinscription. Pas de pixel de suivi des ouvertures (CNIL) : on suit les réponses.
 - **Mails** : modèles modifiables (table `prosp_modeles`), jamais de prix (« devis gratuit », « sur mesure », pas de délai promis),
   jamais d'achats industriels. Signature « L'équipe du Double B », bandeau « d'abord un restaurant », SIREN et lien de désinscription
-  ajoutés par `buildMail`. Photos : dossier public Supabase `prospection` (table `prosp_photos`), ajoutées depuis l'onglet Mails.
+  ajoutés par `buildMail` ; `{plaquette}` = bouton vers `plaquette-traiteur.pdf`. Jamais « de 15 à 100 personnes » (Julien : « on s'adapte »)
+  ni livraison promise (pas de livraison de base : « à emporter », livraison « on en parle »). Photos : `traiteur/photo-N.jpg`
+  (table `prosp_photos`) ; celles ajoutées depuis l'onglet Mails vont dans le dossier public Supabase `prospection`.
+- **Plaquette** : `plaquette-traiteur.pdf` ; sa source (HTML + photos) est dans iCloud Double B › 03 - Communication › Traiteur.
 - **Base** : tables `prosp_*`, RPC `prosp_etat`, `prosp_importer`, `prosp_maj`, `prosp_ajouter`, `prosp_envoye`, `prosp_modele_enregistrer`,
   `prosp_reglage`, `prosp_photo_retirer` (code d'équipe) et `prosp_desinscrire(p_jeton)` (publique, page de désinscription).
 - **Plus tard** : quand le domaine `ledoubleb.fr` et un compte Brevo existeront (clé dans `secrets`), remplacer le copier-coller par
