@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Prospection traiteur</title>
+<meta name="description" content="Prospection traiteur du Double B : entreprises, CSE, associations et collectivités autour de Folschviller.">
+<meta name="theme-color" content="#f2a516">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Commande 2B">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
+<style>
+/* Layout : en-tête ; onglets Bilan / Envoi du jour / Prospects / Importer / Modèles ; fiches prospect en fenêtre du bas. */
+:root{
+  --bg:#f4f2ec; --surface:#ffffff; --sunken:#f9f7f2; --line:#e6e1d5; --fg:#1d1b17; --muted:#6f695d;
+  --accent:#f2a516; --accent-ink:#2a1d00; --accent-soft:#fdf1d6; --go:#2f7d4f; --go-soft:#dff1e6; --danger:#c23a2b; --info:#2f5d9e; --info-soft:#e2ebf8;
+  --display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
+  --body:"Figtree","Segoe UI",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#141310; --surface:#1f1d18; --sunken:#191814; --line:#34312a; --fg:#f3efe5; --muted:#a69f90;
+  --accent:#f5b232; --accent-ink:#231800; --accent-soft:#3a2e12; --go:#4fae78; --go-soft:#16301f; --danger:#e8705f; --info:#8db7ee; --info-soft:#1b2a40; color-scheme:dark}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.35;-webkit-tap-highlight-color:transparent;
+  padding:env(safe-area-inset-top,0px) max(16px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(16px,env(safe-area-inset-left,0px))}
+[hidden]{display:none!important}
+.wrap{max-width:860px;margin:0 auto;padding-block:16px 60px}
+h1,h2,h3{font-family:var(--display);margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+header.top{display:flex;align-items:center;gap:14px}
+.logo{flex:none;width:112px;height:62px;border-radius:16px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;padding:6px 10px}
+.logo img{width:100%;height:auto;display:block;aspect-ratio:1000/403}
+.titles{flex:1;min-width:0}
+.titles h1{font-size:30px;font-weight:800;letter-spacing:-.5px;line-height:1}
+.titles p{margin:6px 0 0;font-size:15px;color:var(--muted);font-weight:500}
+.sync{font-size:12px;color:var(--muted);text-align:right;margin-bottom:6px}
+.sync::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--muted);margin-right:6px;vertical-align:1px}
+.sync.ok::before{background:var(--go)} .sync.err::before{background:var(--danger)}
+
+.tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:14px;margin:16px 0 4px;position:sticky;top:6px;z-index:5}
+.tabs button{min-height:46px;border-radius:10px;border:0;background:transparent;font-weight:800;font-size:14px;color:var(--muted);line-height:1.1;padding:2px;position:relative}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.tabs .nb{position:absolute;top:3px;right:5px;min-width:19px;height:19px;border-radius:10px;background:var(--danger);color:#fff;font-size:11.5px;display:grid;place-items:center;padding:0 5px}
+
+.btn{min-height:50px;border-radius:14px;border:0;padding:0 18px;font-weight:800;background:var(--accent);color:var(--accent-ink);display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:16px;text-decoration:none;text-align:center}
+.btn.soft{background:var(--sunken);border:1px solid var(--line);color:var(--fg)}
+.btn.go{background:var(--go);color:#fff}
+.btn.small{min-height:40px;padding:0 12px;font-size:14.5px;border-radius:11px}
+.btn:disabled{opacity:.55}
+.panel{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:0 1px 2px rgba(60,40,10,.04),0 6px 18px -10px rgba(60,40,10,.14)}
+.panel h2{font-size:20px;font-weight:800;margin-bottom:4px}
+.hint{color:var(--muted);font-size:14.5px;margin:4px 0 10px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* Bilan */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px 14px 12px;box-shadow:0 1px 2px rgba(60,40,10,.04),0 6px 18px -10px rgba(60,40,10,.14)}
+.kpi small{display:block;font-size:13px;font-weight:700;color:var(--muted)}
+.kpi b{display:block;font-family:var(--display);font-size:30px;font-weight:800;line-height:1.1;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi span{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.kpi.hi{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.todo{display:flex;align-items:center;gap:14px}
+.todo .t{flex:1;min-width:0}
+.todo .t b{font-family:var(--display);font-size:21px}
+.funnel{display:flex;flex-direction:column;gap:7px;margin-top:8px}
+.fl{display:grid;grid-template-columns:130px 1fr 44px;gap:10px;align-items:center;font-size:14.5px;font-weight:600}
+.fl .bar{height:14px;border-radius:7px;background:var(--sunken);overflow:hidden}
+.fl .bar i{display:block;height:100%;border-radius:7px;background:var(--accent)}
+.fl b{text-align:right;font-variant-numeric:tabular-nums}
+.strip{display:flex;gap:8px;overflow-x:auto;margin-top:10px;padding-bottom:4px;scroll-snap-type:x mandatory}
+.strip img{flex:none;height:150px;width:auto;border-radius:12px;scroll-snap-align:start;background:var(--sunken)}
+
+/* Listes */
+.list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.it{display:flex;gap:12px;align-items:center;background:var(--sunken);border:1px solid var(--line);border-radius:14px;padding:11px 12px;text-align:left;width:100%}
+button.it{cursor:pointer}
+.it .m{flex:1;min-width:0}
+.it .m b{display:block;font-weight:800;font-size:15.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.it .m small{display:block;color:var(--muted);font-size:13.5px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tag{flex:none;font-size:12px;font-weight:800;padding:4px 9px;border-radius:999px;background:var(--line);color:var(--fg);white-space:nowrap}
+.tag.a_contacter{background:var(--accent-soft);color:var(--accent-ink)} .tag.contacte,.tag.relance{background:var(--info-soft);color:var(--info)}
+.tag.rdv,.tag.devis{background:#efe3fb;color:#6d28d9} .tag.client{background:var(--go-soft);color:var(--go)} .tag.refus{background:var(--sunken);color:var(--muted);border:1px solid var(--line)}
+@media (prefers-color-scheme: dark){.tag.rdv,.tag.devis{background:#2a1f3d;color:#c4a5f5}}
+.filters{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+input[type=text],input[type=search],input[type=email],input[type=url],input[type=tel],input[type=number],input[type=date],select,textarea{width:100%;min-height:48px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);padding:10px 12px;font-size:16px}
+textarea{min-height:90px;resize:vertical;line-height:1.45}
+label.f{display:flex;flex-direction:column;gap:5px;font-size:13.5px;font-weight:700;color:var(--muted)}
+.more{display:block;margin:12px auto 0}
+.empty{color:var(--muted);font-size:15px;text-align:center;padding:16px 8px}
+
+/* Envoi */
+.send{background:var(--sunken);border:1px solid var(--line);border-radius:16px;padding:12px}
+.send .h{display:flex;gap:10px;align-items:flex-start}
+.send .h .m{flex:1;min-width:0}
+.send .h b{font-weight:800}
+.send .h small{display:block;color:var(--muted);font-size:13.5px;margin-top:2px;word-break:break-all}
+.send .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.send.done{opacity:.55}
+.steps{margin-top:10px;background:var(--accent-soft);border-radius:12px;padding:10px 12px;font-size:14.5px;line-height:1.45}
+.steps ol{margin:4px 0 8px;padding-left:20px}
+
+/* Import */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:44px;border-radius:12px;border:1.5px solid var(--line);background:var(--sunken);padding:0 14px;font-weight:700;font-size:15px;display:inline-flex;align-items:center;gap:6px}
+.chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-ink)}
+@media (prefers-color-scheme: dark){.chip[aria-pressed="true"]{color:var(--fg)}}
+.prog{height:12px;border-radius:6px;background:var(--sunken);overflow:hidden;margin-top:12px}
+.prog i{display:block;height:100%;width:0;background:var(--go);transition:width .3s}
+
+/* Modèles & photos */
+.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:10px}
+.ph{position:relative;border-radius:14px;overflow:hidden;background:var(--sunken);aspect-ratio:3/4}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}
+.ph button{position:absolute;top:6px;right:6px;width:34px;height:34px;border-radius:10px;border:0;background:rgba(0,0,0,.6);color:#fff;font-weight:800}
+.ph .n{position:absolute;left:6px;top:6px;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:13px;border-radius:8px;padding:2px 7px}
+.drop{border:2px dashed var(--line);border-radius:16px;padding:18px;text-align:center;color:var(--muted);font-weight:600;cursor:pointer}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+
+/* Fenêtres */
+.sheet{position:fixed;inset:0;background:rgba(10,8,4,.55);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet .box{background:var(--surface);width:100%;max-width:640px;border-radius:22px 22px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));max-height:92vh;overflow:auto;display:flex;flex-direction:column;gap:12px}
+.sheet h3{font-size:22px;font-weight:800}
+.sheet .sub{color:var(--muted);font-size:14px;margin-top:-6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.info{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14.5px;background:var(--sunken);border-radius:12px;padding:10px 12px}
+.info dt{color:var(--muted);font-weight:700}
+.info dd{margin:0;word-break:break-word}
+.hist{font-size:14px;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+.check{display:flex;align-items:center;gap:10px;font-weight:700;min-height:48px;padding:0 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--sunken)}
+.check input{width:22px;height:22px;accent-color:var(--go)}
+iframe.prev{width:100%;height:62vh;border:1px solid var(--line);border-radius:12px;background:#fff}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:11px 16px;border-radius:12px;font-weight:600;font-size:15px;z-index:60;max-width:calc(100% - 32px)}
+@media (max-width:640px){.kpis{grid-template-columns:repeat(2,1fr)}.filters{grid-template-columns:1fr 1fr}.filters .q{grid-column:1/-1}.fl{grid-template-columns:100px 1fr 36px}}
+@media (max-width:400px){.titles h1{font-size:25px}header.top .logo{width:92px;height:54px}.tabs button{font-size:12px}.grid2{grid-template-columns:1fr}}
+@view-transition{navigation:auto}
+.pbar{view-transition-name:pbar}
+@media (prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="pbar" id="pbar"></div><script src="profil.js"></script>
+  <div class="sync" id="sync">Connexion…</div>
+  <header class="top">
+    <div class="logo"><img src="logo-hd.png" alt="Double B" width="1000" height="403"></div>
+    <div class="titles"><h1>Prospection</h1><p>Trouver des clients réguliers pour le traiteur.</p></div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-v="bilan" aria-selected="true">Bilan</button>
+    <button role="tab" data-v="envoi">Envoi<span class="nb" id="nbEnv" hidden></span></button>
+    <button role="tab" data-v="liste">Prospects</button>
+    <button role="tab" data-v="import">Importer</button>
+    <button role="tab" data-v="modeles">Mails</button>
+  </nav>
+
+  <!-- ===== Bilan ===== -->
+  <section data-p="bilan">
+    <div class="panel todo">
+      <div class="t"><b id="todoT">…</b><div class="hint" id="todoS" style="margin:4px 0 0"></div></div>
+      <button class="btn" type="button" id="goEnv">Commencer ›</button>
+    </div>
+    <div class="kpis" id="kpis"></div>
+    <div class="panel">
+      <h2>Où en sont les prospects</h2>
+      <div class="funnel" id="funnel"></div>
+    </div>
+    <div class="panel">
+      <h2>Nos réalisations</h2>
+      <p class="hint">Les photos mises dans les mails. On les change dans « Mails &amp; photos ».</p>
+      <div class="strip" id="strip"></div>
+    </div>
+  </section>
+
+  <!-- ===== Envoi du jour ===== -->
+  <section data-p="envoi" hidden>
+    <div class="panel">
+      <h2>Envoi du jour</h2>
+      <p class="hint">Les relances prévues d'abord, puis les nouveaux contacts les plus proches. Pour chacun : <b>Préparer dans Outlook</b>, coller, envoyer, puis <b>C'est envoyé</b>.</p>
+      <div class="list" id="queue"></div>
+    </div>
+  </section>
+
+  <!-- ===== Prospects ===== -->
+  <section data-p="liste" hidden>
+    <div class="panel">
+      <div class="row" style="justify-content:space-between"><h2>Prospects</h2>
+        <div class="row"><button class="btn small soft" type="button" id="enrBtn">🔎 Chercher les adresses</button><button class="btn small" type="button" id="addBtn">＋ Ajouter</button></div></div>
+      <div class="filters">
+        <input class="q" type="search" id="fQ" placeholder="Nom, commune…" aria-label="Rechercher">
+        <select id="fS" aria-label="Statut"></select>
+        <select id="fC" aria-label="Type"></select>
+      </div>
+      <div class="row" style="margin-top:8px"><select id="fE" aria-label="Adresse mail" style="flex:1"><option value="">Avec ou sans adresse mail</option><option value="oui">Avec adresse mail</option><option value="non">Sans adresse mail</option></select>
+        <select id="fD" aria-label="Distance" style="flex:1"><option value="">Toutes distances</option><option value="10">≤ 10 km</option><option value="15">≤ 15 km</option><option value="30">≤ 30 km</option></select></div>
+      <div class="hint" id="count" style="margin-top:10px"></div>
+      <div class="list" id="plist"></div>
+      <button class="btn soft more" type="button" id="moreBtn" hidden>Voir plus</button>
+    </div>
+  </section>
+
+  <!-- ===== Importer ===== -->
+  <section data-p="import" hidden>
+    <div class="panel">
+      <h2>Importer depuis la base SIRENE</h2>
+      <p class="hint">Fichier officiel et gratuit des entreprises (INSEE). Seuls les établissements ouverts sont pris, sans les entrepreneurs individuels, ni ceux qui refusent la prospection, ni les restaurants. Les fiches déjà suivies ne sont jamais écrasées.</p>
+      <label class="f">Rayon autour de Folschviller</label>
+      <div class="chips" id="iR" style="margin-top:6px"><button class="chip" aria-pressed="true" data-r="10">10 km</button><button class="chip" aria-pressed="false" data-r="15">15 km</button><button class="chip" aria-pressed="false" data-r="30">30 km</button></div>
+      <label class="f" style="margin-top:14px">Qui chercher</label>
+      <div class="chips" id="iT" style="margin-top:6px"></div>
+      <label class="f" style="margin-top:14px">Taille minimum</label>
+      <div class="chips" id="iS" style="margin-top:6px"><button class="chip" aria-pressed="true" data-s="10">10 salariés et plus</button><button class="chip" aria-pressed="false" data-s="6">6 salariés et plus</button></div>
+      <p class="hint" style="margin-top:10px">Les mairies et administrations sont prises quelle que soit leur taille.</p>
+      <button class="btn" type="button" id="iGo" style="width:100%;margin-top:6px">Lancer l'import</button>
+      <div class="prog" id="iProg" hidden><i></i></div>
+      <div class="hint" id="iMsg"></div>
+    </div>
+  </section>
+
+  <!-- ===== Mails & photos ===== -->
+  <section data-p="modeles" hidden>
+    <div class="panel">
+      <h2>Modèles de mails</h2>
+      <p class="hint">Touche un modèle pour le modifier ou le voir tel que le client le reçoit.</p>
+      <div class="list" id="mlist"></div>
+    </div>
+    <div class="panel">
+      <h2>Photos de nos dînatoires</h2>
+      <p class="hint">Glisse ou choisis des photos : elles sont réduites toutes seules. Les premières de la liste vont dans les mails (2 dans le premier mail, 1 dans la relance, toutes dans la présentation).</p>
+      <label class="drop" id="drop">📷 Ajouter des photos<input type="file" id="pFile" accept="image/*" multiple hidden></label>
+      <div class="hint" id="pMsg"></div>
+      <div class="photos" id="plist2"></div>
+    </div>
+    <div class="panel">
+      <h2>Réglages</h2>
+      <div class="grid2">
+        <label class="f">Note Google (ex. 4,8)<input type="text" id="rNote" inputmode="decimal" placeholder="Laisser vide : « très bien noté »"></label>
+        <label class="f">Mails par jour (conseillé : 20)<input type="number" id="rLot" min="1" max="60"></label>
+        <label class="f">Téléphone dans les mails<input type="tel" id="rTel"></label>
+        <label class="f">Signature<input type="text" id="rSig"></label>
+      </div>
+      <button class="btn" type="button" id="rSave" style="margin-top:12px">Enregistrer les réglages</button>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* Connexion : même base et même code d'équipe que le reste de l'appli */
+const API="https://kokjumjhpasxxxrpspng.supabase.co/rest/v1/rpc/";
+const FN="https://kokjumjhpasxxxrpspng.supabase.co/functions/v1/prospection";
+const KEY="sb_publishable_HIJXH1eJ_CP-A4G3AecDKg_NbBUD0m2";
+const CK="commande2b-code";
+let CODE=null;try{CODE=localStorage.getItem(CK)}catch{}
+if(!CODE)location.replace("./");
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,3000)}
+async function rpc(fn,args={}){
+  const r=await fetch(API+fn,{method:"POST",headers:{"apikey":KEY,"Content-Type":"application/json"},body:JSON.stringify({p_code:CODE,...args})});
+  if(!r.ok){let e={};try{e=await r.json()}catch{}const err=new Error(e.message||"Erreur réseau");err.code=e.code;throw err}
+  const t=await r.text();return t?JSON.parse(t):null;
+}
+async function fn(args){
+  const r=await fetch(FN,{method:"POST",headers:{"apikey":KEY,"Content-Type":"application/json"},body:JSON.stringify({code:CODE,...args})});
+  const d=await r.json().catch(()=>({}));if(!r.ok){const err=new Error(d.error||"Erreur réseau");err.code=d.code;throw err}return d;
+}
+function setSync(t,cls){const s=$("#sync");s.textContent=t;s.className="sync"+(cls?" "+cls:"")}
+function lost(e){if(e&&e.code==="28000"){try{localStorage.removeItem(CK)}catch{}location.replace("./");return true}return false}
+const who=()=>{try{return localStorage.getItem("2b-profil")||""}catch{return ""}};
+const NOMS={julien:"Julien",eric:"Eric",thierry:"Thierry",claire:"Claire"};
+const pad=n=>String(n).padStart(2,"0");
+const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const TODAY=iso(new Date());
+const fdate=s=>s?new Date(s.length>10?s:s+"T12:00").toLocaleDateString("fr-FR",{day:"numeric",month:"short"}):"";
+const eur=v=>new Intl.NumberFormat("fr-FR",{maximumFractionDigits:0}).format(v||0)+" €";
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+/* ---------- Libellés ---------- */
+const STATUTS={a_contacter:"À contacter",contacte:"Contacté",relance:"Relancé",rdv:"Rendez-vous",devis:"Devis envoyé",client:"Client",refus:"Refus"};
+const CATS={entreprise:"Services aux entreprises",banque:"Banque / assurance",conseil:"Conseil / expertise",industrie:"Industrie / énergie",administration:"Mairie / administration",association:"Association",cse:"CSE / CE",sante:"Santé / social",enseignement:"Enseignement"};
+const BESOINS={ce:"CE / CSE",reunion:"Réunion",evenement:"Événement",seminaire:"Séminaire",repas:"Repas d'équipe",autre:"Autre"};
+const MODELE_NOM={accroche:"Premier contact",relance7:"Relance J+7",relance15:"Relance J+15",offre:"Présentation avec photos"};
+const TRANCHES={"00":"0 salarié","01":"1-2 salariés","02":"3-5 salariés","03":"6-9 salariés","11":"10-19 salariés","12":"20-49 salariés","21":"50-99 salariés","22":"100-199 salariés","31":"200-249 salariés","32":"250-499 salariés","41":"500-999 salariés","42":"1 000-1 999 salariés","51":"2 000-4 999 salariés","52":"5 000-9 999 salariés","53":"10 000 salariés et +"};
+// Phrase glissée dans le premier mail selon le besoin repéré (ou, à défaut, le type d'organisme)
+const PHRASE_BESOIN={ce:"pour les événements de votre CSE (fêtes de fin d'année, départs, arbres de Noël)",reunion:"pour vos réunions et formations",evenement:"pour vos inaugurations, vœux, portes ouvertes et cocktails clients",seminaire:"pour vos séminaires et journées d'équipe",repas:"pour les repas de vos équipes, livrés chauds sur place"};
+const PHRASE_CAT={cse:PHRASE_BESOIN.ce,administration:"pour vos vœux, inaugurations, réceptions et réunions",association:"pour vos assemblées, fêtes et événements",sante:"pour vos réunions d'équipe, départs et fêtes de fin d'année",enseignement:"pour vos réunions, fêtes de fin d'année et départs"};
+
+const S={prospects:[],envois:[],modeles:[],photos:[],reglages:{},view:"bilan",lim:40,fait:new Set()};
+const vivants=()=>S.prospects.filter(p=>!p.desinscrit_le);
+
+async function load(){
+  try{const d=await rpc("prosp_etat");Object.assign(S,d);setSync("À jour","ok");render()}
+  catch(e){if(!lost(e))setSync("Pas de connexion","err")}
+}
+function render(){renderBilan();renderQueue();renderList();renderModeles();renderPhotos();renderReglages()}
+
+/* ---------- Onglets ---------- */
+function show(v){S.view=v;document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===v));
+  document.querySelectorAll("[data-p]").forEach(s=>s.hidden=s.dataset.p!==v);try{sessionStorage.setItem("prosp-vue",v)}catch{}scrollTo({top:0})}
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>show(b.dataset.v));
+$("#goEnv").onclick=()=>show("envoi");
+try{const v=sessionStorage.getItem("prosp-vue");if(v)show(v)}catch{}
+
+/* ---------- Bilan ---------- */
+function stats(){
+  const L=vivants(),all=S.prospects;
+  const contactes=all.filter(p=>p.premier_contact);
+  const repondu=contactes.filter(p=>p.repondu_le||["rdv","devis","client"].includes(p.statut));
+  const rdv=all.filter(p=>["rdv","devis","client"].includes(p.statut));
+  const devis=all.filter(p=>p.devis_montant!=null||["devis","client"].includes(p.statut));
+  const semaine=new Date();semaine.setDate(semaine.getDate()-7);
+  return {total:L.length,avecMail:L.filter(p=>p.email).length,contactes:contactes.length,repondu:repondu.length,
+    taux:contactes.length?Math.round(repondu.length*100/contactes.length):0,rdv:rdv.length,devis:devis.length,
+    devisMontant:all.reduce((s,p)=>s+(+p.devis_montant||0),0),ca:all.reduce((s,p)=>s+(+p.ca_montant||0),0),
+    clients:all.filter(p=>p.statut==="client").length,reguliers:all.filter(p=>p.contrat_regulier).length,
+    semaine:S.envois.filter(e=>new Date(e.d)>=semaine).length,desinscrits:all.filter(p=>p.desinscrit_le).length};
+}
+function renderBilan(){
+  const s=stats(),q=queue(),reste=q.filter(x=>!S.fait.has(x.p.id)).length;
+  $("#todoT").textContent=reste?`${reste} mail${reste>1?"s":""} à envoyer aujourd'hui`:"Rien à envoyer aujourd'hui 👍";
+  const rel=q.filter(x=>x.m!=="accroche"&&!S.fait.has(x.p.id)).length,nv=reste-rel;
+  $("#todoS").textContent=reste?`${rel} relance${rel>1?"s":""} et ${nv} premier${nv>1?"s":""} contact${nv>1?"s":""}. Compte 2 minutes par mail.`:
+    (s.avecMail?"Tous les mails prévus sont partis. Les relances arriveront toutes seules.":"Commence par « Importer », puis « Chercher les adresses » dans Prospects.");
+  $("#goEnv").hidden=!reste;
+  const nb=$("#nbEnv");nb.textContent=reste;nb.hidden=!reste;
+  const K=(l,v,sub,hi)=>`<div class="kpi${hi?" hi":""}"><small>${l}</small><b>${v}</b><span>${sub||"&nbsp;"}</span></div>`;
+  $("#kpis").innerHTML=K("Prospects",s.total,`${s.avecMail} avec adresse mail`)+K("Contactés",s.contactes,`${s.semaine} mail${s.semaine>1?"s":""} cette semaine`)+
+    K("Taux de réponse",s.taux+" %",`${s.repondu} réponse${s.repondu>1?"s":""}`)+K("Rendez-vous",s.rdv,"obtenus")+
+    K("Devis",s.devis,s.devisMontant?eur(s.devisMontant)+" au total":"")+K("Chiffre d'affaires",eur(s.ca),"généré par la prospection",true)+
+    K("Clients",s.clients,"ont commandé")+K("Contrats réguliers",s.reguliers,"signés",true);
+  const L=vivants(),max=Math.max(1,...Object.keys(STATUTS).map(k=>L.filter(p=>p.statut===k).length));
+  $("#funnel").innerHTML=Object.entries(STATUTS).map(([k,l])=>{const n=L.filter(p=>p.statut===k).length;
+    return `<div class="fl"><span>${l}</span><div class="bar"><i style="width:${n*100/max}%"></i></div><b>${n}</b></div>`}).join("")+
+    (s.desinscrits?`<div class="hint" style="margin-top:6px">${s.desinscrits} désinscrit${s.desinscrits>1?"s":""} : ils ne recevront plus rien.</div>`:"");
+  $("#strip").innerHTML=S.photos.length?S.photos.map(f=>`<img src="${esc(f.url)}" alt="${esc(f.legende||"Réalisation du Double B")}" loading="lazy">`).join(""):`<div class="empty">Pas encore de photo.</div>`;
+}
+
+/* ---------- File d'envoi du jour ---------- */
+function queue(){
+  const L=vivants().filter(p=>p.email);
+  const rel=L.filter(p=>["contacte","relance"].includes(p.statut)&&p.prochaine_relance&&p.prochaine_relance<=TODAY&&p.etape<3)
+    .map(p=>({p,m:p.etape<=1?"relance7":"relance15"}));
+  const lot=+S.reglages.lots_par_jour||20;
+  const dejaAujourdhui=S.envois.filter(e=>e.m==="accroche"&&iso(new Date(e.d))===TODAY).length;
+  const nv=L.filter(p=>p.statut==="a_contacter"&&!p.etape).sort((a,b)=>(+a.distance_km||99)-(+b.distance_km||99))
+    .slice(0,Math.max(0,lot-dejaAujourdhui)).map(p=>({p,m:"accroche"}));
+  // ceux envoyés pendant cette visite restent affichés (grisés) jusqu'au rechargement
+  const faits=[...S.fait].map(id=>S.prospects.find(p=>p.id===id)).filter(Boolean).map(p=>({p,m:S.envois.find(e=>e.p===p.id)?.m||"accroche",done:true}));
+  const seen=new Set();return [...rel,...nv,...faits].filter(x=>!seen.has(x.p.id)&&seen.add(x.p.id));
+}
+function renderQueue(){
+  const q=queue(),el=$("#queue");
+  if(!q.length){el.innerHTML=`<div class="empty">${vivants().some(p=>p.email)?"Rien de prévu aujourd'hui. Les relances apparaîtront ici le moment venu.":"Pas encore de prospect avec une adresse mail. Va dans <b>Prospects</b> › <b>Chercher les adresses</b>."}</div>`;return}
+  el.innerHTML=q.map(({p,m,done})=>`<div class="send${done||S.fait.has(p.id)?" done":""}" data-id="${p.id}" data-m="${m}">
+    <div class="h"><div class="m"><b>${esc(p.nom)}</b><small>${esc(p.commune||"")}${p.distance_km!=null?` · ${(+p.distance_km).toLocaleString("fr-FR")} km`:""} · ${esc(p.email)}</small></div><span class="tag ${m==="accroche"?"a_contacter":"relance"}">${MODELE_NOM[m]}</span></div>
+    ${done||S.fait.has(p.id)?`<div class="hint" style="margin:8px 0 0">✓ Envoyé</div>`:`<div class="acts"><button class="btn small" data-a="prep">✉️ Préparer dans Outlook</button><button class="btn small soft" data-a="voir">Voir le mail</button><button class="btn small soft" data-a="fiche">Fiche</button></div>`}
+  </div>`).join("");
+}
+$("#queue").addEventListener("click",async e=>{
+  const b=e.target.closest("button");if(!b)return;const c=b.closest(".send"),p=S.prospects.find(x=>x.id===c.dataset.id),m=c.dataset.m;
+  if(b.dataset.a==="fiche")return openFiche(p);
+  if(b.dataset.a==="voir")return preview(m,p);
+  if(b.dataset.a==="prep"){await prepare(p,m,c.querySelector(".acts"));}
+});
+// Copie le mail mis en forme (texte + photos) puis ouvre un nouveau message Outlook avec le destinataire et l'objet déjà remplis
+async function prepare(p,m,zone){
+  const mail=buildMail(m,p);
+  try{await navigator.clipboard.write([new ClipboardItem({"text/html":new Blob([mail.html],{type:"text/html"}),"text/plain":new Blob([mail.text],{type:"text/plain"})})])}
+  catch{try{await navigator.clipboard.writeText(mail.text)}catch{}}
+  window.open(`https://outlook.live.com/mail/0/deeplink/compose?to=${encodeURIComponent(p.email)}&subject=${encodeURIComponent(mail.sujet)}`,"_blank","noopener");
+  let st=zone.parentElement.querySelector(".steps");
+  if(!st){st=document.createElement("div");st.className="steps";zone.after(st)}
+  st.innerHTML=`<b>Le mail est copié.</b><ol><li>Dans Outlook, clique dans le grand espace du message.</li><li>Colle : <b>⌘ + V</b> (Mac) ou <b>Ctrl + V</b> (PC), ou appui long › Coller.</li><li>Clique <b>Envoyer</b>, puis reviens ici.</li></ol>
+    <div class="row"><button class="btn small go" data-ok>✓ C'est envoyé</button><button class="btn small soft" data-again>Recopier</button></div>`;
+  st.querySelector("[data-again]").onclick=()=>prepare(p,m,zone);
+  st.querySelector("[data-ok]").onclick=async ev=>{ev.target.disabled=true;
+    try{const r=await rpc("prosp_envoye",{p_id:p.id,p_modele:m,p_par:who()});Object.assign(p,r);S.envois.unshift({p:p.id,m,d:new Date().toISOString(),par:who()});S.fait.add(p.id);render();toast("Noté ✓ Relance prévue automatiquement")}
+    catch(err){ev.target.disabled=false;if(!lost(err))toast(err.message.includes("désinscrit")?"Ce contact s'est désinscrit : ne pas lui écrire":"Pas enregistré : vérifie la connexion")}};
+}
+
+/* ---------- Construction des mails ----------
+   Texte du modèle → HTML simple et sûr pour tous les logiciels de mail (tableaux, styles en ligne).
+   {besoin} {telephone} {avis} et [photos N] sont remplacés ; chaque mail porte l'identité du Double B,
+   le petit bandeau « restaurant » et un lien de désinscription personnel. */
+const BASE="https://julienbordin57500.github.io/commande-double-b/";
+function avisTexte(){const n=(S.reglages.note_google||"").trim();return n?`Nos clients nous donnent ${n}/5 sur Google.`:"Notre restaurant est très bien noté par ses clients sur Google."}
+function phraseBesoin(p){return PHRASE_BESOIN[p.besoin]||PHRASE_CAT[p.categorie]||"pour vos réunions, vos événements et les repas de vos équipes"}
+function buildMail(cle,p){
+  const M=S.modeles.find(x=>x.cle===cle)||{sujet:"",corps:""};const R=S.reglages;
+  const tel=R.telephone||"06 13 10 05 03",mel=R.email||"doubleb57500@outlook.fr",sig=R.signature||"L'équipe du Double B";
+  const desinsc=`${R.lien_desinscription||BASE+"desinscription.html"}?j=${p.jeton||""}`;
+  const fill=t=>t.replace(/\{besoin\}/g,phraseBesoin(p)).replace(/\{telephone\}/g,tel).replace(/\{avis\}/g,avisTexte()).replace(/\{nom\}/g,p.nom||"");
+  const corps=fill(M.corps||""),sujet=fill(M.sujet||"");
+  const P='style="margin:0 0 14px"';
+  const photos=n=>{const l=S.photos.slice(0,n);if(!l.length)return "";
+    const cells=l.map(f=>`<td style="padding:4px;width:50%" valign="top"><img src="${esc(f.url)}" alt="${esc(f.legende||"Réalisation du Double B")}" width="276" style="display:block;width:100%;max-width:276px;height:auto;border-radius:10px;border:0"></td>`);
+    let rows="";for(let i=0;i<cells.length;i+=2)rows+=`<tr>${cells[i]}${cells[i+1]||(l.length>1?'<td style="width:50%"></td>':"")}</tr>`;
+    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:560px;margin:4px 0 16px"><tbody>${rows}</tbody></table>`};
+  const blocs=corps.split(/\n\s*\n/).map(b=>b.trim()).filter(Boolean);
+  const html=blocs.map(b=>{
+    const ph=b.match(/^\[photos\s*(\d+)\]$/i);if(ph)return photos(+ph[1]);
+    const lines=b.split("\n");
+    if(lines.every(l=>/^- /.test(l)))return `<ul style="margin:0 0 14px;padding-left:22px">${lines.map(l=>`<li style="margin:0 0 4px">${esc(l.slice(2))}</li>`).join("")}</ul>`;
+    if(lines.length>1&&!/^- /.test(lines[0])&&!/[.:,!?]$/.test(lines[0])&&lines[1].startsWith("- "))
+      return `<p style="margin:0 0 6px">${esc(lines[0])}</p><ul style="margin:0 0 14px;padding-left:22px">${lines.slice(1).map(l=>`<li style="margin:0 0 4px">${esc(l.replace(/^- /,""))}</li>`).join("")}</ul>`;
+    if(lines.length>1&&!/[.:,!?]$/.test(lines[0])&&lines[0].length<60)return `<p ${P}><b style="color:#b06d00">${esc(lines[0])}</b><br>${esc(lines.slice(1).join(" "))}</p>`;
+    return `<p ${P}>${esc(lines.join(" "))}</p>`}).join("");
+  const full=`<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#222222;max-width:600px">
+<p style="margin:0 0 18px"><img src="${BASE}logo-hd.png" alt="Double B" width="150" style="display:block;width:150px;height:auto;border:0"></p>
+${html}
+<p style="margin:0 0 20px">${esc(sig)}<br><b>Le Double B</b> · restaurant et traiteur fait maison<br>59 avenue Foch, 57730 Folschviller<br>${esc(tel)} · <a href="mailto:${esc(mel)}" style="color:#b06d00">${esc(mel)}</a></p>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:560px;margin:0 0 16px"><tr><td style="background:#f7f1e6;border-radius:10px;padding:10px 14px;font-size:13px;line-height:1.45;color:#5c5446">🍽️ <b style="color:#2a1d00">Le Double B, c'est d'abord un restaurant.</b> Venez goûter notre cuisine maison, du lundi au vendredi, midi et soir, au 59 avenue Foch à Folschviller.</td></tr></table>
+<p style="margin:0;font-size:11.5px;line-height:1.45;color:#8a8275">Le Double B, SIREN ${esc(R.siren||"915 267 595")}, 59 avenue Foch, 57730 Folschviller. Ce message est envoyé à l'adresse de contact professionnelle de votre structure, au sujet de notre service traiteur pour les professionnels. Vous ne souhaitez plus rien recevoir ? <a href="${esc(desinsc)}" style="color:#8a8275">Se désinscrire en un clic</a> ou répondez « STOP ».</p>
+</div>`;
+  const text=corps.replace(/\[photos\s*\d+\]\n*/gi,"")+`\n\n${sig}\nLe Double B · restaurant et traiteur fait maison\n59 avenue Foch, 57730 Folschviller\n${tel} · ${mel}\n\nLe Double B, c'est d'abord un restaurant : venez goûter notre cuisine maison, du lundi au vendredi, midi et soir.\n\nPour ne plus rien recevoir : ${desinsc} ou répondez STOP.`;
+  return {sujet,html:full,text};
+}
+function preview(cle,p){
+  p=p||vivants().find(x=>x.email)||{nom:"Exemple SARL",categorie:"entreprise",jeton:"exemple",email:"contact@exemple.fr"};
+  const mail=buildMail(cle,p);
+  const m=sheet(`<h3>${esc(MODELE_NOM[cle])}</h3><div class="sub">À : ${esc(p.email||"—")}<br>Objet : <b>${esc(mail.sujet)}</b></div><iframe class="prev" title="Aperçu du mail"></iframe><button class="btn soft" data-close>Fermer</button>`);
+  m.querySelector("iframe").srcdoc=`<body style="margin:14px;background:#fff">${mail.html}</body>`;
+}
+
+/* ---------- Fenêtres ---------- */
+function sheet(html){const m=document.createElement("div");m.className="sheet";m.innerHTML=`<div class="box" role="dialog">${html}</div>`;
+  const close=()=>{m.remove();if(!document.querySelector(".sheet"))document.documentElement.style.overflow=""};
+  m.addEventListener("click",e=>{if(e.target===m||e.target.closest("[data-close]"))close()});m.close=close;
+  document.body.appendChild(m);document.documentElement.style.overflow="hidden";return m}
+
+/* ---------- Liste des prospects ---------- */
+$("#fS").innerHTML=`<option value="">Tous les statuts</option>`+Object.entries(STATUTS).map(([k,l])=>`<option value="${k}">${l}</option>`).join("")+`<option value="desinscrit">Désinscrits</option>`;
+$("#fC").innerHTML=`<option value="">Tous les types</option>`+Object.entries(CATS).map(([k,l])=>`<option value="${k}">${l}</option>`).join("");
+["#fQ","#fS","#fC","#fE","#fD"].forEach(s=>$(s).addEventListener("input",()=>{S.lim=40;renderList()}));
+$("#moreBtn").onclick=()=>{S.lim+=60;renderList()};
+const norm=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+function filtered(){
+  const q=norm($("#fQ").value),st=$("#fS").value,c=$("#fC").value,e=$("#fE").value,d=+$("#fD").value;
+  return S.prospects.filter(p=>(st==="desinscrit"?p.desinscrit_le:(!st||p.statut===st))&&(!c||p.categorie===c)&&(!e||(e==="oui"?!!p.email:!p.email))&&(!d||(+p.distance_km||0)<=d)&&
+    (!q||norm(p.nom+" "+p.commune+" "+(p.email||"")+" "+(p.notes||"")).includes(q)));
+}
+function renderList(){
+  const L=filtered();$("#count").textContent=`${L.length} prospect${L.length>1?"s":""}`;
+  $("#plist").innerHTML=L.length?L.slice(0,S.lim).map(p=>`<button class="it" type="button" data-id="${p.id}"><div class="m"><b>${esc(p.nom)}</b>
+    <small>${esc(CATS[p.categorie]||"")} · ${esc(p.commune||"")}${p.distance_km!=null?` · ${(+p.distance_km).toLocaleString("fr-FR")} km`:""}${p.email?" · ✉️":p.email_source?" · pas d'adresse":""}${p.besoin?" · "+esc(BESOINS[p.besoin]):""}</small></div>
+    <span class="tag ${p.desinscrit_le?"refus":p.statut}">${p.desinscrit_le?"Désinscrit":STATUTS[p.statut]}</span></button>`).join(""):`<div class="empty">${S.prospects.length?"Aucun prospect avec ces filtres.":"Pas encore de prospect : va dans « Importer »."}</div>`;
+  $("#moreBtn").hidden=L.length<=S.lim;
+}
+$("#plist").addEventListener("click",e=>{const b=e.target.closest(".it");if(b)openFiche(S.prospects.find(p=>p.id===b.dataset.id))});
+
+/* ---------- Fiche prospect ---------- */
+function openFiche(p){
+  let statut=p.statut,besoin=p.besoin||"";
+  const hist=S.envois.filter(e=>e.p===p.id);
+  const g=encodeURIComponent(`${p.nom} ${p.commune||""} contact`);
+  const m=sheet(`<h3 style="padding-right:52px">${esc(p.nom)}</h3>
+    <div class="sub">${esc(CATS[p.categorie]||"")}${p.effectif?" · "+esc(p.effectif):""}</div>
+    ${p.desinscrit_le?`<div class="steps" style="margin:0;background:var(--sunken)">🚫 <b>Désinscrit le ${fdate(p.desinscrit_le)}.</b> Ne plus lui écrire.</div>`:""}
+    <dl class="info"><dt>Adresse</dt><dd>${esc(p.adresse||"—")}</dd>${p.distance_km!=null?`<dt>Distance</dt><dd>${(+p.distance_km).toLocaleString("fr-FR")} km de Folschviller</dd>`:""}
+      ${p.siret?`<dt>SIRET</dt><dd><a href="https://annuaire-entreprises.data.gouv.fr/etablissement/${esc(p.siret)}" target="_blank" rel="noopener">${esc(p.siret)}</a></dd>`:""}
+      ${p.premier_contact?`<dt>1er contact</dt><dd>${fdate(p.premier_contact)}${p.dernier_contact&&p.dernier_contact!==p.premier_contact?` · dernier le ${fdate(p.dernier_contact)}`:""}</dd>`:""}
+      ${p.prochaine_relance?`<dt>Relance</dt><dd>prévue le ${fdate(p.prochaine_relance)}</dd>`:""}</dl>
+    <label class="f">Adresse mail générique (contact@, accueil@…)<input type="email" id="xMail" value="${esc(p.email||"")}" placeholder="contact@…"></label>
+    <div class="hint" id="xSrc" style="margin:-6px 0 0">${p.email_source?esc(p.email_source):"Jamais d'adresse au nom d'une personne (RGPD)."}</div>
+    <div class="grid2"><label class="f">Site web<input type="url" id="xSite" value="${esc(p.site||"")}" placeholder="https://…"></label><label class="f">Téléphone<input type="tel" id="xTel" value="${esc(p.telephone||"")}"></label></div>
+    <div class="row"><button class="btn small soft" id="xFind" type="button">🔎 Chercher l'adresse</button><a class="btn small soft" href="https://www.google.com/search?q=${g}" target="_blank" rel="noopener">Voir sur Google</a>${p.site?`<a class="btn small soft" href="${esc(/^https?:/.test(p.site)?p.site:"https://"+p.site)}" target="_blank" rel="noopener">Ouvrir le site</a>`:""}</div>
+    <label class="f">Statut</label><div class="chips" id="xSt">${Object.entries(STATUTS).map(([k,l])=>`<button class="chip" type="button" data-k="${k}" aria-pressed="${k===statut}">${l}</button>`).join("")}</div>
+    <label class="f">Besoin potentiel (adapte le premier mail)</label><div class="chips" id="xBe">${Object.entries(BESOINS).map(([k,l])=>`<button class="chip" type="button" data-k="${k}" aria-pressed="${k===besoin}">${l}</button>`).join("")}</div>
+    <label class="f">Notes<textarea id="xNotes" placeholder="Qui a répondu, ce qu'ils cherchent, dates…">${esc(p.notes||"")}</textarea></label>
+    <div class="grid2"><label class="f">Montant du devis (€)<input type="number" id="xDevis" min="0" step="1" value="${p.devis_montant??""}"></label><label class="f">CA encaissé (€)<input type="number" id="xCa" min="0" step="1" value="${p.ca_montant??""}"></label></div>
+    <label class="check"><input type="checkbox" id="xReg" ${p.contrat_regulier?"checked":""}> Contrat régulier signé</label>
+    <label class="check"><input type="checkbox" id="xRep" ${p.repondu_le?"checked":""}> A répondu${p.repondu_le?` (le ${fdate(p.repondu_le)})`:""} : plus de relance automatique</label>
+    ${hist.length?`<div class="hist"><b style="color:var(--fg)">Mails envoyés</b>${hist.map(e=>`<span>${fdate(e.d)} · ${esc(MODELE_NOM[e.m]||e.m)}${e.par?" · "+esc(NOMS[e.par]||e.par):""}</span>`).join("")}</div>`:""}
+    <button class="btn" id="xSave" type="button">Enregistrer</button>
+    ${p.desinscrit_le?"":`<div class="row"><select id="xMod" style="flex:1">${Object.entries(MODELE_NOM).map(([k,l])=>`<option value="${k}">${l}</option>`).join("")}</select><button class="btn soft" id="xPrep" type="button">✉️ Écrire</button></div><div id="xZone"></div>`}`);
+  const chips=(sel,set)=>m.querySelector(sel).addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;
+    const on=b.getAttribute("aria-pressed")!=="true"||sel==="#xSt";m.querySelectorAll(sel+" .chip").forEach(c=>c.setAttribute("aria-pressed",c===b&&on));set(on?b.dataset.k:"")});
+  chips("#xSt",v=>statut=v);chips("#xBe",v=>besoin=v);
+  m.querySelector("#xFind").onclick=async ev=>{ev.target.disabled=true;ev.target.textContent="Recherche…";
+    try{const r=await fn({action:"enrichir",nom:p.nom,commune:p.commune,siret:p.siret,site:m.querySelector("#xSite").value.trim(),cp:(p.adresse||"").match(/\b\d{5}\b/)?.[0]});
+      if(r.site&&!m.querySelector("#xSite").value)m.querySelector("#xSite").value=r.site;
+      if(r.telephone&&!m.querySelector("#xTel").value)m.querySelector("#xTel").value=r.telephone;
+      if(r.email){m.querySelector("#xMail").value=r.email;m.querySelector("#xSrc").textContent="Trouvée : "+r.source+(r.emails.length>1?" · autres : "+r.emails.slice(1).join(", "):"")}
+      else m.querySelector("#xSrc").textContent=r.note||"Rien trouvé : regarde sur Google ou sur le site.";
+    }catch(err){if(!lost(err))toast("Recherche impossible : vérifie la connexion")}
+    ev.target.disabled=false;ev.target.textContent="🔎 Chercher l'adresse"};
+  const champs=()=>{const mail=m.querySelector("#xMail").value.trim().toLowerCase();const rep=m.querySelector("#xRep").checked;
+    const c={email:mail,site:m.querySelector("#xSite").value.trim(),telephone:m.querySelector("#xTel").value.trim(),statut,besoin,notes:m.querySelector("#xNotes").value,
+      devis_montant:m.querySelector("#xDevis").value,ca_montant:m.querySelector("#xCa").value,contrat_regulier:m.querySelector("#xReg").checked,par:who()};
+    if(mail!==(p.email||""))c.email_source=mail?(m.querySelector("#xSrc").textContent.startsWith("Trouvée")?m.querySelector("#xSrc").textContent.replace(/^Trouvée : /,"").split(" · ")[0]:"Saisie à la main"):"";
+    if(rep&&!p.repondu_le){c.repondu_le=TODAY}else if(!rep&&p.repondu_le)c.repondu_le="";
+    if(rep||!["a_contacter","contacte","relance"].includes(statut))c.prochaine_relance="";
+    return c};
+  m.querySelector("#xSave").onclick=async ev=>{const c=champs();
+    if(c.email&&!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(c.email))return toast("Adresse mail pas valide");
+    ev.target.disabled=true;
+    try{const r=await rpc("prosp_maj",{p_id:p.id,p_champs:c});Object.assign(p,r);Profil?.saved?.(m);m.close();render();toast("Fiche enregistrée")}
+    catch(err){ev.target.disabled=false;if(!lost(err))toast("Pas enregistré : vérifie la connexion")}};
+  const prep=m.querySelector("#xPrep");
+  if(prep)prep.onclick=async()=>{const mail=m.querySelector("#xMail").value.trim();if(!mail)return toast("Il faut d'abord une adresse mail");
+    if(mail!==p.email){try{Object.assign(p,await rpc("prosp_maj",{p_id:p.id,p_champs:{email:mail,email_source:"Saisie à la main",par:who()}}))}catch{}}
+    const zone=m.querySelector("#xZone");zone.innerHTML=`<div></div>`;await prepare(p,m.querySelector("#xMod").value,zone.firstChild)};
+}
+
+/* ---------- Ajouter à la main ---------- */
+$("#addBtn").onclick=()=>{
+  const m=sheet(`<h3>Nouveau prospect</h3><label class="f">Nom de l'organisme<input type="text" id="aNom"></label>
+    <div class="grid2"><label class="f">Commune<input type="text" id="aCom"></label><label class="f">Type<select id="aCat">${Object.entries(CATS).map(([k,l])=>`<option value="${k}">${l}</option>`).join("")}</select></label></div>
+    <label class="f">Adresse mail générique<input type="email" id="aMail" placeholder="contact@…"></label>
+    <label class="f">Notes<textarea id="aNotes"></textarea></label><button class="btn" id="aOk" type="button">Ajouter</button>`);
+  m.querySelector("#aOk").onclick=async()=>{const nom=m.querySelector("#aNom").value.trim();if(!nom)return toast("Il faut un nom");
+    try{await rpc("prosp_ajouter",{p_champs:{nom,commune:m.querySelector("#aCom").value.trim(),categorie:m.querySelector("#aCat").value,email:m.querySelector("#aMail").value.trim(),notes:m.querySelector("#aNotes").value,par:who()}});
+      m.close();await load();toast("Prospect ajouté")}catch(err){if(!lost(err))toast("Pas ajouté : vérifie la connexion")}};
+};
+
+/* ---------- Recherche d'adresses par lot ----------
+   Les 20 plus proches sans adresse et jamais cherchés. Une requête à la fois, sans insister (pas de scraping abusif). */
+$("#enrBtn").onclick=async ev=>{
+  const L=vivants().filter(p=>!p.email&&!p.email_source).sort((a,b)=>(+a.distance_km||99)-(+b.distance_km||99)).slice(0,20);
+  if(!L.length)return toast("Tous les prospects ont déjà été cherchés");
+  const b=ev.target;b.disabled=true;let ok=0;
+  for(let i=0;i<L.length;i++){const p=L[i];b.textContent=`Recherche ${i+1}/${L.length}…`;
+    try{const r=await fn({action:"enrichir",nom:p.nom,commune:p.commune,siret:p.siret,site:p.site||"",cp:(p.adresse||"").match(/\b\d{5}\b/)?.[0]});
+      const c={site:r.site||p.site||"",par:who(),email_source:r.email?r.source:("Non trouvée : "+(r.note||"rien sur le site"))};
+      if(r.email){c.email=r.email;ok++}
+      if(r.telephone&&!p.telephone)c.telephone=r.telephone;
+      Object.assign(p,await rpc("prosp_maj",{p_id:p.id,p_champs:c}));
+    }catch(err){if(lost(err))return}
+  }
+  b.disabled=false;b.textContent="🔎 Chercher les adresses";render();
+  toast(`${ok} adresse${ok>1?"s":""} trouvée${ok>1?"s":""} sur ${L.length}. Pour les autres : « Voir sur Google » dans la fiche.`);
+};
+
+/* ---------- Import SIRENE ----------
+   Communes de Moselle (et Meurthe-et-Moselle / Bas-Rhin pour 30 km) dont le centre est dans le rayon,
+   puis recherche des organismes de ces communes par famille d'activité (API Recherche d'entreprises, gratuite). */
+const CENTRE={lat:49.0696,lon:6.6897};
+const FAMILLES={pro:{l:"Entreprises, banques, conseil, industrie",on:true},admin:{l:"Mairies et administrations",on:true},sante:{l:"Santé et enseignement",on:true},asso:{l:"Associations",on:true},cse:{l:"CSE / CE",on:true}};
+$("#iT").innerHTML=Object.entries(FAMILLES).map(([k,f])=>`<button class="chip" data-t="${k}" aria-pressed="${f.on}">${f.l}</button>`).join("");
+$("#iT").onclick=e=>{const b=e.target.closest(".chip");if(b)b.setAttribute("aria-pressed",b.getAttribute("aria-pressed")!=="true")};
+["#iR","#iS"].forEach(s=>$(s).onclick=e=>{const b=e.target.closest(".chip");if(!b)return;$(s).querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",c===b))});
+function km(a,b,c,d){const R=6371,r=x=>x*Math.PI/180,x=Math.sin(r(c-a)/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(r(d-b)/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
+function categorie(r,e){
+  const n=norm(r.nom_complet),naf=e.activite_principale||r.activite_principale||"",sec=r.section_activite_principale;
+  if(/\bcse\b|comite social|comite d.?entreprise|comite d.?etablissement/.test(n))return "cse";
+  if(sec==="O")return "administration";if(sec==="P")return "enseignement";if(sec==="Q")return "sante";
+  if(r.complements?.est_association||/^9[24]\./.test(naf))return "association";
+  if(sec==="K")return "banque";if(["C","D","E"].includes(sec))return "industrie";if(sec==="M")return "conseil";return "entreprise";
+}
+// Activités écartées : restaurants (concurrents), agriculture, lotissements, loueurs, écoles maternelles et primaires, cabinets médicaux ;
+// pour le public, aussi les services eau / assainissement / déchets
+const EXCL=/^(56\.|0[1-3]\.|68\.20|42\.99|85\.10|85\.20|86\.2[123])/,EXCL_PUB=/^3[6-9]\./;
+const titre=s=>String(s||"").toLowerCase().replace(/(^|[\s\-'(])([a-zà-ÿ])/g,(m,a,b)=>a+b.toUpperCase());
+async function api(url){
+  for(let i=0;i<4;i++){const r=await fetch(url);if(r.status===429){await sleep(1500*(i+1));continue}if(!r.ok)throw new Error("SIRENE");return r.json()}
+  throw new Error("SIRENE occupé");
+}
+$("#iGo").onclick=async ev=>{
+  const R=+$("#iR [aria-pressed=true]").dataset.r,min=$("#iS [aria-pressed=true]").dataset.s;
+  const fam=[...document.querySelectorAll("#iT [aria-pressed=true]")].map(b=>b.dataset.t);if(!fam.length)return toast("Choisis au moins un type");
+  const b=ev.target,msg=$("#iMsg"),bar=$("#iProg");b.disabled=true;bar.hidden=false;bar.firstChild.style.width="3%";msg.textContent="Recherche des communes…";
+  try{
+    const deps=R>=30?["57","54","67"]:["57"];const COM={};
+    for(const d of deps){const l=await (await fetch(`https://geo.api.gouv.fr/departements/${d}/communes?fields=centre,code,nom`)).json();
+      for(const c of l){if(!c.centre)continue;const k=km(CENTRE.lat,CENTRE.lon,c.centre.coordinates[1],c.centre.coordinates[0]);if(k<=R)COM[c.code]={nom:c.nom,km:Math.round(k*10)/10}}}
+    const codes=Object.keys(COM);
+    const T=(min==="6"?"03,":"")+"11,12,21,22,31,32,41,42,51,52,53";
+    const Q=[];
+    if(fam.includes("pro"))Q.push(`section_activite_principale=C,D,E,J,K,M,N&tranche_effectif_salarie=${T}`);
+    if(fam.includes("admin"))Q.push(`section_activite_principale=O`);
+    if(fam.includes("sante"))Q.push(`section_activite_principale=P,Q&tranche_effectif_salarie=${T}`);
+    if(fam.includes("asso"))Q.push(`est_association=true&tranche_effectif_salarie=${T}`);
+    if(fam.includes("cse"))Q.push(`q=CSE`,`q=${encodeURIComponent("comite social economique")}`);
+    const out=new Map(),vus=new Set();let done=0,totalPages=Q.length;
+    for(const q of Q){
+      let page=1,pages=1;
+      do{
+        const d=await api(`https://recherche-entreprises.api.gouv.fr/search?code_commune=${codes.join(",")}&etat_administratif=A&per_page=25&page=${page}&minimal=true&include=matching_etablissements,complements&${q}`);
+        if(page===1){pages=Math.min(d.total_pages||1,40);totalPages+=pages-1}
+        for(const r of d.results||[]){
+          if(String(r.nature_juridique||"").startsWith("1")||r.statut_diffusion!=="O"||r.opposition_diffusion_commerciale)continue;
+          // un seul contact par organisme et par commune (la mairie en premier), sans les annexes techniques
+          const etabs=[...(r.matching_etablissements||[])].sort((a,b)=>/mairie/i.test((b.liste_enseignes||[]).join())-/mairie/i.test((a.liste_enseignes||[]).join()));
+          for(const e of etabs){
+            const naf=e.activite_principale||"";
+            if(e.etat_administratif!=="A"||!COM[e.commune]||out.has(e.siret)||vus.has(r.siren+e.commune)||e.statut_diffusion_etablissement==="P"||EXCL.test(naf)||(r.section_activite_principale==="O"&&EXCL_PUB.test(naf)))continue;
+            vus.add(r.siren+e.commune);
+            const ens=(e.liste_enseignes||[])[0]||e.nom_commercial||"";
+            const nom=ens&&!norm(r.nom_complet).includes(norm(ens))?`${r.nom_complet} – ${ens}`:r.nom_complet;
+            const tr=e.tranche_effectif_salarie&&e.tranche_effectif_salarie!=="NN"?e.tranche_effectif_salarie:r.tranche_effectif_salarie;
+            out.set(e.siret,{siret:e.siret,siren:r.siren,nom:titre(nom).replace(/\b(Sa|Sas|Sarl|Cse|Ce|Ccas|Ehpad|Edf|Sncf|Bnp|Lcl|Cic|Ssiad|Sivom|Sivu|Cfa|Afpa|Urssaf|Caf|Cpam|Ime|Esat)\b/g,w=>w.toUpperCase()),
+              categorie:categorie(r,e),naf:e.activite_principale||r.activite_principale,effectif:TRANCHES[tr]||"",adresse:e.adresse,commune:titre(e.libelle_commune||COM[e.commune].nom),
+              code_commune:e.commune,distance_km:COM[e.commune].km,site:null,email:null,email_source:null});
+          }
+        }
+        done++;bar.firstChild.style.width=Math.min(95,5+done*90/totalPages)+"%";msg.textContent=`Lecture de la base SIRENE… ${out.size} organismes trouvés`;
+        page++;await sleep(170);
+      }while(page<=pages);
+    }
+    const L=[...out.values()];let nouveaux=0;
+    for(let i=0;i<L.length;i+=200){const r=await rpc("prosp_importer",{p_liste:L.slice(i,i+200)});nouveaux+=r.nouveaux}
+    bar.firstChild.style.width="100%";msg.innerHTML=`<b>Terminé : ${L.length} organismes dans ${R} km, dont ${nouveaux} nouveaux.</b> Étape suivante : Prospects › Chercher les adresses.`;
+    await load();
+  }catch(err){if(!lost(err))msg.textContent="L'import s'est arrêté (connexion ou base SIRENE occupée). Relance-le : rien ne sera en double."}
+  b.disabled=false;
+};
+
+/* ---------- Modèles ---------- */
+function renderModeles(){
+  $("#mlist").innerHTML=S.modeles.map(m=>`<button class="it" type="button" data-k="${m.cle}"><div class="m"><b>${esc(m.nom)}</b><small>${esc(m.sujet)}</small></div><span class="tag">Modifier</span></button>`).join("");
+}
+$("#mlist").onclick=e=>{const b=e.target.closest(".it");if(!b)return;const M=S.modeles.find(x=>x.cle===b.dataset.k);
+  const m=sheet(`<h3>${esc(M.nom)}</h3><label class="f">Objet<input type="text" id="mSu" value="${esc(M.sujet)}"></label>
+    <label class="f">Texte<textarea id="mCo" style="min-height:300px">${esc(M.corps)}</textarea></label>
+    <div class="hint" style="margin:-4px 0 0">Mots remplacés tout seuls : <b>{besoin}</b> (selon la fiche), <b>{telephone}</b>, <b>{avis}</b> (note Google). <b>[photos 2]</b> place 2 photos. Une ligne vide = nouveau paragraphe, « - » = liste. Signature, bandeau restaurant et désinscription sont ajoutés automatiquement.</div>
+    <div class="row"><button class="btn" id="mOk" type="button" style="flex:1">Enregistrer</button><button class="btn soft" id="mPrev" type="button">Aperçu</button></div>`);
+  m.querySelector("#mPrev").onclick=()=>{const old={...M};M.sujet=m.querySelector("#mSu").value;M.corps=m.querySelector("#mCo").value;preview(M.cle);M.sujet=old.sujet;M.corps=old.corps};
+  m.querySelector("#mOk").onclick=async()=>{try{await rpc("prosp_modele_enregistrer",{p_cle:M.cle,p_sujet:m.querySelector("#mSu").value,p_corps:m.querySelector("#mCo").value});
+    M.sujet=m.querySelector("#mSu").value;M.corps=m.querySelector("#mCo").value;Profil?.saved?.(m);m.close();renderModeles();toast("Modèle enregistré")}catch(err){if(!lost(err))toast("Pas enregistré : vérifie la connexion")}};
+};
+
+/* ---------- Photos ---------- */
+function renderPhotos(){
+  $("#plist2").innerHTML=S.photos.map((f,i)=>`<div class="ph"><img src="${esc(f.url)}" alt="" loading="lazy"><span class="n">${i+1}</span><button type="button" data-id="${f.id}" aria-label="Retirer la photo">✕</button></div>`).join("");
+}
+$("#plist2").onclick=async e=>{const b=e.target.closest("button");if(!b)return;if(!confirm("Retirer cette photo des mails ?"))return;
+  try{await rpc("prosp_photo_retirer",{p_id:b.dataset.id});S.photos=S.photos.filter(f=>f.id!==b.dataset.id);renderPhotos();renderBilan()}catch(err){if(!lost(err))toast("Pas retirée : vérifie la connexion")}};
+async function reduire(file){
+  const img=await createImageBitmap(file);const k=Math.min(1,1400/Math.max(img.width,img.height));
+  const c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+  const blob=await new Promise(r=>c.toBlob(r,"image/jpeg",.82));
+  return await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(String(fr.result).split(",")[1]);fr.readAsDataURL(blob)});
+}
+async function ajouterPhotos(files){
+  files=[...files].filter(f=>f.type.startsWith("image/"));if(!files.length)return;
+  const msg=$("#pMsg");let n=0;
+  for(const f of files){msg.textContent=`Envoi de la photo ${n+1} sur ${files.length}…`;
+    try{await fn({action:"photo",type:"image/jpeg",data:await reduire(f),ordre:S.photos.length+n});n++}catch(err){if(lost(err))return;msg.textContent="Une photo n'est pas passée (format ?)"}}
+  msg.textContent=`${n} photo${n>1?"s":""} ajoutée${n>1?"s":""} ✓`;await load();
+}
+$("#pFile").onchange=e=>{ajouterPhotos(e.target.files);e.target.value=""};
+const drop=$("#drop");
+drop.addEventListener("dragover",e=>{e.preventDefault();drop.classList.add("over")});
+drop.addEventListener("dragleave",()=>drop.classList.remove("over"));
+drop.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("over");ajouterPhotos(e.dataTransfer.files)});
+
+/* ---------- Réglages ---------- */
+function renderReglages(){const R=S.reglages;$("#rNote").value=R.note_google||"";$("#rLot").value=R.lots_par_jour||20;$("#rTel").value=R.telephone||"";$("#rSig").value=R.signature||""}
+$("#rSave").onclick=async()=>{const v={note_google:$("#rNote").value.trim(),lots_par_jour:String(Math.max(1,Math.min(60,+$("#rLot").value||20))),telephone:$("#rTel").value.trim(),signature:$("#rSig").value.trim()};
+  try{for(const [k,x] of Object.entries(v))await rpc("prosp_reglage",{p_cle:k,p_valeur:x});Object.assign(S.reglages,v);render();toast("Réglages enregistrés")}catch(err){if(!lost(err))toast("Pas enregistré : vérifie la connexion")}};
+
+load();
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&!document.querySelector(".sheet"))load()});
+</script>
+</body>
+</html>

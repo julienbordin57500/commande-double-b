@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Désinscription – Double B</title>
+<meta name="description" content="Ne plus recevoir les messages du traiteur Le Double B.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="icon-192.png" type="image/png">
+<style>
+/* Page publique, ouverte depuis le lien en bas des mails de prospection. Une seule action : se désinscrire. */
+:root{--bg:#f4f2ec;--surface:#fff;--line:#e6e1d5;--fg:#1d1b17;--muted:#6f695d;--accent:#f2a516;--accent-ink:#2a1d00;--go:#2f7d4f;color-scheme:light}
+@media (prefers-color-scheme: dark){:root{--bg:#141310;--surface:#1f1d18;--line:#34312a;--fg:#f3efe5;--muted:#a69f90;--accent:#f5b232;--accent-ink:#231800;--go:#4fae78;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;padding:16px}
+.c{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:28px 22px;max-width:440px;width:100%;text-align:center}
+.logo{width:150px;margin:0 auto 18px;background:#fff;border-radius:14px;padding:8px 12px}
+.logo img{width:100%;height:auto;display:block}
+h1{font-size:23px;margin:0 0 10px}
+p{color:var(--muted);line-height:1.5;margin:0 0 18px}
+button{width:100%;height:54px;border-radius:14px;border:0;background:var(--accent);color:var(--accent-ink);font:inherit;font-weight:800;font-size:17px;cursor:pointer}
+button:disabled{opacity:.6}
+.ok{color:var(--go);font-size:44px;line-height:1;margin-bottom:8px}
+</style>
+</head>
+<body>
+<main class="c" id="c">
+  <div class="logo"><img src="logo-hd.png" alt="Le Double B" width="1000" height="403"></div>
+  <h1>Ne plus recevoir nos messages</h1>
+  <p>Vous ne recevrez plus aucun mail du service traiteur du Double B à cette adresse.</p>
+  <button type="button" id="go">Me désinscrire</button>
+</main>
+<script>
+const API="https://kokjumjhpasxxxrpspng.supabase.co/rest/v1/rpc/prosp_desinscrire";
+const KEY="sb_publishable_HIJXH1eJ_CP-A4G3AecDKg_NbBUD0m2";
+const j=new URLSearchParams(location.search).get("j")||"";
+const c=document.getElementById("c"),b=document.getElementById("go");
+const fini=t=>{c.innerHTML=`<div class="ok">✓</div><h1>C'est fait</h1><p>${t}</p><p>Le Double B · 59 avenue Foch, 57730 Folschviller</p>`};
+if(!/^[0-9a-f-]{36}$/i.test(j)){b.disabled=true;b.textContent="Lien incomplet";
+  c.querySelector("p").textContent="Ce lien est incomplet. Répondez simplement « STOP » à notre mail : nous vous retirerons de la liste."}
+b.onclick=async()=>{b.disabled=true;b.textContent="Un instant…";
+  try{const r=await fetch(API,{method:"POST",headers:{apikey:KEY,"Content-Type":"application/json"},body:JSON.stringify({p_jeton:j})});
+    if(!r.ok)throw 0;fini("Votre adresse est retirée de notre liste. Nous ne vous écrirons plus. Merci et à bientôt peut-être au restaurant !")}
+  catch{b.disabled=false;b.textContent="Me désinscrire";alert("Pas de connexion. Réessayez, ou répondez « STOP » à notre mail.")}};
+</script>
+</body>
+</html>
