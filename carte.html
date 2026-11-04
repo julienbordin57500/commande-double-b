@@ -80,6 +80,17 @@ body{margin:0;min-height:100vh;color:var(--fg);font-family:var(--body);font-size
 .slot.gift{border:2px solid var(--mt);font-size:clamp(20px,6.5vw,26px);color:inherit;flex-direction:column}
 .slot.gift em{position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);font-style:normal;font-family:var(--body);font-size:9px;font-weight:800;letter-spacing:.08em;
   padding:2px 6px;border-radius:999px;background:var(--m2);color:#1a1205;white-space:nowrap}
+/* Les 2 tampons de bienvenue : un petit ruban doré sous les deux premières pièces */
+.stamps{position:relative}
+.welc{position:absolute;left:0;width:calc((100% - 40px)*.4 + 10px);top:calc(50% - 5px);display:flex;justify-content:center;z-index:2;transform:translateY(-35%);pointer-events:none}
+.welc span{position:relative;pointer-events:none;white-space:nowrap;
+  font-family:var(--body);font-size:10px;font-weight:800;letter-spacing:.07em;padding:3px 9px;border-radius:999px;color:#1a1205;
+  background:linear-gradient(180deg,#ffe7a3,#f2a516);box-shadow:0 4px 12px -4px rgba(242,165,22,.7),inset 0 1px 0 rgba(255,255,255,.6)}
+.welc.pop span{animation:welc .7s cubic-bezier(.2,1.5,.4,1) both;animation-delay:var(--d,0ms)}
+@keyframes welc{0%{opacity:0;transform:translateY(60%) scale(.4)}100%{opacity:1;transform:none}}
+.welc.pop span::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.8) 50%,transparent 70%);
+  background-size:250% 100%;background-position:120% 0;animation:wsheen 1.1s ease-out both;animation-delay:calc(var(--d,0ms) + .5s)}
+@keyframes wsheen{to{background-position:-120% 0}}
 .slot.gift.near{animation:near 1.8s ease-in-out infinite}
 @keyframes near{50%{transform:scale(1.08) rotate(-4deg);box-shadow:0 0 18px 2px var(--mt)}}
 .coin.wig{animation:wig .5s ease}
@@ -175,7 +186,7 @@ body{margin:0;min-height:100vh;color:var(--fg);font-family:var(--body);font-size
 .conf{position:fixed;inset:0;pointer-events:none;z-index:50;overflow:hidden}
 .conf i{position:absolute;top:-20px;width:9px;height:14px;border-radius:2px;animation:fall var(--t) cubic-bezier(.25,.6,.4,1) both;animation-delay:var(--d)}
 @keyframes fall{to{transform:translate(var(--x),110vh) rotate(var(--r));opacity:.9}}
-@media (prefers-reduced-motion:reduce){.card.enter,.slot.gift.near,.show,.ticket .big,.coin.wig,.card::after,.coin.new,.ring,.spark,.slot.gift.ready,.bday .e,.live i,.left b.bump,.card.shake{animation:none!important}.conf{display:none}}
+@media (prefers-reduced-motion:reduce){.card.enter,.slot.gift.near,.show,.ticket .big,.coin.wig,.card::after,.coin.new,.ring,.spark,.slot.gift.ready,.welc.pop span,.welc.pop span::after,.bday .e,.live i,.left b.bump,.card.shake{animation:none!important}.conf{display:none}}
 </style>
 </head>
 <body>
@@ -207,7 +218,7 @@ body{margin:0;min-height:100vh;color:var(--fg);font-family:var(--body);font-size
     <details class="how"><summary>ℹ️ Les règles de la carte</summary>
       <p><em>🍔</em><span><b>1 burger acheté = 1 tampon</b>, sans limite, en donnant ton numéro.</span></p>
       <p><em>🎁</em><span><b>10 tampons = 1 burger offert</b>, celui que tu veux.</span></p>
-      <p><em>🎂</em><span>Ton anniversaire : un dessert offert, valable 30 jours.</span></p>
+      <p><em>🎂</em><span>Ton anniversaire : un produit offert avec ta commande, pendant 30 jours.</span></p>
       <p><em>🏅</em><span>Niveaux : 🥉 Habitué à 1 carte terminée, 🥈 Gourmand à 3, 🥇 VIP à 5.</span></p>
       <p><em>📌</em><span>Garde cette page en favori : tes tampons arrivent en direct.</span></p>
     </details>
@@ -267,6 +278,11 @@ function draw(c){
     st.appendChild(d)}
   const g=st.lastChild;if(full<10){g.innerHTML=IC.gift+`<em>OFFERT</em>`;if(s>=7)g.classList.add("near")}else g.querySelector(".coin").innerHTML=IC.gift;
   if(full>=10)g.classList.add("ready");
+  // Première carte : les 2 premiers tampons sont ceux offerts à la création, on le dit avec un ruban
+  const bienvenue=c.offerts===0&&full>=2,premiere=!vu&&!shown;
+  if(bienvenue){const w=document.createElement("div");w.className="welc";w.innerHTML="<span>+2 OFFERTS · BIENVENUE</span>";
+    if(premiere&&!calme){w.classList.add("pop");w.style.setProperty("--d",350+Math.min(2,neufs.length)*(neufs.length>5?260:420)+200+"ms")}
+    st.appendChild(w)}
   // Les nouveaux tampons tombent l'un après l'autre : choc, onde dorée, étincelles, petite secousse
   const step=neufs.length>5?260:420;
   neufs.forEach(([d,k],n)=>{const delay=350+n*step;k.style.setProperty("--d",delay+"ms");
@@ -282,7 +298,8 @@ function draw(c){
   const m=$("#msg");m.className="msg"+(s>=10?" win":"");
   // Petit mot personnalisé selon où en est le client
   const p=c.prenom,absent=c.derniere&&(Date.now()-new Date(c.derniere))/864e5>30;
-  m.innerHTML=s>=10?`<b>Bravo ${p} ! 🎉</b><span>Ton burger est offert : donne ton numéro à ta prochaine commande, il est pour nous.</span>`
+  m.innerHTML=premiere&&bienvenue&&s<10?`<b>Bienvenue ${p} ! 🎁</b><span>On t'offre 2 tampons pour ta nouvelle carte. Encore ${10-s} burger${10-s>1?"s":""} et le suivant est pour nous.</span>`
+    :s>=10?`<b>Bravo ${p} ! 🎉</b><span>Ton burger est offert : donne ton numéro à ta prochaine commande, il est pour nous.</span>`
     :s===9?`<b>Plus qu'un burger, ${p}, on t'attend ! 🔥</b><span>Le prochain tampon te fait gagner ton burger offert.</span>`
     :absent?`<b>Ça fait longtemps, ${p} ! 🙂</b><span>Encore ${10-s} burgers avant ton burger offert. On a hâte de te revoir.</span>`
     :s===0?`<b>Nouvelle carte, ${p} ! C'est reparti 🍔</b><span>10 tampons et le burger suivant est pour nous.</span>`
@@ -291,7 +308,7 @@ function draw(c){
     :`<b>Bien parti, ${p} !</b><span>Encore ${10-s} burgers et le suivant est offert.</span>`;
   $("#showGo").hidden=s<10;
   const b=$("#bday");b.hidden=!c.anniv;
-  if(c.anniv)b.innerHTML=`<span class="e">🎂</span><b>Joyeux anniversaire ${c.prenom.replace(/[<>&"]/g,"")} !</b><span>Un dessert t'est offert avec ta prochaine commande, jusqu'au ${dmF(c.anniv_fin)}.</span>`;
+  if(c.anniv)b.innerHTML=`<span class="e">🎂</span><b>Joyeux anniversaire ${c.prenom.replace(/[<>&"]/g,"")} !</b><span>Pour ton anniversaire, un produit t'est offert avec ta prochaine commande, jusqu'au ${dmF(c.anniv_fin)}.</span>`;
   $("#kb").textContent=c.burgers;$("#ko").textContent=c.offerts;
   $("#kl").textContent=c.derniere?new Date(c.derniere).toLocaleDateString("fr-FR",{day:"numeric",month:"short"}):"—";
   shown={full,offerts:c.offerts,anniv:c.anniv};

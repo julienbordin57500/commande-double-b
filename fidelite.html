@@ -203,7 +203,7 @@ body.fiche .wrap{padding-top:10px}
           <div><span class="lbl">🎂 Anniversaire (facultatif, sans l'année)</span><div class="two"><select class="in sm" id="nJ" aria-label="Jour"></select><select class="in sm" id="nA" aria-label="Mois"></select></div></div>
           <div hidden><label class="lbl" for="nPa">👥 Parrainé par (facultatif) : numéro du parrain</label><input class="in sm num" id="nPa" inputmode="tel" autocomplete="off" placeholder="06 …"><div class="pok" id="nPaOk"></div></div>
           <label class="check"><input type="checkbox" id="nOk"><span>Le client est d'accord pour qu'on garde son prénom et son numéro pour sa carte fidélité. Il peut demander à tout effacer.</span></label>
-          <label class="check" id="nSmsL" hidden><input type="checkbox" id="nSms"><span>🎂 Il accepte un SMS le jour de son anniversaire (dessert offert).</span></label>
+          <label class="check" id="nSmsL" hidden><input type="checkbox" id="nSms"><span>🎂 Il accepte un SMS le jour de son anniversaire (produit offert avec sa commande).</span></label>
           <button type="button" class="btn" id="nGo">Créer la carte</button>
           <p class="hint" style="text-align:center;margin-top:0">2 tampons de bienvenue offerts en plus 🎁</p>
         </div>
@@ -265,7 +265,7 @@ function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTim
 // Messages clairs pour les refus du serveur
 const ERR={nombre:"50 tampons maximum d'un coup : vérifie le nombre",parrain:"Aucune carte avec le numéro du parrain",date:"Choisis le jour ET le mois de l'anniversaire","pas assez":"Pas encore 10 tampons","trop tard":"Trop tard pour annuler (15 minutes passées)",
   solde:"Impossible : le burger offert a déjà utilisé ces tampons. Annule d'abord le burger offert.",numero:"Numéro de téléphone pas valable",prenom:"Écris le prénom",
-  deja:"Ce numéro a déjà une carte",anniv:"Dessert d'anniversaire déjà donné ou plus valable"};
+  deja:"Ce numéro a déjà une carte",anniv:"Cadeau d'anniversaire déjà donné ou plus valable"};
 const fail=e=>{if(lost(e))return;toast(ERR[e.message]||"Pas enregistré : vérifie la connexion")};
 const nomF=c=>c.prenom+(c.initiale?" "+c.initiale+".":"");   // initiale du nom : vue seulement par l'équipe
 const telF=t=>String(t||"").replace(/(\d{2})(?=\d)/g,"$1 ");
@@ -354,7 +354,7 @@ $("#fBack").onclick=nextCli;$("#fNext").onclick=nextCli;
 /* ---------- Fiche client ---------- */
 let CUR=null,busy=false;
 async function openCli(id){try{const c=await rpc("fid_fiche",{p_client:id});if(!c){delRec(id);drawRec();toast("Ce client a été effacé");return}show(c)}catch(e){fail(e)}}
-const LAB={bienvenue:["👋","Bienvenue"],burger:["🍔","Burger"],offert:["🎁","Burger offert"],anniv:["🎂","Dessert anniversaire"],parrainage:["👥","Parrainage"]};
+const LAB={bienvenue:["👋","Bienvenue"],burger:["🍔","Burger"],offert:["🎁","Burger offert"],anniv:["🎂","Cadeau anniversaire"],parrainage:["👥","Parrainage"]};
 function show(c,anim){
   if(!c){toast("Client introuvable");showSearch();return}
   if(!CUR||CUR.id!==c.id){$("#fDone").hidden=true;$(".plus-n").hidden=false;addRec(c)}
@@ -373,7 +373,7 @@ function show(c,anim){
   $("#fStat").innerHTML=s>=10?`🎉 Burger offert disponible !<small>${s>10?`Et déjà ${s-10} tampon${s-10>1?"s":""} pour la carte suivante · `:""}Total : ${c.burgers} burgers achetés</small>`
     :`Plus que ${10-s} tampon${10-s>1?"s":""} avant son burger offert<small>${c.burgers} burger${c.burgers>1?"s":""} acheté${c.burgers>1?"s":""} · ${c.offerts} offert${c.offerts>1?"s":""}${c.aujourdhui?` · aujourd'hui : ${c.aujourdhui}`:""}</small>`;
   $("#fGift").hidden=s<10;$("#fAnniv").hidden=!c.anniv_dispo;
-  if(c.anniv_dispo)$("#fAnnivT").innerHTML=`🎂 Anniversaire : <b>dessert offert</b> jusqu'au ${dmF(c.anniv_fin)}.${c.sms?`<br><small>${c.sms.statut==="envoye"?"SMS envoyé ✓":"SMS à envoyer à la main (Bilan)"}</small>`:""}`;
+  if(c.anniv_dispo)$("#fAnnivT").innerHTML=`🎂 Anniversaire : <b>un produit offert avec sa commande</b> jusqu'au ${dmF(c.anniv_fin)}.${c.sms?`<br><small>${c.sms.statut==="envoye"?"SMS envoyé ✓":"SMS à envoyer à la main (Bilan)"}</small>`:""}`;
   $("#fHist").innerHTML=c.historique.length?c.historique.map(h=>{const[e,l]=LAB[h.sorte];
     const v=h.sorte==="anniv"?"":h.nb>0?"+"+h.nb:String(h.nb);
     return `<div class="hl${h.annule?" x":""}"><em>${e}</em><span>${l}${h.annule?" (annulé)":""}<small>${dtF(h.le)}${h.par?" · "+esc(NOMS()[h.par]||h.par):""}</small></span><b>${v}</b>${h.annulable?`<button type="button" data-x="${h.id}">Annuler</button>`:""}</div>`}).join("")
@@ -397,7 +397,7 @@ $("#fMany").onclick=()=>{let n=9;const m=modal(`<h3>🍔 Combien de burgers ?</h
   m.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{n=Math.max(1,Math.min(50,n+ +b.dataset.d));up()});
   m.querySelector("[data-ok]").onclick=async()=>{m.remove();const avant=CUR&&CUR.solde;await act("fid_tamponner",{p_nb:n,p_par:who()});if(CUR&&CUR.solde!==avant)doneMsg(CUR,n)}};
 $("#fGift").onclick=()=>confirmBox("🎁 Offrir le burger ?",`${esc(CUR.prenom)} a ${CUR.solde} tampons. On en retire 10.`,"Oui, burger offert",()=>act("fid_offrir",{p_par:who()},"Burger offert ✓ · bon appétit !"));
-$("#fAnnivGo").onclick=()=>act("fid_anniv",{p_par:who()},"Dessert d'anniversaire noté ✓");
+$("#fAnnivGo").onclick=()=>act("fid_anniv",{p_par:who()},"Cadeau d'anniversaire noté ✓");
 $("#fHist").addEventListener("click",e=>{const b=e.target.closest("[data-x]");if(!b||busy)return;
   confirmBox("Annuler cette ligne ?","Elle restera visible, barrée, dans l'historique.","Oui, annuler",async()=>{busy=true;
     try{show(await rpc("fid_annuler",{p_mvt:+b.dataset.x,p_par:who()}));toast("Annulé ✓")}catch(e){fail(e)}finally{busy=false}})});
@@ -449,9 +449,9 @@ async function bilan(){
       ${b.presque?`<p class="note">🔥 ${b.presque} client${b.presque>1?"s sont":" est"} à 1 ou 2 tampons du burger offert.</p>`:""}</div>
     ${b.alertes.length?`<div class="card warn"><h2>⚠️ À vérifier</h2><p class="note" style="margin:-4px 0 6px">Plus de 20 tampons en 7 jours : ça peut être normal (famille, collègues), mais jette un œil.</p>
       ${li(b.alertes,x=>`${x.n} tampons cette semaine · ${telF(x.tel)}`)}</div>`:""}
-    ${b.anniv.length?`<div class="card"><h2>🎂 Desserts d'anniversaire</h2><p class="note" style="margin:-4px 0 6px">${b.sms_auto?"Les SMS partent tout seuls le matin de l'anniversaire.":"SMS automatique pas encore branché : envoie-le d'un toucher avec 💬."}</p>
-      ${li(b.anniv,x=>`${x.jour} ${MOIS[x.mois-1]} · ${x.dispo?"valable jusqu'au "+dmF(x.fin):"dessert donné ✓"}${x.sms&&x.sms.statut==="envoye"?" · SMS envoyé":""}`,
-        x=>x.dispo&&x.sms_ok&&!(x.sms&&x.sms.statut==="envoye")?smsA(x,`Joyeux anniversaire ${x.prenom} ! Le Double B t'offre un dessert avec ta prochaine commande, jusqu'au ${dmF(x.fin)}. A tres vite !`):"")}</div>`:""}
+    ${b.anniv.length?`<div class="card"><h2>🎂 Cadeaux d'anniversaire</h2><p class="note" style="margin:-4px 0 6px">${b.sms_auto?"Les SMS partent tout seuls le matin de l'anniversaire.":"SMS automatique pas encore branché : envoie-le d'un toucher avec 💬."}</p>
+      ${li(b.anniv,x=>`${x.jour} ${MOIS[x.mois-1]} · ${x.dispo?"valable jusqu'au "+dmF(x.fin):"cadeau donné ✓"}${x.sms&&x.sms.statut==="envoye"?" · SMS envoyé":""}`,
+        x=>x.dispo&&x.sms_ok&&!(x.sms&&x.sms.statut==="envoye")?smsA(x,`Joyeux anniversaire ${x.prenom} ! Le Double B t'offre un produit avec ta prochaine commande, jusqu'au ${dmF(x.fin)}. A tres vite !`):"")}</div>`:""}
     <div class="card"><h2>😴 Pas revenus depuis 2 mois</h2>${b.relancer.length?li(b.relancer,x=>"Dernière visite "+ago(x.derniere),
       x=>smsA(x,`Bonjour ${x.prenom} ! Ça fait longtemps 🙂 Ta carte fidélité t'attend au Double B, on a hâte de te revoir !`)):`<div class="empty">Personne, bravo !</div>`}</div>
     <div class="card"><h2>🏆 Meilleurs clients</h2>${b.top.length?li(b.top,x=>telF(x.tel),x=>`<span class="v num">${x.burgers} 🍔</span>`):`<div class="empty">Pas encore de tampons.</div>`}</div>
