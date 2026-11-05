@@ -163,6 +163,7 @@ iframe.prev{width:100%;height:62vh;border:1px solid var(--line);border-radius:12
     <div class="titles"><h1>Prospection</h1><p>Trouver des clients réguliers pour le traiteur.</p></div>
   </header>
 
+  <div class="panel empty" id="locked" hidden style="margin-top:16px">🔒 La prospection est réservée à Julien.</div>
   <nav class="tabs" role="tablist">
     <button role="tab" data-v="envoi" aria-selected="true">À envoyer<span class="nb" id="nbEnv" hidden></span></button>
     <button role="tab" data-v="liste">Prospects</button>
@@ -275,6 +276,8 @@ const KEY="sb_publishable_HIJXH1eJ_CP-A4G3AecDKg_NbBUD0m2";
 const CK="commande2b-code";
 let CODE=null;try{CODE=localStorage.getItem(CK)}catch{}
 if(!CODE)location.replace("./");
+// Réservé au profil Julien (choix de Julien, 2026-11-05)
+const JULIEN=(()=>{try{return localStorage.getItem("2b-profil")==="julien"}catch{return false}})();
 
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
@@ -323,7 +326,7 @@ function show(v){S.view=v;document.querySelectorAll(".tabs button").forEach(b=>b
   document.querySelectorAll("[data-p]").forEach(s=>s.hidden=s.dataset.p!==v);try{sessionStorage.setItem("prosp-vue",v)}catch{}scrollTo({top:0})}
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>show(b.dataset.v));
 $("#goEnv").onclick=()=>show("envoi");
-try{const v=sessionStorage.getItem("prosp-vue");if(["envoi","liste","bilan","plus"].includes(v))show(v)}catch{}
+{let v="envoi";try{const x=sessionStorage.getItem("prosp-vue");if(["envoi","liste","bilan","plus"].includes(x))v=x}catch{}show(v)}
 
 /* ---------- Bilan ---------- */
 function stats(){
@@ -390,7 +393,8 @@ function renderAuto(el){
   const n=prochainEnvoi(),q=queue(n.jour),partis=S.envois.filter(e=>e.par==="brevo").slice(0,40);
   let dern={};try{dern=JSON.parse(S.reglages.brevo_dernier||"{}")}catch{}
   const nomP=id=>S.prospects.find(p=>p.id===id)||{nom:"?",commune:""};
-  const ligne=(p,m,d)=>`<div class="it"><div class="m"><b>${esc(p.nom)}</b><small>${esc(p.commune||"")}${d?" · "+fdate(d):""}</small></div><span class="tag ${m==="accroche"?"a_contacter":"relance"}">${MODELE_NOM[m]||m}</span></div>`;
+  // Toucher une ligne : le mail tel que le prospect le reçoit (reconstruit avec les modèles actuels)
+  const ligne=(p,m,d)=>`<button class="it" type="button" data-voir="${esc(p.id)}" data-m="${esc(m)}"><div class="m"><b>${esc(p.nom)}</b><small>${esc(p.commune||"")}${d?" · "+fdate(d):""} · voir le mail ›</small></div><span class="tag ${m==="accroche"?"a_contacter":"relance"}">${MODELE_NOM[m]||m}</span></button>`;
   el.innerHTML=`<div class="auto"><span class="ic">✉️</span><div><b>Envoi automatique chaque matin</b><small>Du lundi au vendredi, avec la plaquette jointe. Les réponses arrivent dans Outlook.</small></div></div>
     ${dern.erreurs&&dern.erreurs.length?`<div class="alerte"><b>Dernier envoi (${fdate(dern.le)}) : ${dern.erreurs.length} mail${dern.erreurs.length>1?"s":""} pas parti${dern.erreurs.length>1?"s":""}.</b><br>${dern.erreurs.slice(0,3).map(esc).join("<br>")}</div>`:""}
     <h3 class="sec">Partira ${esc(n.nom)} · ${q.length} mail${q.length>1?"s":""}</h3>
@@ -399,6 +403,7 @@ function renderAuto(el){
     <div class="list">${partis.length?partis.map(e=>ligne(nomP(e.p),e.m,e.d)).join(""):`<div class="empty">Pas encore d'envoi automatique.</div>`}</div>
     <button class="btn small soft more" type="button" id="manuel">Envoyer un mail à la main (Outlook)</button>`;
   $("#manuel").onclick=()=>{S.manuel=true;renderQueue()};
+  el.querySelectorAll("[data-voir]").forEach(b=>b.onclick=()=>{const p=S.prospects.find(x=>x.id===b.dataset.voir);if(p)recap(b.dataset.m,p)});
 }
 function renderQueue(){
   const a=auto()&&!S.manuel;$("#qT").textContent=a?"Envoi du jour":"Mail suivant";$("#qPlaq").hidden=a;
@@ -489,6 +494,23 @@ ${ps?`<p style="margin:0 0 18px;font-style:italic">${esc(ps)}</p>`:""}
 </div>`;
   const text=corps.replace(/\[photos\s*\d+\]\n*/gi,"").replace(/\{plaquette\}/g,"Notre plaquette : "+plaq)+`\n\n${sig}\nLe Double B · restaurant et traiteur fait maison\n59 avenue Foch, 57730 Folschviller\n${tel} · ${mel}\n\n${ps?ps+"\n\n":""}Le Double B, c'est d'abord un restaurant : venez goûter notre cuisine maison, du lundi au vendredi, midi et soir.\n\nPour ne plus rien recevoir : ${desinsc} ou répondez STOP.`;
   return {sujet,html:full,text};
+}
+// Fiche d'un mail parti ou prévu : à qui on écrit (liens Google, site, plan, annuaire), puis le mail tel qu'il est reçu
+function recap(cle,p){
+  const mail=buildMail(cle,p),envs=S.envois.filter(e=>e.p===p.id);
+  const q=encodeURIComponent(`${p.nom} ${p.commune||""}`),site=p.site?(/^https?:/.test(p.site)?p.site:"https://"+p.site):"";
+  const m=sheet(`<h3 style="padding-right:52px">${esc(p.nom)}</h3>
+    <div class="sub">${esc(CATS[p.categorie]||"")}${p.effectif?" · "+esc(TRANCHES[p.effectif]||p.effectif):""}</div>
+    <dl class="info"><dt>Où</dt><dd>${esc(p.adresse||p.commune||"—")}${p.distance_km!=null?` · ${(+p.distance_km).toLocaleString("fr-FR")} km`:""}</dd>
+      <dt>Mail</dt><dd>${esc(p.email||"—")}</dd>${p.telephone?`<dt>Tél.</dt><dd><a href="tel:${esc(p.telephone)}">${esc(p.telephone)}</a></dd>`:""}
+      <dt>Statut</dt><dd>${esc(STATUTS[p.statut]||p.statut)}</dd>
+      ${envs.length?`<dt>Envoyés</dt><dd>${envs.slice().reverse().map(e=>`${MODELE_NOM[e.m]||e.m} le ${fdate(e.d)}`).map(esc).join("<br>")}</dd>`:""}</dl>
+    <div class="row"><a class="btn small soft" href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener">🔎 Google</a>${site?`<a class="btn small soft" href="${esc(site)}" target="_blank" rel="noopener">🌐 Site</a>`:""}<a class="btn small soft" href="https://www.google.com/maps/search/?api=1&query=${q}" target="_blank" rel="noopener">📍 Plan</a>${p.siret?`<a class="btn small soft" href="https://annuaire-entreprises.data.gouv.fr/etablissement/${esc(p.siret)}" target="_blank" rel="noopener">🏢 Fiche officielle</a>`:""}</div>
+    <h3 class="sec" style="margin:4px 0 0">${esc(MODELE_NOM[cle]||cle)}</h3><div class="sub" style="margin:0">Objet : <b>${esc(mail.sujet)}</b> · plaquette jointe</div>
+    <iframe class="prev" title="Le mail"></iframe>
+    <div class="row"><button class="btn small soft" data-fiche type="button">Modifier la fiche</button><button class="btn soft" data-close style="flex:1">Fermer</button></div>`);
+  m.querySelector("iframe").srcdoc=`<body style="margin:14px;background:#fff">${mail.html}</body>`;
+  m.querySelector("[data-fiche]").onclick=()=>{m.querySelector("[data-close]").click();openFiche(p)};
 }
 function preview(cle,p){
   p=p||vivants().find(x=>x.email)||{nom:"Exemple SARL",categorie:"entreprise",jeton:"exemple",email:"contact@exemple.fr"};
@@ -737,8 +759,9 @@ $("#bAuto").onchange=async ev=>{const v=ev.target.checked?"oui":"non";
 $("#rSave").onclick=async()=>{const v={note_google:$("#rNote").value.trim(),lots_par_jour:String(Math.max(1,Math.min(60,+$("#rLot").value||20))),telephone:$("#rTel").value.trim(),signature:$("#rSig").value.trim()};
   try{for(const [k,x] of Object.entries(v))await rpc("prosp_reglage",{p_cle:k,p_valeur:x});Object.assign(S.reglages,v);render();toast("Réglages enregistrés")}catch(err){if(!lost(err))toast("Pas enregistré : vérifie la connexion")}};
 
-load();
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&!document.querySelector(".sheet"))load()});
+if(JULIEN){load();
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&!document.querySelector(".sheet"))load()});}
+else{document.querySelector(".tabs").hidden=true;document.querySelectorAll("[data-p]").forEach(x=>x.hidden=true);$("#locked").hidden=false;setSync("","")}
 </script>
 </body>
 </html>

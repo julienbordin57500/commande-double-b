@@ -134,9 +134,9 @@ a{color:inherit}
     <div class="card-h"><span class="ico" aria-hidden="true">🤝</span><h2>Prospection traiteur</h2><span class="go" aria-hidden="true">›</span></div>
     <div class="empty">Entreprises, CSE, mairies : les mails du jour et le suivi des contacts.</div>
   </a>
-  <script>/* Cartes de fidélité : visibles seulement sur le profil Julien pour l'instant. Prospection : Julien, Eric et Thierry */
+  <script>/* Cartes de fidélité : visibles seulement sur le profil Julien pour l'instant. Prospection : Julien seulement */
   try{document.getElementById("cFid").hidden=!(window.Profil&&Profil.get()==="julien")}catch(e){}
-  try{document.getElementById("cPro").hidden=!(window.Profil&&["julien","eric","thierry"].includes(Profil.get()))}catch(e){}</script>
+  try{document.getElementById("cPro").hidden=!(window.Profil&&Profil.get()==="julien")}catch(e){}</script>
 
   <div class="card ouv" id="cOuv">
     <div class="card-h"><span class="ico" aria-hidden="true">🕒</span><h2 id="ouvT">Aujourd'hui</h2></div>
