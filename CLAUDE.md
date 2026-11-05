@@ -52,19 +52,30 @@ But : décrocher des contrats réguliers (entreprises, CSE, associations, mairie
 - **Adresses** : fonction Edge `prospection` (source dans `supabase/functions/prospection/`) : annuaire officiel du service public
   (par SIRET), puis le site de l'organisme (3 pages max, robots.txt respecté). Seules les adresses **génériques** sont gardées (RGPD).
 - **Écran** : simplifié le 2026-11-04 (Julien trouvait l'outil trop complexe) : onglets À envoyer (un mail à la fois) / Prospects / Bilan / Réglages.
-- **Envoi** : pas de service d'envoi pour l'instant (choix de Julien, 2026-11-04) : le mail est copié en HTML puis Outlook web s'ouvre
-  (destinataire + objet remplis) ; on colle, on envoie, on touche « C'est envoyé ». Relances : J+7 puis J+15 après le 1er contact,
-  arrêtées dès « A répondu », un statut avancé ou une désinscription. Pas de pixel de suivi des ouvertures (CNIL) : on suit les réponses.
+- **Envoi automatique (Brevo, depuis le 2026-11-05)** : la fonction Edge `prospection` (action `lot`) envoie la file du jour par l'API
+  transactionnelle Brevo, du lundi au vendredi à 7 h UTC (tâche cron `prospection-envoi`, pg_cron + pg_net, en-tête `x-cle` = `secrets.cron`).
+  Même règles que `queue()` et `buildMail()` de la page (copiées dans la fonction : **modifier les deux ensemble**) : `lots_par_jour` premiers
+  contacts (20) + les relances J+7 puis J+15, arrêtées dès « A répondu », un statut avancé ou une désinscription. Expéditeur
+  « L'équipe du Double B » <traiteur@doubleb-folschviller.fr> (domaine du site chez o2switch, authentifié dans Brevo ; traiteur@ est redirigé
+  vers Outlook), réponse vers doubleb57500@outlook.fr, plaquette jointe (par son adresse en ligne), en-têtes List-Unsubscribe /
+  List-Unsubscribe-Post vers `prospection?d=<jeton>` (POST = désinscription en un clic, GET = renvoi vers `desinscription.html?j=`).
+  Chaque envoi est noté par `_prosp_noter_envoi` avec `par = 'brevo'` ; le bilan du dernier passage est dans le réglage `brevo_dernier`.
+  Rien ne part tant que le réglage `envoi_auto` ≠ `oui` (case dans Réglages). Clé API : `secrets.brevo`, saisie dans Réglages par
+  `prosp_brevo_cle` (jamais relue par la page, jamais dans GitHub). Bouton « M'envoyer un test » (action `test`) : un premier contact vers
+  doubleb57500@outlook.fr seulement, jamais noté, lien de désinscription factice.
+  Écran « À envoyer » en mode automatique : ce qui partira au prochain passage, ce qui est parti, erreurs du dernier lot, et un bouton
+  pour repasser en **mode manuel** (Outlook web : mail copié en HTML, on colle, on joint la plaquette, « C'est envoyé »).
+  Pas de pixel de suivi des ouvertures (CNIL) : on suit les réponses.
+- **SMS anniversaire (cartes fidélité)** : il partage `secrets.brevo`, mais reste en pause tant que `secrets.brevo_sms` ≠ `oui` (choix de Julien,
+  2026-11-05 : le forfait Brevo gratuit n'a pas de crédit SMS).
 - **Mails** : modèles modifiables (table `prosp_modeles`), jamais de prix (« devis gratuit », « sur mesure », pas de délai promis),
   jamais d'achats industriels. Signature « L'équipe du Double B », bandeau « d'abord un restaurant », SIREN et lien de désinscription
   ajoutés par `buildMail` (le « PS : » du modèle passe sous la signature). Mots auto : `{commune}`, `{occasions}` (selon type/besoin),
-  `{saison}` (change avec le mois : jamais « fin d'année » en janvier). La plaquette est **jointe à la main** (PDF léger `plaquette-traiteur.pdf`,
-  bouton « Télécharger la plaquette »), plus de lien dans le texte (choix de Julien). Jamais « de 15 à 100 personnes » (Julien : « on s'adapte »)
+  `{saison}` (change avec le mois : jamais « fin d'année » en janvier). La plaquette est **jointe** (PDF léger `plaquette-traiteur.pdf` ; à la main en mode
+  manuel, bouton « Télécharger la plaquette »), plus de lien dans le texte (choix de Julien). Jamais « de 15 à 100 personnes » (Julien : « on s'adapte »)
   ni livraison promise (pas de livraison de base : « à emporter », livraison « on en parle »). Photos : `traiteur/photo-N.jpg`
   (table `prosp_photos`) ; celles ajoutées depuis l'onglet Mails vont dans le dossier public Supabase `prospection`.
 - **Plaquette** : `plaquette-traiteur.pdf` ; sa source (HTML + photos) est dans iCloud Double B › 03 - Communication › Traiteur.
 - **Base** : tables `prosp_*`, RPC `prosp_etat`, `prosp_importer`, `prosp_maj`, `prosp_ajouter`, `prosp_envoye`, `prosp_modele_enregistrer`,
-  `prosp_reglage`, `prosp_photo_retirer` (code d'équipe) et `prosp_desinscrire(p_jeton)` (publique, page de désinscription).
-- **Plus tard** : quand le domaine `ledoubleb.fr` et un compte Brevo existeront (clé dans `secrets`), remplacer le copier-coller par
-  un envoi automatique par lots depuis la fonction Edge, avec expéditeur @ledoubleb.fr (SPF/DKIM) et lien de désinscription en en-tête.
-
+  `prosp_reglage`, `prosp_photo_retirer`, `prosp_brevo_cle` (code d'équipe) et `prosp_desinscrire(p_jeton)` (publique, page de désinscription).
+  Réservées à la fonction Edge (clé de service) : `_prosp_tout`, `_prosp_noter_envoi`, `_prosp_reglage_srv`.
