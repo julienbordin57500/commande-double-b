@@ -50,7 +50,11 @@ But : décrocher des contrats réguliers (entreprises, CSE, associations, mairie
   autour du centre de Folschviller (distance au centre de la commune). Écartés : entrepreneurs individuels, diffusion partielle,
   opposition à la prospection, restaurants (NAF 56), annexes techniques (liste `EXCL`). Un contact par organisme et par commune.
 - **Adresses** : fonction Edge `prospection` (source dans `supabase/functions/prospection/`) : annuaire officiel du service public
-  (par SIRET), puis le site de l'organisme (3 pages max, robots.txt respecté). Seules les adresses **génériques** sont gardées (RGPD).
+  (par SIRET), puis le site de l'organisme (6 pages max : liens contact / mentions + /contact, /mentions-legales… ; robots.txt respecté ;
+  adresses cachées par Cloudflare décodées). Sécurité (2026-11-05) : seules les adresses **génériques au nom de domaine du site** sont gardées
+  (RGPD), plus une boîte gratuite si elle contient le nom du site (twoclean57730@gmail.com sur twoclean.fr) ; toute adresse doit avoir un
+  serveur de mail (MX, vérifié par DNS public). Le téléphone du standard est relevé (liens tel:, puis texte visible).
+  « Chercher les adresses » reprend aussi, une fois, les fiches notées « Non trouvée » par l'ancienne méthode (nouvelle note : « Pas trouvée »).
 - **Écran** : simplifié le 2026-11-04 (Julien trouvait l'outil trop complexe) : onglets À envoyer (un mail à la fois) / Prospects / Bilan / Réglages.
 - **Envoi automatique (Brevo, depuis le 2026-11-05)** : la fonction Edge `prospection` (action `lot`) envoie la file du jour par l'API
   transactionnelle Brevo, du lundi au vendredi à 7 h UTC (tâche cron `prospection-envoi`, pg_cron + pg_net, en-tête `x-cle` = `secrets.cron`).
@@ -63,7 +67,7 @@ But : décrocher des contrats réguliers (entreprises, CSE, associations, mairie
   Rien ne part tant que le réglage `envoi_auto` ≠ `oui` (case dans Réglages). Clé API : `secrets.brevo`, saisie dans Réglages par
   `prosp_brevo_cle` (jamais relue par la page, jamais dans GitHub). Bouton « M'envoyer un test » (action `test`) : un premier contact vers
   doubleb57500@outlook.fr seulement, jamais noté, lien de désinscription factice.
-  Écran « À envoyer » en mode automatique : ce qui partira au prochain passage, ce qui est parti (chaque ligne ouvre la fiche du mail :
+  Écran « À envoyer » en mode automatique : deux sous-onglets « À partir » (prochain passage) / « Déjà partis » (groupés par jour) (chaque ligne ouvre la fiche du mail :
   qui est le prospect, liens Google / site / plan / fiche officielle, puis le mail), les erreurs du dernier lot, et un bouton pour repasser
   en **mode manuel** (Outlook web : mail copié en HTML, on colle, on joint la plaquette, « C'est envoyé »).
   Pas de pixel de suivi des ouvertures (CNIL) : on suit les réponses.

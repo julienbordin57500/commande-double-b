@@ -113,6 +113,11 @@ label.f{display:flex;flex-direction:column;gap:5px;font-size:13.5px;font-weight:
 .auto b{display:block;font-family:var(--display);font-size:18px;color:var(--go)}
 .auto small{display:block;color:var(--muted);font-size:13.5px;margin-top:2px}
 h3.sec{font-size:16px;font-weight:800;margin:16px 0 2px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;background:var(--sunken);border:1px solid var(--line);border-radius:14px;margin-top:12px}
+.seg button{min-height:46px;border:0;border-radius:10px;background:transparent;font-weight:800;font-size:15px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.jour{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--display);font-size:17px;font-weight:800;margin:14px 0 6px}
+.jour small{font-family:var(--body);font-size:13px;font-weight:700;color:var(--muted);text-transform:none}
 .alerte{background:#fbe4e1;color:var(--danger);border-radius:12px;padding:10px 12px;font-size:14px;margin-top:10px}
 @media (prefers-color-scheme: dark){.alerte{background:#3a1d18}}
 
@@ -390,19 +395,31 @@ function prochainEnvoi(){const d=new Date();
   const j=iso(d),dem=new Date();dem.setDate(dem.getDate()+1);
   return {jour:j,nom:j===TODAY?"ce matin":j===iso(dem)?"demain matin":d.toLocaleDateString("fr-FR",{weekday:"long"})+" matin"}}
 function renderAuto(el){
-  const n=prochainEnvoi(),q=queue(n.jour),partis=S.envois.filter(e=>e.par==="brevo").slice(0,40);
+  const n=prochainEnvoi(),q=queue(n.jour),partis=S.envois.filter(e=>e.par==="brevo");
   let dern={};try{dern=JSON.parse(S.reglages.brevo_dernier||"{}")}catch{}
-  const nomP=id=>S.prospects.find(p=>p.id===id)||{nom:"?",commune:""};
-  // Toucher une ligne : le mail tel que le prospect le reçoit (reconstruit avec les modèles actuels)
-  const ligne=(p,m,d)=>`<button class="it" type="button" data-voir="${esc(p.id)}" data-m="${esc(m)}"><div class="m"><b>${esc(p.nom)}</b><small>${esc(p.commune||"")}${d?" · "+fdate(d):""} · voir le mail ›</small></div><span class="tag ${m==="accroche"?"a_contacter":"relance"}">${MODELE_NOM[m]||m}</span></button>`;
-  el.innerHTML=`<div class="auto"><span class="ic">✉️</span><div><b>Envoi automatique chaque matin</b><small>Du lundi au vendredi, avec la plaquette jointe. Les réponses arrivent dans Outlook.</small></div></div>
-    ${dern.erreurs&&dern.erreurs.length?`<div class="alerte"><b>Dernier envoi (${fdate(dern.le)}) : ${dern.erreurs.length} mail${dern.erreurs.length>1?"s":""} pas parti${dern.erreurs.length>1?"s":""}.</b><br>${dern.erreurs.slice(0,3).map(esc).join("<br>")}</div>`:""}
-    <h3 class="sec">Partira ${esc(n.nom)} · ${q.length} mail${q.length>1?"s":""}</h3>
-    <div class="list">${q.length?q.map(x=>ligne(x.p,x.m)).join(""):`<div class="empty">Rien de prévu : ${vivants().some(p=>p.email&&p.statut==="a_contacter")?"le lot du jour est déjà parti.":"plus de prospect à contacter avec une adresse mail."}</div>`}</div>
-    <h3 class="sec">Déjà parti</h3>
-    <div class="list">${partis.length?partis.map(e=>ligne(nomP(e.p),e.m,e.d)).join(""):`<div class="empty">Pas encore d'envoi automatique.</div>`}</div>
+  const nomP=id=>S.prospects.find(p=>p.id===id)||{id,nom:"?",commune:""};
+  // Toucher une ligne : la fiche du mail (qui est le prospect + le mail tel qu'il est reçu)
+  const ligne=(p,m)=>`<button class="it" type="button" data-voir="${esc(p.id)}" data-m="${esc(m)}"><div class="m"><b>${esc(p.nom)}</b><small>${esc(p.commune||"")} · voir le mail ›</small></div><span class="tag ${m==="accroche"?"a_contacter":"relance"}">${MODELE_NOM[m]||m}</span></button>`;
+  const vue=S.autoVue||"avenir",pl=k=>k>1?"s":"",maj=t=>t.charAt(0).toUpperCase()+t.slice(1);
+  let corps="";
+  if(vue==="avenir"){
+    const jn=new Date(n.jour+"T12:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
+    corps=`<div class="jour">${esc(maj(jn))}<small>vers 8 h · ${q.length} mail${pl(q.length)}</small></div>
+      <div class="list" style="margin-top:0">${q.length?q.map(x=>ligne(x.p,x.m)).join(""):`<div class="empty">Rien de prévu : ${vivants().some(p=>p.email&&p.statut==="a_contacter")?"le lot du jour est déjà parti.":"plus de prospect à contacter avec une adresse mail. Va dans <b>Prospects › Chercher les adresses</b>."}</div>`}</div>`;
+  }else{
+    // Regroupés par jour, le plus récent en haut
+    const jours={};partis.forEach(e=>{const j=iso(new Date(e.d));(jours[j]=jours[j]||[]).push(e)});
+    corps=Object.keys(jours).length?Object.entries(jours).map(([j,l])=>{
+      const t=j===TODAY?"Aujourd'hui":new Date(j+"T12:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
+      return `<div class="jour">${esc(maj(t))}<small>${l.length} mail${pl(l.length)}</small></div><div class="list" style="margin-top:0">${l.map(e=>ligne(nomP(e.p),e.m)).join("")}</div>`}).join(""):`<div class="empty">Pas encore d'envoi automatique.</div>`;
+  }
+  el.innerHTML=`<div class="auto"><span class="ic">✉️</span><div><b>Envoi automatique chaque matin</b><small>Du lundi au vendredi vers 8 h, avec la plaquette jointe. Les réponses arrivent dans Outlook.</small></div></div>
+    ${dern.erreurs&&dern.erreurs.length?`<div class="alerte"><b>Dernier envoi (${fdate(dern.le)}) : ${dern.erreurs.length} mail${pl(dern.erreurs.length)} pas parti${pl(dern.erreurs.length)}.</b><br>${dern.erreurs.slice(0,3).map(esc).join("<br>")}</div>`:""}
+    <div class="seg" role="group" aria-label="Mails"><button type="button" data-vue="avenir" aria-pressed="${vue==="avenir"}">À partir · ${q.length}</button><button type="button" data-vue="partis" aria-pressed="${vue==="partis"}">Déjà partis · ${partis.length}</button></div>
+    ${corps}
     <button class="btn small soft more" type="button" id="manuel">Envoyer un mail à la main (Outlook)</button>`;
   $("#manuel").onclick=()=>{S.manuel=true;renderQueue()};
+  el.querySelectorAll("[data-vue]").forEach(b=>b.onclick=()=>{S.autoVue=b.dataset.vue;renderQueue()});
   el.querySelectorAll("[data-voir]").forEach(b=>b.onclick=()=>{const p=S.prospects.find(x=>x.id===b.dataset.voir);if(p)recap(b.dataset.m,p)});
 }
 function renderQueue(){
@@ -613,12 +630,13 @@ $("#addBtn").onclick=()=>{
 /* ---------- Recherche d'adresses par lot ----------
    Les 20 plus proches sans adresse et jamais cherchés. Une requête à la fois, sans insister (pas de scraping abusif). */
 $("#enrBtn").onclick=async ev=>{
-  const L=vivants().filter(p=>!p.email&&!p.email_source).sort((a,b)=>(+a.distance_km||99)-(+b.distance_km||99)).slice(0,20);
+  // jamais cherchés, ou cherchés avec l'ancienne méthode (« Non trouvée : ») ; la nouvelle note « Pas trouvée » évite de recommencer en boucle
+  const L=vivants().filter(p=>!p.email&&(!p.email_source||p.email_source.startsWith("Non trouvée"))).sort((a,b)=>(+a.distance_km||99)-(+b.distance_km||99)).slice(0,20);
   if(!L.length)return toast("Tous les prospects ont déjà été cherchés");
   const b=ev.target;b.disabled=true;let ok=0;
   for(let i=0;i<L.length;i++){const p=L[i];b.textContent=`Recherche ${i+1}/${L.length}…`;
     try{const r=await fn({action:"enrichir",nom:p.nom,commune:p.commune,siret:p.siret,site:p.site||"",cp:(p.adresse||"").match(/\b\d{5}\b/)?.[0]});
-      const c={site:r.site||p.site||"",par:who(),email_source:r.email?r.source:("Non trouvée : "+(r.note||"rien sur le site"))};
+      const c={site:r.site||p.site||"",par:who(),email_source:r.email?r.source:("Pas trouvée : "+(r.note||"rien sur le site"))};
       if(r.email){c.email=r.email;ok++}
       if(r.telephone&&!p.telephone)c.telephone=r.telephone;
       Object.assign(p,await rpc("prosp_maj",{p_id:p.id,p_champs:c}));

@@ -1,7 +1,9 @@
 // Prospection traiteur du Double B.
 // - « enrichir » : retrouve le site web et une adresse de contact GÉNÉRIQUE (contact@, accueil@…) d'un organisme.
 //   Sources : annuaire officiel du service public (mairies, administrations), puis le site de l'organisme lui-même
-//   (accueil + page contact / mentions légales, 3 pages au plus, robots.txt respecté). Aucune adresse nominative gardée.
+//   (accueil + pages contact / mentions légales, 6 pages au plus, robots.txt respecté). Aucune adresse nominative gardée.
+//   Sécurité : une adresse trouvée sur un site n'est gardée que si elle est au nom de domaine de ce site, et toute adresse
+//   (annuaire compris) doit avoir un serveur de mail qui existe (MX). Le téléphone du standard est aussi relevé.
 // - « photo » : range une photo de dînatoire dans le dossier public « prospection ».
 // - « lot » : envoie par Brevo la file du jour (même règles que queue() et buildMail() de prospection.html).
 //   Lancée du lundi au vendredi par la tâche cron « prospection-envoi » (en-tête x-cle = secrets.cron).
@@ -35,8 +37,13 @@ async function get(url: string, ms = 6000) {
 const GEN = /^(contact|contacts|accueil|secretariat|secr[eé]tariat|info|infos|information|informations|bonjour|hello|mairie|administration|direction|commercial|commerciale|ventes?|cse|ce|comite|communication|evenements?|events?|reception|standard|office|agence|cabinet|etude|service\.?client|serviceclient|clients?|devis|gestion|siege|courrier|association|asso|bureau|ecole|college|lycee|ehpad|ccas|cfa|formation|presidence|accueil\.[a-z-]+|contact\.[a-z-]+|mairie[.\-_a-z0-9]*|secretariat[.\-_a-z0-9]*)$/i;
 const BAD_DOM = /(example\.|sentry|wixpress|domain\.|email\.com$|votre|yourdomain|\.png$|\.jpg$|\.gif$|\.webp$|\.svg$)/i;
 
+// Adresses cachées par Cloudflare (data-cfemail="…") : simple chiffrement XOR, à décoder
+function cfemail(h: string) {
+  try { const k = parseInt(h.slice(0, 2), 16); let o = ""; for (let i = 2; i < h.length; i += 2) o += String.fromCharCode(parseInt(h.slice(i, i + 2), 16) ^ k); return o } catch { return "" }
+}
 function emails(html: string) {
-  const t = html.replace(/&#64;|&#x40;|\s?\[at\]\s?|\s?\(at\)\s?|\s?\[arobase\]\s?/gi, "@").replace(/\s?\[dot\]\s?|\s?\(dot\)\s?/gi, ".");
+  const cf = [...html.matchAll(/data-cfemail=["']([0-9a-f]{10,})["']/gi)].map(m => cfemail(m[1])).join(" ");
+  const t = (html.replace(/%40/g, "@") + " " + cf).replace(/&#64;|&#x40;|\s?\[at\]\s?|\s?\(at\)\s?|\s?\[arobase\]\s?/gi, "@").replace(/\s?\[dot\]\s?|\s?\(dot\)\s?/gi, ".");
   const found = new Set<string>();
   for (const m of t.matchAll(/[a-z0-9][a-z0-9._%+-]{0,40}@[a-z0-9.-]+\.[a-z]{2,10}/gi)) {
     const e = m[0].toLowerCase().replace(/\.$/, "");
@@ -46,6 +53,35 @@ function emails(html: string) {
 }
 const generic = (e: string) => GEN.test(e.split("@")[0]);
 const host = (u: string) => { try { return new URL(u).hostname.replace(/^www\./, "") } catch { return "" } };
+// Numéros français (fixe ou portable) : d'abord les liens tel:, puis le texte ; le plus cité gagne
+function telephones(html: string) {
+  const n: Record<string, number> = {};
+  const add = (x: string, w: number) => { let d = x.replace(/[^\d+]/g, "").replace(/^\+33|^0033/, "0"); if (/^0[1-9]\d{8}$/.test(d) && !/^08(9|36)/.test(d)) n[d] = (n[d] || 0) + w };
+  for (const m of html.matchAll(/href=["']tel:([^"']+)["']/gi)) add(m[1], 3);
+  // dans le texte visible seulement, et avec des espaces ou des points (03 87 12 34 56) : évite les numéros de commande ou de code
+  const vu = html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ");
+  for (const m of vu.matchAll(/(?<![\d.])(?:\+33\s?\(?0?\)?\s?|0)[1-9](?:[\s.\-]\d{2}){4}(?![\d.])/g)) add(m[0], 1);
+  return Object.entries(n).sort((a, b) => b[1] - a[1]).map(([d]) => d.replace(/(\d{2})(?=\d)/g, "$1 "));
+}
+// Le domaine reçoit-il vraiment des mails ? (serveur MX, demandé à un DNS public) ; si le DNS ne répond pas, on ne bloque pas
+const mxCache: Record<string, boolean> = {};
+async function mxOk(email: string) {
+  const d = (email.split("@")[1] || "").toLowerCase(); if (!d) return false;
+  if (d in mxCache) return mxCache[d];
+  try {
+    const r = await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(d)}&type=MX`, { headers: { accept: "application/dns-json" } });
+    const j = await r.json(); return mxCache[d] = j.Status === 0 && (j.Answer || []).some((x: any) => x.type === 15);
+  } catch { return true }
+}
+const racine = (h: string) => h.split(".").slice(-2).join(".");
+// Petites structures avec une boîte gratuite : gardée seulement si l'adresse contient le nom du site de la structure
+// (twoclean57730@gmail.com trouvée sur twoclean.fr) ; jamais une boîte au nom d'une personne (jean.durand@…)
+const GRATUIT = /^(gmail\.com|orange\.fr|wanadoo\.fr|free\.fr|laposte\.net|hotmail\.(fr|com)|outlook\.(fr|com)|live\.fr|yahoo\.(fr|com)|sfr\.fr|neuf\.fr|aol\.com|icloud\.com)$/;
+function boiteStructure(e: string, siteHost: string) {
+  const [loc, d] = e.split("@"); if (!GRATUIT.test(d || "")) return false;
+  const k = racine(siteHost).split(".")[0].replace(/[^a-z0-9]/g, "");
+  return k.length >= 5 && !GRATUIT.test(racine(siteHost)) && loc.replace(/[^a-z0-9]/g, "").includes(k);
+}
 const norm = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
 async function robotsOk(base: string) {
@@ -65,7 +101,8 @@ function guesses(nom: string) {
   let n = norm(nom).replace(/\(.*?\)/g, " ").replace(/\b(sas|sasu|sarl|sa|eurl|sci|snc|scop|selarl|association|asso|ste|societe|et|de|du|des|la|le|les|l)\b/g, " ").replace(/[^a-z0-9 ]/g, " ").trim().replace(/\s+/g, " ");
   if (!n || n.length < 3) return [];
   const a = n.replace(/ /g, ""), b = n.replace(/ /g, "-");
-  return [...new Set([`${a}.fr`, `${b}.fr`, `${a}.com`, `${b}.com`])].slice(0, 4).map(d => `https://www.${d}/`);
+  const doms = [...new Set([`${a}.fr`, `${b}.fr`, `${a}.com`, `${b}.com`])].slice(0, 4);
+  return doms.flatMap(d => [`https://www.${d}/`, `https://${d}/`]);
 }
 
 async function annuaire(siret: string) {
@@ -87,7 +124,7 @@ async function enrichir(b: any) {
   if (an) {
     if (an.site && !out.site) out.site = an.site;
     if (an.tel) out.telephone = an.tel;
-    if (an.email) { out.email = an.email; out.emails = [an.email]; out.source = "Annuaire officiel du service public"; return out; }
+    if (an.email && await mxOk(an.email)) { out.email = an.email; out.emails = [an.email]; out.source = "Annuaire officiel du service public"; return out; }
   }
   const commune = norm(b.commune || ""), cp = String(b.cp || "");
   let page: { url: string, txt: string } | null = null;
@@ -102,21 +139,29 @@ async function enrichir(b: any) {
   if (!page) { out.note = out.site ? "Site injoignable" : "Site introuvable automatiquement"; return out; }
   if (!(await robotsOk(page.url))) { out.note = "Le site refuse la lecture automatique : à regarder à la main"; return out; }
   const pages = [page];
-  const links = [...page.txt.matchAll(/href=["']([^"'#]+)["']/gi)].map(m => m[1]).filter(h => /contact|mentions|nous-joindre|coordonn|a-propos|qui-sommes/i.test(h)).slice(0, 6);
+  // pages liées depuis l'accueil, puis les adresses habituelles même si elles ne sont pas en lien
+  const liees = [...page.txt.matchAll(/href=["']([^"'#]+)["']/gi)].map(m => m[1]).filter(h => /contact|mentions|nous-joindre|coordonn|a-propos|qui-sommes|equipe|mairie|horaires|infos-pratiques/i.test(h));
+  const habituelles = ["/contact", "/contact/", "/nous-contacter", "/contactez-nous", "/mentions-legales", "/mentions-legales/"];
   const seen = new Set([page.url]);
-  for (const h of links) {
-    if (pages.length >= 3) break;
+  for (const h of [...liees.slice(0, 8), ...habituelles]) {
+    if (pages.length >= 6) break;
     let u = ""; try { u = new URL(h, page.url).href } catch { continue }
     if (seen.has(u) || host(u) !== host(page.url)) continue; seen.add(u);
-    const p = await get(u, 5000); if (p) pages.push(p);
+    const p = await get(u, 5000); if (p && !seen.has(p.url)) { seen.add(p.url); pages.push(p); }
   }
+  const dom = racine(host(page.url));
   const all = [...new Set(pages.flatMap(p => emails(p.txt)))];
-  const dom = host(page.url).split(".").slice(-2).join(".");
-  const gens = all.filter(generic).sort((x, y) => Number(y.endsWith(dom)) - Number(x.endsWith(dom)));
+  // Sécurité : seulement les adresses génériques AU NOM DU SITE (contact@lesite.fr), jamais une adresse d'un autre site cité sur la page
+  const gens: string[] = [];
+  const surSite = all.filter(e => generic(e) && racine(e.split("@")[1]) === dom);
+  const gratuites = all.filter(e => !surSite.includes(e) && boiteStructure(e, host(page.url)));
+  for (const e of [...surSite, ...gratuites]) if (await mxOk(e)) gens.push(e);
+  const tels = telephones(pages.map(p => p.txt).join(" "));
+  if (!out.telephone && tels[0]) out.telephone = tels[0];
   out.emails = gens;
   out.email = gens[0] || "";
   out.source = gens[0] ? "Site de l'organisme (" + host(page.url) + ")" : "";
-  if (!gens.length) out.note = all.length ? "Seulement des adresses nominatives : non gardées (RGPD)" : "Pas d'adresse sur le site : formulaire de contact ?";
+  if (!gens.length) out.note = all.some(generic) ? "Adresse d'un autre site ou boîte inexistante : non gardée" : all.length ? "Seulement des adresses nominatives : non gardées (RGPD)" : "Pas d'adresse sur le site : formulaire de contact ?" + (out.telephone ? " Téléphone trouvé." : "");
   return out;
 }
 
