@@ -110,8 +110,24 @@ header.top{display:flex;align-items:center;gap:14px}
 /* CA du mois en détail : midi, soir, soirées à thème, privatisations, traiteur ; puis chaque prestation avec sa case « En caisse » */
 :root{--theme:#7c3aed;--priv:#c2410c;--trait:#0e7490}
 @media (prefers-color-scheme:dark){:root{--theme:#c4a5f5;--priv:#fb923c;--trait:#67c6d9}}
-.rep{margin-top:10px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
-.rep h3{font-size:17px;font-weight:800;margin-bottom:4px}
+.card{margin-top:10px;background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.card>summary{list-style:none;display:flex;align-items:center;gap:12px;min-height:68px;padding:10px 14px;cursor:pointer;user-select:none}
+.card>summary::-webkit-details-marker{display:none}
+.card>summary::after{content:"›";font-size:28px;line-height:1;color:var(--muted);transition:transform .2s}
+.card[open]>summary::after{transform:rotate(90deg)}
+.card .ci{width:46px;height:46px;flex:none;border-radius:14px;background:var(--accent-soft);display:grid;place-items:center;font-size:23px}
+.card .ct{flex:1;min-width:0}
+.card .ct b{display:block;font-family:var(--display);font-size:18px;font-weight:800;line-height:1.15}
+.card .ct em{display:block;font-style:normal;font-size:14px;font-weight:700;color:var(--muted);margin-top:3px;font-variant-numeric:tabular-nums}
+.card .ct em .cw{display:inline-block;margin-top:3px;padding:2px 8px;border-radius:8px;background:#fdecea;color:#a1251b;font-weight:800}
+@media (prefers-color-scheme:dark){.card .ct em .cw{background:#3a1d1b;color:#f6aea9}}
+.card .cb{padding:2px 14px 14px;border-top:1px solid var(--line)}
+.card .cb .prs:first-child{margin-top:12px}
+.refl{display:flex;align-items:center;gap:10px;margin-top:10px;padding:6px 6px 6px 14px;border-radius:14px;background:var(--mamie-soft);border:1px solid color-mix(in srgb,var(--mamie) 25%,transparent)}
+.refl label{flex:1;font-weight:800;font-size:15px;color:var(--mamie)}
+.refl input{width:78px;height:46px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);text-align:center;font:inherit;font-weight:800;font-size:18px;color:var(--fg);font-variant-numeric:tabular-nums}
+.refl input:focus{border-color:var(--mamie);outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--mamie) 25%,transparent)}
+.fb{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:7px;background:var(--soir-soft);color:var(--soir);font-size:12px;font-weight:800;vertical-align:middle}
 .rl{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:3px 10px;padding:5px 0;font-weight:700;font-size:15px}
 .rl .v{font-variant-numeric:tabular-nums;font-weight:800;white-space:nowrap}
 .rl .tr{grid-column:1/-1;height:8px;border-radius:4px;background:var(--sunken);overflow:hidden}
@@ -128,14 +144,14 @@ header.top{display:flex;align-items:center;gap:14px}
 .pr .v{font-weight:800;font-size:17px;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
 .pr .v a{color:var(--danger);font-size:14px}
 .pr .v small{font-size:13px;color:var(--muted);font-weight:600}
-.pr.fut{opacity:.65}
+.pr.fut{border-style:dashed}
 .cai{grid-column:1/-1;display:flex;align-items:center;gap:10px;min-height:52px;padding:6px 10px;border-radius:12px;border:2px solid var(--line);background:var(--surface);font-weight:800;font-size:15px;cursor:pointer}
 .cai input{width:28px;height:28px;flex:none;margin:0;accent-color:var(--go)}
 .cai small{display:block;font-weight:600;font-size:12px;color:var(--muted)}
 .cai.no{border-color:var(--danger)}
 .cai:has(input:checked){border-color:var(--go);background:color-mix(in srgb,var(--go) 12%,var(--surface))}
-.prw{padding:10px 12px;border-radius:12px;background:#fdecea;color:#a1251b;font-weight:700;font-size:14px}
-@media (prefers-color-scheme:dark){.prw{background:#3a1d1b;color:#f6aea9}}
+.prwarn{padding:10px 12px;border-radius:12px;background:#fdecea;color:#a1251b;font-weight:700;font-size:14px}
+@media (prefers-color-scheme:dark){.prwarn{background:#3a1d1b;color:#f6aea9}}
 td.pt{font-size:13px} td.pt.fut{color:var(--muted)} .compact i.p{color:var(--fg);font-weight:700}
 
 /* Saisie du jour */
@@ -143,7 +159,7 @@ td.pt{font-size:13px} td.pt.fut{color:var(--muted)} .compact i.p{color:var(--fg)
 .dayhead{display:flex;align-items:center;gap:8px}
 .dayhead h3{flex:1;text-align:center;font-size:20px;font-weight:800}
 .dayhead h3 small{display:block;font-family:var(--body);font-size:13px;font-weight:600;color:var(--muted);margin-top:2px}
-.groups{display:grid;grid-template-columns:1fr 1fr .6fr;gap:10px;margin-top:12px}
+.groups{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 @media (max-width:760px){.groups{grid-template-columns:1fr}}
 .grp{border-radius:16px;padding:12px;background:var(--soft);border:1px solid color-mix(in srgb,var(--c) 25%,transparent)}
 .grp h4{margin:0 0 8px;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--c);display:flex;align-items:center;gap:8px}
@@ -195,8 +211,13 @@ td.pt{font-size:13px} td.pt.fut{color:var(--muted)} .compact i.p{color:var(--fg)
 .prw input{width:100%;height:46px;border-radius:10px;border:1.5px solid var(--line);background:var(--sunken);text-align:center;font:inherit;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--fg);padding:0}
 .prw.on input{border-color:var(--c);color:var(--c)}
 .prw input:focus{outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 30%,transparent)}
-.pvn{display:grid;grid-template-columns:minmax(0,1fr) 88px;gap:6px;padding:8px;border-radius:12px;border:1.5px dashed color-mix(in srgb,var(--c) 45%,var(--line));background:var(--sunken)}
-.pvn b{grid-column:1/-1;font-size:15px;font-weight:800}
+.pvn{border-radius:12px;border:1.5px dashed color-mix(in srgb,var(--c) 45%,var(--line));background:var(--sunken)}
+.pvn>summary{list-style:none;min-height:48px;display:flex;align-items:center;gap:6px;padding:0 12px;font-weight:800;font-size:15px;cursor:pointer;color:var(--fg)}
+.pvn>summary::-webkit-details-marker{display:none}
+.pvn>summary em{font-style:normal;color:var(--muted)}
+.pvn>summary::after{content:"›";margin-left:auto;font-size:22px;color:var(--muted);transition:transform .2s}
+.pvn[open]>summary::after{transform:rotate(90deg)}
+.pvg{display:grid;grid-template-columns:minmax(0,1fr) 88px;gap:6px;padding:0 8px 8px}
 .pvn .pnx{grid-column:1/-1;font-size:12.5px;font-weight:600;color:var(--muted);margin-top:-2px}
 .pxl{grid-column:1/-1;display:flex;align-items:center;gap:8px;padding:6px 6px 6px 10px;border-radius:10px;background:var(--surface);border:1px solid var(--line);font-weight:700;font-size:15px}
 .pxl span{flex:1;min-width:0}.pxl small{color:var(--muted);font-weight:600}
@@ -410,8 +431,6 @@ html.vue-plats #vPlats{display:block} html.vue-plats #vMois{display:none}
   </div>
 
   <div class="kpis" id="kpis"></div>
-  <section class="rep" id="rep" aria-label="Le CA du mois en détail"></section>
-  <section class="rep" id="ventes" aria-label="Ce qui a été vendu ce mois-ci"></section>
   <section class="day" aria-label="Saisie du jour">
     <div class="dayhead">
       <button class="arrow" id="dPrev" aria-label="Jour précédent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
@@ -436,13 +455,11 @@ html.vue-plats #vPlats{display:block} html.vue-plats #vMois{display:none}
           <div class="f" id="thPersF"><label for="theme_pers">Personnes venues pour la soirée</label><div class="thrw"><div class="in"><input id="theme_pers" data-k="theme_pers" inputmode="numeric" autocomplete="off" placeholder="–"></div><span class="px" id="thPx"></span></div></div>
           <div class="f" id="thCaF"><label for="ca_theme">Chiffre de la soirée</label><div class="in"><input id="ca_theme" class="eur" data-k="ca_theme" inputmode="decimal" autocomplete="off" placeholder="–"><span>€</span></div></div>
           <div class="thr" id="thRes" aria-live="polite"></div></div></div>
-      <div class="grp autre"><h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>Refusés</h4>
-        <div class="fields one">
-          <div class="f"><label for="refuses">Clients refusés (faute de place)</label><div class="in"><input id="refuses" data-k="refuses" inputmode="numeric" autocomplete="off" placeholder="–"></div></div>
         </div></div>
     </div>
     <div class="pv" aria-label="Plats vendus ce jour-là"><div class="pvh"><h4>🍽️ Plats vendus</h4><button class="btn pvadd" id="pvAdd" type="button">＋ Ajouter</button></div>
       <div class="pvc"><div class="pvs midi"><h5>☀️ Midi <em id="cn_midi"></em></h5><div class="pvl" id="pvl_midi"></div></div><div class="pvs soir"><h5>🌙 Soir <em id="cn_soir"></em></h5><div class="pvl" id="pvl_soir"></div></div></div></div>
+    <div class="refl"><label for="refuses">🚫 Clients refusés, faute de place</label><input id="refuses" data-k="refuses" inputmode="numeric" autocomplete="off" placeholder="0"></div>
     <div class="daytot" id="dayTot"></div>
     <button class="hbtn" id="hBtn" type="button" hidden></button>
   </section>
@@ -451,6 +468,11 @@ html.vue-plats #vPlats{display:block} html.vue-plats #vMois{display:none}
     <div class="chopt"><label class="sw"><input type="checkbox" id="split" autocomplete="off"><span class="tg"></span>Séparer midi et soir</label><span class="lg" id="lg" hidden><span><i style="background:var(--midi)"></i>Midi</span><span><i style="background:var(--soir)"></i>Soir</span></span></div>
     <div class="tipr"><button class="arrow" id="cPrev" type="button" aria-label="Jour précédent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><div class="tip" id="tip" aria-live="polite">Touche le graphique pour voir le détail d'un jour.</div><button class="arrow" id="cNext" type="button" aria-label="Jour suivant"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button></div>
     <div id="chart"></div></section>
+
+  <!-- Statistiques du mois : grandes cartes repliables, le résumé reste visible même fermé -->
+  <details class="card" data-c="rep"><summary><span class="ci">📊</span><span class="ct"><b>Le CA du mois en détail</b><em id="sRep"></em></span></summary><div class="cb" id="rep"></div></details>
+  <details class="card" data-c="presta"><summary><span class="ci">🎉</span><span class="ct"><b>Privatisations, traiteur et soirées</b><em id="sPre"></em></span></summary><div class="cb" id="presta"></div></details>
+  <details class="card" data-c="ventes"><summary><span class="ci">🍽️</span><span class="ct"><b>Ce qui a été vendu ce mois-ci</b><em id="sVen"></em></span></summary><div class="cb" id="ventes"></div></details>
 
   <section class="tblcard">
     <header><h3 id="tTitle">Tableau du mois</h3>
@@ -695,6 +717,9 @@ function renderPV(){const row=S.data[key(S.y,S.m,S.d)]||{};PVI={};
       return `<button type="button" class="pvr" data-i="${sv+i}"><span class="e">${x.d?x.d.e:"✨"}</span><span class="n">${esc(x.d?x.d.l:x.nom)}${x.d?"":`<small>Hors carte${x.prix!=null?" · "+eur(+x.prix):""}</small>`}</span><b>× ${int(x.q)}</b></button>`}).join("")
       :`<p class="pve">Rien de noté</p>`})}
 let PVI={};
+document.querySelectorAll(".card").forEach(d=>{
+  try{if(localStorage.getItem("chiffres2b-card-"+d.dataset.c)==="1")d.open=true}catch{}
+  d.addEventListener("toggle",()=>{try{localStorage.setItem("chiffres2b-card-"+d.dataset.c,d.open?"1":"0")}catch{}})});
 document.querySelector(".pv").addEventListener("click",e=>{const b=e.target.closest(".pvr"),x=b&&PVI[b.dataset.i];if(x)pvOpen(x.sv,x.d?"c:"+x.d.k:"l:"+x.id)});
 $("#pvAdd").onclick=()=>pvOpen();
 function renderTotals(){
@@ -714,10 +739,10 @@ function prestaItem(e){
   const ts=e.type==="theme"?themeSplit(dk,S.data[dk]||{}):null;
   const v=ts?(ts.soiree==null?`<small>soir pas saisi</small>`:eur(ts.soiree)+(ts.prec?` <small>à préciser</small>`:""))
     :prixEv(e)!=null?eur(prixEv(e)):`<a href="evenements.html#ev=${encodeURIComponent(e.id)}&j=${dk}">Noter le prix</a>`;
-  const sub=[t.l,e.statut==="option"?"en option":"",fut?"à venir, pas encore compté":"",ts?(ts.p!=null?eur(ts.p)+" / pers."+(ts.n!=null?" · "+int(ts.n)+" venus":""):"chiffre tapé le soir"):""].filter(Boolean).join(" · ");
+  const sub=[t.l,e.statut==="option"?"en option":"",fut?"comptée le jour venu":"",ts?(ts.p!=null?eur(ts.p)+" / pers."+(ts.n!=null?" · "+int(ts.n)+" venus":""):"chiffre tapé le soir"):""].filter(Boolean).join(" · ");
   const par=e.en_caisse_par?`Coché par ${esc(NOMS[e.en_caisse_par]||e.en_caisse_par)}${e.en_caisse_le?" le "+new Date(e.en_caisse_le).toLocaleDateString("fr-FR"):""}`:"C'est fait";
   const cai=paye(e)?`<label class="cai${!e.en_caisse&&!fut?" no":""}"><input type="checkbox" data-cai="${esc(e.id)}"${e.en_caisse?" checked":""}><span>💰 Entré dans la caisse<small>${e.en_caisse?par:"À cocher seulement quand c'est tapé dans la caisse"}</small></span></label>`:"";
-  return `<div class="pr${fut?" fut":""}" style="--c:${t.c}"><div class="n">${esc(cap(wd(S.y,S.m,d)))} ${d} · ${t.e} ${esc(e.client)}<small>${esc(sub)}</small></div><div class="v">${v}</div>${cai}</div>`;
+  return `<div class="pr${fut?" fut":""}" style="--c:${t.c}"><div class="n">${esc(cap(wd(S.y,S.m,d)))} ${d} · ${t.e} ${esc(e.client)}${fut?`<span class="fb">📅 À venir</span>`:""}<small>${esc(sub)}</small></div><div class="v">${v}</div>${cai}</div>`;
 }
 /* Burgers et plats du jour du mois : total par type et part de chaque type dans les burgers vendus */
 function renderVentes(){
@@ -727,7 +752,8 @@ function renderVentes(){
   const tot=add(...rows.map(r=>r[1])),mx=Math.max(1,...rows.map(r=>r[1]||0));
   rows.sort((a,b)=>(b[1]??-1)-(a[1]??-1));   // le plus vendu en haut ; rien noté = en bas
   const tm=add(s.plats_midi,s.bg_midi,...CARTE.map(([c])=>s["pc_"+c+"_midi"]),s.lib_midi),ts=add(s.plats_soir,s.bg_soir,...CARTE.map(([c])=>s["pc_"+c+"_soir"]),s.lib_soir);
-  $("#ventes").innerHTML=`<h3>🍽️ Ce qui a été vendu</h3>
+  const top=rows.find(r=>r[1]);$("#sVen").textContent=tot?`${int(tot)} plats · le plus vendu : ${top[0].replace(/^\S+\s/,"").replace(/&amp;/g,"&")} (${int(top[1])})`:"Rien de noté ce mois-ci";
+  $("#ventes").innerHTML=`
     ${rows.map(([l,v])=>`<div class="rl" style="--c:var(--accent)"><span>${l}</span><span class="v">${v==null?"–":int(v)}${v&&tot?` <small class="pc">· ${Math.round(v/tot*100)} %</small>`:""}</span><span class="tr"><i style="width:${v?Math.max(1,v/mx*100):0}%"></i></span></div>`).join("")}
     <div class="rl rtot"><span>Total vendu</span><span class="v">${tot==null?"–":int(tot)}</span>${tot?`<small>Midi ${int(tm||0)} · Soir ${int(ts||0)}</small>`:""}</div>`;
 }
@@ -737,15 +763,18 @@ function renderRep(){renderVentes();
   const rows=[["☀️ Midi",s.ca_midi,"var(--midi)",1],[has("theme")?"🌙 Soir à la carte":"🌙 Soir",s.soir_n,"var(--soir)",1],["🎉 Soirées à thème",s.theme,"var(--theme)",has("theme")],["🏠 Privatisations",s.priv,"var(--priv)",has("privatisation")],["🚚 Traiteur extérieur",s.trait,"var(--trait)",has("traiteur")]].filter(r=>r[3]||r[1]!=null);
   const mx=Math.max(1,...rows.map(r=>r[1]||0));
   const oubli=list.filter(e=>paye(e)&&!e.en_caisse&&e.jour<=TODAY).length;
-  $("#rep").innerHTML=`<h3>Le CA du mois en détail</h3>
+  $("#sRep").textContent=s.total==null?"Rien de noté ce mois-ci":[["Midi",s.ca_midi],["Soir",add(s.soir_n,s.theme)],["Prestations",s.presta]].filter(x=>x[1]!=null).map(([l,v])=>l+" "+int(Math.round(v))+" €").join(" · ");
+  $("#sPre").innerHTML=(list.length?`${list.length} ce mois-ci`:"Rien ce mois-ci")+(oubli?`<br><span class="cw">⚠️ ${oubli} pas encore entrée${oubli>1?"s":""} dans la caisse</span>`:"");
+  $("#rep").innerHTML=`
     ${rows.map(([l,v,c])=>`<div class="rl" style="--c:${c}"><span>${l}</span><span class="v">${v==null?"–":eur(v)}</span><span class="tr"><i style="width:${v?Math.max(1,v/mx*100):0}%"></i></span></div>`).join("")}
     <div class="rl rtot"><span>Total du mois</span><span class="v">${s.total==null?"–":eur(s.total)}</span>${s.presta?`<small>Caisse ${s.ca==null?"–":eur(s.ca)} + prestations payées à part ${eur(s.presta)}</small>`:""}</div>
-    <div class="prs"><h4>Privatisations, traiteur et soirées</h4>
-    ${oubli?`<div class="prw">⚠️ ${oubli} prestation${oubli>1?"s":""} pas encore entrée${oubli>1?"s":""} dans la caisse</div>`:""}
+`;
+  $("#presta").innerHTML=`<div class="prs">
+    ${oubli?`<div class="prwarn">⚠️ ${oubli} prestation${oubli>1?"s":""} pas encore entrée${oubli>1?"s":""} dans la caisse</div>`:""}
     ${list.length?list.map(prestaItem).join(""):`<p class="vide">Rien ce mois-ci. On les ajoute dans l'onglet Événements.</p>`}</div>`;
 }
 const CAI=new Set();   // cases « En caisse » en cours d'envoi : le rafraîchissement ne les écrase pas
-$("#rep").addEventListener("change",async e=>{
+$("#presta").addEventListener("change",async e=>{
   const cb=e.target.closest("input[data-cai]");if(!cb)return;const ev=S.evs.find(x=>x.id===cb.dataset.cai);if(!ev)return;
   const v=cb.checked,old={en_caisse:ev.en_caisse,en_caisse_par:ev.en_caisse_par,en_caisse_le:ev.en_caisse_le};
   Object.assign(ev,{en_caisse:v,en_caisse_par:v?who():null,en_caisse_le:v?new Date().toISOString():null});CAI.add(ev.id);renderRep();
@@ -762,6 +791,7 @@ function pvOpen(sv,focus){
   const dk=key(S.y,S.m,S.d),row=S.data[dk]||{};
   sv=sv||(new Date().getHours()<16?"midi":"soir");
   const D={midi:{},soir:{}};   // quantités changées, pas encore enregistrées
+  let pxOpen=false;            // « Ajouter ou supprimer un plat hors carte » : fermé au départ
   const base=(s2,id)=>{if(id[0]==="c")return val(row,id.slice(2)+"_"+s2)||0;const l=libres(row,s2).find(x=>"l:"+x.id===id);return l?l.qte:0};
   const cur=(s2,id)=>id in D[s2]?D[s2][id]:base(s2,id);
   const items=s2=>[...DISH.map(d=>({id:"c:"+d.k,e:d.e,l:d.l})),...libres(row,s2).map(x=>({id:"l:"+x.id,e:"✨",l:x.nom,px:x.prix,x:(S.extras.find(e=>pvN(e.nom)===pvN(x.nom))||{}).id})),
@@ -782,7 +812,7 @@ function pvOpen(sv,focus){
     m.querySelectorAll("[data-s]").forEach(b=>{b.setAttribute("aria-pressed",b.dataset.s===sv);const t=tot(b.dataset.s);b.querySelector("em").textContent=t?"· "+t:""});
     const it=items(sv),grp=(t,a)=>a.length?`<div class="prh">${t}</div>`+a.map(rowHTML).join(""):"";
     $m(".prl").innerHTML=grp("Plats du jour et burgers",it.filter(x=>x.id[0]==="c"&&!x.id.startsWith("c:pc_")))+grp("Carte",it.filter(x=>x.id.startsWith("c:pc_")))+grp("Hors carte",it.filter(x=>x.id[0]!=="c"))
-      +`<div class="pvn"><b>✨ Mes plats hors carte</b><small class="pnx">Ils restent proposés tous les jours, midi et soir, jusqu'à ce que tu les supprimes.</small>${S.extras.map(e=>`<div class="pxl"><span>${esc(e.nom)}${e.prix!=null?` <small>${esc(eur(+e.prix))}</small>`:""}</span><button type="button" class="pxd" data-rm="${e.id}">🗑️ Supprimer</button></div>`).join("")}<input data-nn placeholder="Nom du plat" maxlength="60" autocomplete="off"><input data-np inputmode="decimal" placeholder="Prix €" autocomplete="off"><button type="button" data-new>＋ Ajouter à mes plats hors carte</button></div>`;
+      +`<details class="pvn"${pxOpen?" open":""}><summary>✨ Ajouter ou supprimer un plat hors carte${S.extras.length?` <em>(${S.extras.length})</em>`:""}</summary><div class="pvg"><small class="pnx">Ils restent proposés tous les jours, midi et soir, jusqu'à ce que tu les supprimes.</small>${S.extras.map(e=>`<div class="pxl"><span>${esc(e.nom)}${e.prix!=null?` <small>${esc(eur(+e.prix))}</small>`:""}</span><button type="button" class="pxd" data-rm="${e.id}">🗑️ Supprimer</button></div>`).join("")}<input data-nn placeholder="Nom du plat" maxlength="60" autocomplete="off"><input data-np inputmode="decimal" placeholder="Prix €" autocomplete="off"><button type="button" data-new>＋ Ajouter à mes plats hors carte</button></div></details>`;
     foot();
   }
   function foot(){const c=changes();$m(".pft small").textContent=c.length?`${c.length} changement${c.length>1?"s":""} à enregistrer`:"Touche ＋ ou tape le nombre, puis Valider";
@@ -817,6 +847,7 @@ function pvOpen(sv,focus){
   });
   m.addEventListener("input",e=>{if(e.target.matches(".prw input")){const v=e.target.value.replace(/\D/g,"");if(v!==e.target.value)e.target.value=v;setQ(e.target.closest(".prw"),+v||0)}
 });
+  m.addEventListener("toggle",e=>{if(e.target.matches(".pvn"))pxOpen=e.target.open},true);
   m.addEventListener("focusin",e=>{if(e.target.matches(".prw input"))setTimeout(()=>e.target.select(),0)});
   document.body.appendChild(m);draw();
   if(focus){const r=m.querySelector(`.prw[data-id="${focus}"]`);if(r){r.scrollIntoView({block:"center"});r.classList.add("fl")}}
