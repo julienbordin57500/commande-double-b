@@ -97,6 +97,14 @@ header.top{display:flex;align-items:center;gap:14px}
 .gf small{font-weight:600;color:var(--muted);font-size:12px}
 .gml{display:grid;grid-template-columns:1fr 130px;gap:6px 10px;align-items:center;font-size:14px;font-weight:700}
 .gml input{height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font-size:15px;font-weight:700;background:var(--sunken);color:var(--fg);width:100%;text-align:right}
+.gtiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.gt{background:var(--sunken);border:1px solid var(--line);border-radius:14px;padding:9px 12px}
+.gt small{display:block;font-size:12px;font-weight:700;color:var(--muted)}
+.gt b{display:block;font-family:var(--display);font-size:21px;font-weight:800;margin-top:2px;white-space:nowrap}
+.gt.ok b{color:var(--go)} .gt.late b{color:var(--danger)}
+.gwin{margin-top:12px;padding:12px;border-radius:14px;background:color-mix(in srgb,var(--go) 14%,var(--surface));color:var(--go);font-family:var(--display);font-size:19px;font-weight:800;text-align:center}
+.gly{margin:10px 0 0;font-size:13px;font-weight:600;color:var(--muted)}
+.gedit.ic{width:36px;padding:0;font-size:16px}
 .gcf{position:fixed;top:-12px;width:9px;height:14px;border-radius:2px;z-index:60;pointer-events:none;animation:gcf linear forwards}
 @keyframes gcf{to{transform:translateY(105vh) rotate(720deg);opacity:.7}}
 @media (prefers-reduced-motion:reduce){.gbar i{transition:none}.gcf{display:none}}
@@ -943,24 +951,21 @@ function renderGoal(live){
   const pc=g.done/g.obj,w=Math.min(100,pc*100),exp=tot?g.obj*gone/tot:0,diff=g.done-exp,ok=g.done>=g.obj;
   const rest=Math.max(0,g.obj-g.done),sLeft=tot-gone;
   const lyK=ym(S.y-1,S.m),ly=OBJ["ca:"+lyK]!=null?+OBJ["ca:"+lyK]:null,mo=mLong(S.y,S.m);
-  let lines="";
-  if(ok)lines+=`<p class="gl">Objectif dépassé de <b>${eur(Math.round(g.done-g.obj))}</b>.</p>`;
-  else if(past)lines+=`<p class="gl">Il a manqué <b>${eur(Math.round(rest))}</b>.</p>`;
-  else lines+=`<p class="gl">Il reste <b>${eur(Math.round(rest))}</b>${sLeft?` → environ <b>${eur(r10(rest/sLeft))}</b> par service <small style="color:var(--muted)">(${sLeft} service${sLeft>1?"s":""})</small>`:""}</p>`;
-  const pill=isCur&&gone&&!ok?`<span class="gpill${diff>=0?" ok":""}">${diff>=0?"✅ "+eur(Math.round(diff))+" d'avance":"⏳ "+eur(Math.round(-diff))+" de retard"} sur le rythme</span>`:"";
-  if(ly!=null)lines+=`<p class="gl">${g.done>=ly?`🏁 Déjà mieux que ${mo} ${S.y-1} (${eur(ly)}) !`:`🏁 ${cap(mo)} ${S.y-1} : ${eur(ly)} · encore <b>${eur(Math.round(ly-g.done))}</b> pour faire mieux`}</p>`;
-  const msg=ok?"🏆 Objectif atteint ! Bravo à toute l'équipe":!isCur?"":pc>=.75?"🔥 La dernière ligne droite !":pc>=.5?"🎉 La moitié est faite !":isCur&&pc>0?"💪 On y va, service après service":"";
-  // année
+  const de=/^[aeiou]/.test(mo)?"d'":"de ";
+  const lyTxt=ly==null?"":g.done>=ly?`🏁 Déjà mieux que ${mo} ${S.y-1} (${eur(ly)})`:`🏁 ${cap(mo)} ${S.y-1} : ${eur(ly)}`;
+  let tiles="";
+  if(ok)tiles=`<div class="gwin">🏆 Objectif atteint ! Bravo l'équipe</div>`;
+  else if(past)tiles=`<div class="gtiles"><div class="gt late"><small>Il a manqué</small><b class="num">${eur(Math.round(rest))}</b></div><div class="gt"><small>Objectif</small><b class="num">${eur(g.obj)}</b></div></div>`;
+  else if(isCur)tiles=`<div class="gtiles"><div class="gt"><small>À faire par service</small><b class="num">${sLeft?eur(r10(rest/sLeft)):"–"}</b></div>${gone?`<div class="gt ${diff>=0?"ok":"late"}"><small>${diff>=0?"✅ En avance":"⏳ En retard"}</small><b class="num">${diff>=0?"+":"−"}${eur(Math.round(Math.abs(diff)))}</b></div>`:`<div class="gt"><small>Il reste</small><b class="num">${eur(Math.round(rest))}</b></div>`}</div>`;
   const yObj=g.annuel,yPc=yObj?g.yDone/yObj:0,y0=g.y0;
   const t0=new Date(y0,6,1),t1=new Date(y0+1,6,1),tPc=Math.min(1,Math.max(0,(now-t0)/(t1-t0)));
   const yTick=ym(S.y,S.m)===ym(now.getFullYear(),now.getMonth());
   el.className="goal"+(ok?" win":"");
-  el.innerHTML=`<div class="gh"><span>🎯 Objectif ${/^[aeiou]/.test(mo)?"d'":"de "}${esc(mo)}</span><button class="gedit" type="button" id="gEdit">✏️ Modifier</button></div>
-    <div class="gbig"><b class="num">${eur(Math.round(g.done))}</b><small>sur ${eur(g.obj)}</small><span class="gp num">${Math.floor(pc*100)} %</span></div>
-    <div class="gbar${ok?" ok":""}" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(w)}"><i style="width:${w}%"></i>${isCur&&!ok&&gone<tot?`<span class="tk" style="left:${Math.min(100,exp/g.obj*100)}%"></span>`:""}</div>
-    ${isCur&&!ok&&gone<tot?`<div class="gtk"><span style="left:${Math.min(92,Math.max(8,exp/g.obj*100))}%">▲ où on devrait être</span></div>`:""}
-    ${lines}${pill}${msg?`<div class="gmsg">${msg}</div>`:""}
-    ${yObj?`<div class="gyr"><p class="gl">📅 Année ${y0}-${String(y0+1).slice(2)} (juillet → juin) : <b class="num">${eur(Math.round(g.yDone))}</b> sur ${eur(yObj)} · <b>${Math.floor(yPc*100)} %</b></p>
+  el.innerHTML=`<div class="gh"><span>🎯 Objectif ${de}${esc(mo)}</span><button class="gedit ic" type="button" id="gEdit" aria-label="Modifier les objectifs">✏️</button></div>
+    <div class="gbig"><b class="num">${eur(Math.round(g.done))}</b><small>/ ${eur(g.obj)}</small><span class="gp num">${Math.floor(pc*100)} %</span></div>
+    <div class="gbar${ok?" ok":""}" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(w)}"><i style="width:${w}%"></i>${isCur&&!ok&&gone&&gone<tot?`<span class="tk" style="left:${Math.min(100,exp/g.obj*100)}%" title="Où on devrait être aujourd'hui"></span>`:""}</div>
+    ${tiles}${lyTxt?`<p class="gly">${lyTxt}</p>`:""}
+    ${yObj?`<div class="gyr"><p class="gl">📅 Année ${y0}-${String(y0+1).slice(2)} : <b class="num">${eur(Math.round(g.yDone))}</b> / ${eur(yObj)} · <b>${Math.floor(yPc*100)} %</b></p>
       <div class="gbar${yPc>=1?" ok":""}"><i style="width:${Math.min(100,yPc*100)}%"></i>${yTick&&yPc<1?`<span class="tk" style="left:${tPc*100}%" title="Où on devrait être aujourd'hui"></span>`:""}</div></div>`:""}`;
   if(ok&&isCur){const k="chiffres2b-goal-"+g.cur;try{if(!localStorage.getItem(k)){localStorage.setItem(k,"1");confetti()}}catch{}}
 }
