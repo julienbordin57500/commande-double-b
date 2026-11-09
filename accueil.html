@@ -17,153 +17,195 @@ if(d)try{e.viewTransition.types.add(d)}catch(x){}else e.viewTransition.skipTrans
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700;800&display=swap" media="print" onload="this.media=\'all\'">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
 <script>try{if(!localStorage.getItem("commande2b-code"))location.replace("./");sessionStorage.setItem("2b-s","1")}catch(e){}</script>
 <style>
-/* Écran d'ouverture : bonjour, puis 3 cartes (programme, à commander, chiffres d'hier). Chaque carte mène à sa partie. */
+/* Écran d'ouverture (refonte 2026-11) : bonjour, puis une carte sombre « le service du jour » (midi/soir + objectif du mois),
+   deux tuiles (hygiène, à commander), le programme, le dernier service, et les outils de Julien. Chaque bloc mène à sa partie. */
 :root{
-  --bg:#f4f2ec; --surface:#ffffff; --sunken:#f9f7f2; --line:#e6e1d5; --fg:#1d1b17; --muted:#6f695d;
-  --accent:#f2a516; --accent-ink:#2a1d00; --accent-soft:#fdf1d6; --go:#2f7d4f; --go-soft:#e3f2e8; --danger:#c23a2b;
+  --bg:#f5f2ea; --surface:#fffdf8; --sunken:#f1ece1; --line:#e6dfd0; --fg:#1f1b14; --muted:#71695a;
+  --accent:#f2a516; --accent-ink:#2a1d00; --accent-soft:#fcefd2; --go:#2f7d4f; --go-soft:#e2f1e7; --warn:#b85a0c; --warn-soft:#fbe9d6; --danger:#c23a2b;
   --priv:#c2410c; --priv-soft:#fdeadf; --trait:#2f5d9e; --trait-soft:#e4ecf8; --note:#2f7d4f; --note-soft:#e3f2e8; --theme:#7c3aed; --theme-soft:#ede4fb;
+  --hero1:#2a2117; --hero2:#3b2c18; --hero-fg:#fff7e6; --hero-muted:#d8c8a6; --hero-line:rgba(255,255,255,.1); --hero-glass:rgba(255,255,255,.07);
+  --shadow:0 1px 0 rgba(60,40,0,.04),0 8px 22px -14px rgba(60,40,0,.25);
   --display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
   --body:"Figtree","Segoe UI",system-ui,sans-serif;
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){:root{
-  --bg:#141310; --surface:#1f1d18; --sunken:#191814; --line:#34312a; --fg:#f3efe5; --muted:#a69f90;
-  --accent:#f5b232; --accent-ink:#231800; --accent-soft:#3a2e12; --go:#5fbf86; --go-soft:#16301f; --danger:#e8705f;
-  --priv:#fb923c; --priv-soft:#3b2414; --trait:#8db7ee; --trait-soft:#1b2a40; --note:#5fbf86; --note-soft:#16301f; --theme:#c4a5f5; --theme-soft:#2a1f3d; color-scheme:dark}}
+  --bg:#13110d; --surface:#1d1a15; --sunken:#17150f; --line:#302b22; --fg:#f4efe3; --muted:#a59d8c;
+  --accent:#f5b232; --accent-ink:#231800; --accent-soft:#3a2e12; --go:#5fbf86; --go-soft:#16301f; --warn:#f0954a; --warn-soft:#3a2614; --danger:#e8705f;
+  --priv:#fb923c; --priv-soft:#3b2414; --trait:#8db7ee; --trait-soft:#1b2a40; --note:#5fbf86; --note-soft:#16301f; --theme:#c4a5f5; --theme-soft:#2a1f3d;
+  --hero1:#2b2214; --hero2:#3e2f16; --hero-muted:#cdbb96;
+  --shadow:0 1px 0 rgba(0,0,0,.3),0 10px 24px -14px rgba(0,0,0,.7); color-scheme:dark}}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.35;
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.35;-webkit-font-smoothing:antialiased;
   padding:env(safe-area-inset-top,0px) max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px))}
 [hidden]{display:none!important}
-.wrap{max-width:680px;margin:0 auto;padding-block:16px 24px}
+.wrap{max-width:560px;margin:0 auto;padding-block:16px 24px;display:flex;flex-direction:column;gap:12px}
+.wrap>.pbar{margin-bottom:0}
 h1,h2,h3{font-family:var(--display);margin:0}
 a{color:inherit}
 .num{font-variant-numeric:tabular-nums}
+.ic{flex:none;width:40px;height:40px;border-radius:13px;display:grid;place-items:center;background:var(--sunken);color:var(--fg)}
+.ic svg{width:22px;height:22px}
+a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 
-.hello{margin:18px 4px 4px}
-.hello h1{font-size:34px;font-weight:800;letter-spacing:-.6px;line-height:1.05}
-.hello p{margin:8px 0 0;color:var(--muted);font-size:17px;font-weight:600}
+/* Bonjour */
+.hello{margin:6px 2px 2px}
+.hello h1{font-size:34px;font-weight:800;letter-spacing:-.8px;line-height:1.05;text-wrap:balance}
+.hello p{margin:6px 0 0;color:var(--muted);font-size:17px;font-weight:600}
 .hello p b{color:var(--fg)}
 
-.bell-cta{display:flex;align-items:center;gap:12px;width:100%;margin-top:16px;padding:14px 16px;border-radius:18px;border:1.5px solid color-mix(in srgb,var(--accent) 60%,transparent);
-  background:var(--accent-soft);color:var(--fg);font:inherit;font-weight:800;font-size:17px;text-align:left;cursor:pointer}
+.bell-cta{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border-radius:18px;border:1.5px solid color-mix(in srgb,var(--accent) 60%,transparent);
+  background:var(--accent-soft);color:var(--fg);font:inherit;font-weight:800;font-size:16px;text-align:left;cursor:pointer;box-shadow:var(--shadow)}
 .bell-cta span{flex:1}
-.bell-cta em{font-style:normal;font-size:22px}
+.bell-cta .ic{background:var(--accent);color:var(--accent-ink);width:36px;height:36px;border-radius:11px}
+.bell-cta b{font-size:22px;color:var(--muted)}
 
-.card{display:block;margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:16px;text-decoration:none;color:var(--fg)}
-.card-h{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-.card-h .ico{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-size:22px;background:var(--sunken)}
-.card-h h2{flex:1;font-size:21px;font-weight:800;min-width:0}
-.card-h .go{flex:none;color:var(--muted);font-size:24px;font-weight:700;line-height:1}
-.empty{color:var(--muted);font-size:16px;padding:2px 2px 4px}
+/* Le service du jour : la carte forte de la page */
+.hero{border-radius:26px;padding:16px;background:linear-gradient(150deg,var(--hero1),var(--hero2));color:var(--hero-fg);box-shadow:var(--shadow);display:flex;flex-direction:column;gap:14px;position:relative;overflow:hidden;isolation:isolate}
+.hero::after{content:"";position:absolute;right:-70px;top:-80px;width:230px;height:230px;border-radius:50%;background:radial-gradient(circle,rgba(245,178,50,.32),transparent 70%);pointer-events:none;z-index:-1}
+.hh{display:flex;align-items:center;gap:10px}
+.hh h2{flex:1;font-size:13px;font-weight:800;color:var(--hero-muted);text-transform:uppercase;letter-spacing:.08em;font-family:var(--body)}
+.ouvgo{flex:none;border:1px solid var(--hero-line);background:var(--hero-glass);color:var(--hero-fg);font:inherit;font-size:13px;font-weight:700;height:34px;padding:0 12px;border-radius:11px;cursor:pointer}
+.ouvp{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.hero .opill{white-space:nowrap;width:auto;height:58px;border-radius:16px;font-size:16px;background:var(--hero-glass);border:1.5px solid var(--hero-line);color:var(--hero-muted);flex-direction:row;gap:10px;justify-content:flex-start;padding:0 14px}
+.hero .opill small{font-size:13px;margin-left:auto;text-decoration:none!important;opacity:1;display:flex;align-items:center;gap:6px}
+.hero .opill small::before{content:"";width:9px;height:9px;border-radius:50%;background:#8a7f6a}
+.hero .opill.on{background:rgba(111,211,154,.12);border-color:rgba(111,211,154,.45);color:var(--hero-fg)}
+.hero .opill.on small{color:#8fe0b0}
+.hero .opill.on small::before{background:#6fd39a;box-shadow:0 0 0 4px rgba(111,211,154,.22)}
+.ouvn{grid-column:1/-1;margin:0;font-size:14px;font-weight:700;color:var(--hero-muted)}
+.goal{display:flex;flex-direction:column;gap:8px;text-decoration:none;color:inherit;padding-top:14px;border-top:1px solid var(--hero-line)}
+.goal .row{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.goal .row span{font-size:13px;font-weight:700;color:var(--hero-muted)}
+.goal .row b{font-family:var(--display);font-size:28px;font-weight:800;letter-spacing:-.5px;line-height:1}
+.goal .row+.row{margin-top:-4px}
+.goal.still .bar i{animation:none}
+.goal .row em{margin-left:auto;font-style:normal;font-family:var(--display);font-size:22px;font-weight:800;color:var(--accent)}
+.goal .bar{height:10px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden}
+.goal .bar i{display:block;height:100%;width:var(--w);border-radius:99px;background:linear-gradient(90deg,#f7c04a,var(--accent));animation:fill 1.1s .15s cubic-bezier(.2,.8,.2,1) backwards}
+.goal.win .bar i{background:linear-gradient(90deg,#6cc58f,#3fa36a)}
+.goal.win .row em{color:#8fe0b0}
+@keyframes fill{from{width:0}}
+.goal p{margin:0;font-size:14px;font-weight:700;color:#8fe0b0}
+.goal p.n{color:var(--hero-muted);font-weight:600}
+
+/* Tuiles */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile,.card{background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);color:var(--fg);text-decoration:none;display:flex;flex-direction:column;transition:scale .12s ease;min-width:0}
+.tile:active,.card:active{scale:.98}
+.tile{padding:14px;gap:8px}
+.th{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tile h2{font-size:16px;font-weight:800;font-family:var(--body);margin-top:2px}
+.tile .big{font-family:var(--display);font-size:34px;font-weight:800;letter-spacing:-.8px;line-height:1;margin-top:2px}
+.tile #hyg,.tile #cmd{display:flex;flex-direction:column;gap:6px}
+.tile .big small{font-family:var(--body);font-size:15px;color:var(--muted);font-weight:700;letter-spacing:0}
+.tile .sub{font-size:13px;font-weight:600;color:var(--muted);line-height:1.3}
+.tile .mini{display:flex;flex-direction:column;gap:3px;font-size:12.5px;font-weight:700;color:var(--muted);padding-top:8px;border-top:1px solid var(--line)}
+.tile .mini .no{color:var(--warn)} .tile .mini .bad{color:var(--danger)}
+.pill:empty{display:none}
+.pill{flex:none;font-size:12px;font-weight:800;padding:4px 10px;border-radius:99px;white-space:nowrap;background:var(--sunken);color:var(--muted)}
+.pill.todo{background:var(--warn-soft);color:var(--warn)} .pill.ok{background:var(--go-soft);color:var(--go)}
+.hyg.todo{border:1.5px solid color-mix(in srgb,var(--warn) 50%,var(--line));background:color-mix(in srgb,var(--warn) 5%,var(--surface))}
+.hyg.todo .ic{background:var(--warn-soft);color:var(--warn)}
+.hyg.fine .ic,.cmd0 .ic{background:var(--go-soft);color:var(--go)}
+.tile.tool .sub{font-size:13px}
+
+/* Cartes */
+.card{padding:4px 0 6px}
+.ch{display:flex;align-items:center;gap:12px;padding:12px 14px 10px}
+.ch h2{flex:1;min-width:0;font-size:19px;font-weight:800}
+.ch .go{flex:none;color:var(--muted);font-size:24px;font-weight:700;line-height:1}
+.empty{color:var(--muted);font-size:15px;padding:2px 16px 10px}
 .empty b{color:var(--go)}
-
-/* Programme */
-.dayl{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:12px 2px 6px}
-.dayl:first-of-type{margin-top:0}
-.ev{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:16px;background:var(--soft,var(--sunken));margin-bottom:8px;text-decoration:none;color:var(--fg);border:1px solid color-mix(in srgb,var(--c,var(--line)) 25%,transparent)}
-.ev .e{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:20px;background:var(--surface)}
-.ev .t{flex:1;min-width:0}
-.ev .t b{display:block;font-size:16.5px;font-weight:800;line-height:1.2;overflow-wrap:anywhere}
-.ev .t small{display:block;font-size:14px;color:var(--muted);font-weight:600;margin-top:2px}
+.dayl{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:8px 16px 6px}
+.ev{display:grid;grid-template-columns:54px 1fr auto;gap:12px;align-items:center;padding:8px 14px;color:var(--fg)}
+.ev+.ev{border-top:1px solid var(--line)}
+.ev .e{height:46px;border-radius:13px;display:grid;place-items:center;background:var(--soft,var(--sunken));color:var(--c,var(--fg));font-family:var(--display);font-weight:800;font-size:16px;line-height:1}
+.ev .e.emo{font-size:21px}
+.ev .t{min-width:0}
+.ev .t b{display:block;font-size:16px;font-weight:800;line-height:1.2;overflow-wrap:anywhere}
+.ev .t small{display:block;font-size:13.5px;color:var(--muted);font-weight:600;margin-top:2px}
 .ev.privatisation{--c:var(--priv);--soft:var(--priv-soft)} .ev.traiteur{--c:var(--trait);--soft:var(--trait-soft)} .ev.note{--c:var(--note);--soft:var(--note-soft)} .ev.theme{--c:var(--theme);--soft:var(--theme-soft)}
-.st{flex:none;font-size:12px;font-weight:800;padding:4px 9px;border-radius:999px;background:var(--surface);color:var(--muted);white-space:nowrap}
-.st.confirme{color:var(--go)}
-
-/* À commander */
-.big{display:flex;align-items:baseline;gap:10px}
-.big b{font-family:var(--display);font-size:44px;font-weight:800;line-height:1;letter-spacing:-1px}
-.big span{font-size:17px;font-weight:700;color:var(--muted)}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
-.chips span{font-size:14px;font-weight:700;padding:6px 11px;border-radius:999px;background:var(--sunken);border:1px solid var(--line)}
-.chips span i{font-style:normal;color:var(--accent-ink);background:var(--accent);border-radius:999px;padding:0 7px;margin-left:6px;font-weight:800}
-
-/* Ouverture du jour */
-.ouv .card-h{align-items:center}
-.ouvgo{display:block;width:100%;margin-top:10px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--sunken);color:var(--fg);font:inherit;font-weight:800;font-size:15px}
-.ouvp{display:flex;gap:8px;margin-top:10px}
-.ouvp .opill{flex:1;width:auto;height:54px;font-size:16px}
-.ouvp .ouvn{flex-basis:100%;font-size:14px;color:var(--muted);margin:2px 0 0}
-.ouvp{flex-wrap:wrap}
-.hyg.ferme{opacity:.92}
-.hyg.ferme .hs{background:var(--sunken);color:var(--muted);border:1px solid var(--line)}
-/* Hier */
-.kp{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.kp div{background:var(--sunken);border-radius:14px;padding:10px 12px;min-width:0}
-.kp small{display:block;font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.st{font-size:11.5px;font-weight:800;padding:4px 9px;border-radius:999px;background:var(--accent-soft);color:var(--fg);white-space:nowrap}
+.st.confirme{background:var(--go-soft);color:var(--go)}
+.kp{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 14px 8px}
+.kp div{background:var(--sunken);border-radius:15px;padding:10px 12px;min-width:0}
+.kp small{display:block;font-size:12px;font-weight:700;color:var(--muted)}
 .kp b{display:block;font-family:var(--display);font-size:26px;font-weight:800;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.fill{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;height:52px;border-radius:14px;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:17px;
+.kp .best{grid-column:1/-1;background:var(--go-soft);color:var(--go);font-weight:800;font-size:14px;padding:9px 12px}
+.fill{display:flex;align-items:center;justify-content:center;gap:8px;margin:2px 14px 8px;height:52px;border-radius:15px;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:17px;
   background-image:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,0));box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 6px 14px -8px color-mix(in srgb,var(--accent) 90%,#000)}
+.sect{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:6px 4px -4px}
 
-/* Hygiène : orange tant que les relevés du moment ne sont pas faits, vert ensuite */
-.hyg.todo{border:1.5px solid color-mix(in srgb,var(--accent) 70%,transparent);background:color-mix(in srgb,var(--accent) 7%,var(--surface))}
-.hyg.fine{border:1.5px solid color-mix(in srgb,var(--go) 45%,transparent)}
-.hs{flex:none;font-size:13px;font-weight:800;padding:4px 10px;border-radius:999px;white-space:nowrap}
-.hyg.todo .hs{background:var(--accent);color:var(--accent-ink)} .hyg.fine .hs{background:var(--go);color:#fff}
-.hl{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:15.5px;font-weight:600}
-.hl:first-child{border-top:0;padding-top:0}
-.hl em{font-style:normal;font-size:20px;flex:none;width:26px;text-align:center}
-.hl span{flex:1;min-width:0}
-.hl b{flex:none;font-weight:800;font-variant-numeric:tabular-nums}
-.hl b.ok{color:var(--go)} .hl b.no{color:var(--accent-ink);background:var(--accent);padding:1px 8px;border-radius:8px}
-.card{transition:scale .12s ease}.card:active{scale:.985}
-.card,.bell-cta{box-shadow:0 1px 2px rgba(60,40,10,.04),0 6px 18px -10px rgba(60,40,10,.14)}
-
-@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @view-transition{navigation:auto}
 .pbar{view-transition-name:pbar}
-@media (prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}}
+@media (prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}.goal .bar i{animation:none}.tile,.card{transition:none}}
+@media (max-width:350px){.grid2{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></symbol>
+  <symbol id="i-thermo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.8V4a2 2 0 1 0-4 0v10.8a4 4 0 1 0 4 0Z"/></symbol>
+  <symbol id="i-cart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3h2.7l2.4 11.4a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.5L21.5 7H6.1"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="17" rx="3"/><path d="M8 2.5v4M16 2.5v4M3 10h18"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="m12 3 2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8Z"/></symbol>
+  <symbol id="i-hand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="m4 7 8 6 8-6"/></symbol>
+</svg>
 <div class="wrap">
   <div class="pbar" id="pbar"></div><script src="profil.js"></script>
+  <header class="hello"><h1 id="hi">Bonjour</h1><p id="date">&nbsp;</p></header>
+  <button class="bell-cta" id="news" type="button" hidden><span class="ic" aria-hidden="true"><svg><use href="#i-bell"/></svg></span><span id="newsT"></span><b aria-hidden="true">›</b></button>
 
-  <header class="hello"><h1 id="hi">Bonjour 👋</h1><p id="date">&nbsp;</p></header>
-
-  <button class="bell-cta" id="news" type="button" hidden><em aria-hidden="true">🛎️</em><span id="newsT"></span><b aria-hidden="true">›</b></button>
-
-  <a class="card c4" href="fidelite.html" id="cFid" hidden>
-    <div class="card-h"><span class="ico" aria-hidden="true">⭐</span><h2>Fidélité</h2><span class="go" aria-hidden="true">›</span></div>
-    <div class="empty">Retrouver un client, ajouter ses tampons, offrir son burger.</div>
-  </a>
-  <a class="card c4" href="prospection.html" id="cPro" hidden>
-    <div class="card-h"><span class="ico" aria-hidden="true">🤝</span><h2>Prospection traiteur</h2><span class="go" aria-hidden="true">›</span></div>
-    <div class="empty">Entreprises, CSE, mairies : les mails du jour et le suivi des contacts.</div>
-  </a>
-  <script>/* Cartes de fidélité : visibles seulement sur le profil Julien pour l'instant. Prospection : Julien seulement */
-  try{document.getElementById("cFid").hidden=!(window.Profil&&Profil.get()==="julien")}catch(e){}
-  try{document.getElementById("cPro").hidden=!(window.Profil&&Profil.get()==="julien")}catch(e){}</script>
-
-  <div class="card ouv" id="cOuv">
-    <div class="card-h"><span class="ico" aria-hidden="true">🕒</span><h2 id="ouvT">Aujourd'hui</h2></div>
+  <section class="hero" id="cOuv" aria-label="Le service du jour">
+    <div class="hh"><h2 id="ouvT">Aujourd'hui</h2><button type="button" class="ouvgo" id="ouvGo">Jours d'ouverture ›</button></div>
     <div class="ouvp" id="ouvP"></div>
-    <button type="button" class="ouvgo" id="ouvGo">Changer les jours d'ouverture ›</button>
+    <a class="goal" id="goal" href="chiffres.html" hidden></a>
+  </section>
+
+  <div class="grid2">
+    <a class="tile hyg" href="hygiene.html" id="cHyg">
+      <div class="th"><span class="ic" aria-hidden="true"><svg><use href="#i-thermo"/></svg></span><span class="pill" id="hygS"></span></div>
+      <h2>Hygiène</h2>
+      <div id="hyg"><div class="sub">Chargement…</div></div>
+    </a>
+    <a class="tile" href="./#acommander" id="cCmd">
+      <div class="th"><span class="ic" aria-hidden="true"><svg><use href="#i-cart"/></svg></span></div>
+      <h2>À commander</h2>
+      <div id="cmd"><div class="sub">Chargement…</div></div>
+    </a>
   </div>
 
-  <a class="card c2" href="evenements.html" id="cEv">
-    <div class="card-h"><span class="ico" aria-hidden="true">📅</span><h2>Au programme</h2><span class="go" aria-hidden="true">›</span></div>
+  <a class="card" href="evenements.html" id="cEv">
+    <div class="ch"><span class="ic" aria-hidden="true"><svg><use href="#i-cal"/></svg></span><h2>Au programme</h2><span class="go" aria-hidden="true">›</span></div>
     <div id="evs"><div class="empty">Chargement…</div></div>
   </a>
 
-  <a class="card c3 hyg" href="hygiene.html" id="cHyg">
-    <div class="card-h"><span class="ico" aria-hidden="true">🧼</span><h2>Hygiène</h2><span class="hs" id="hygS"></span><span class="go" aria-hidden="true">›</span></div>
-    <div id="hyg"><div class="empty">Chargement…</div></div>
-  </a>
-
-  <a class="card c3" href="./#acommander" id="cCmd">
-    <div class="card-h"><span class="ico" aria-hidden="true">🛒</span><h2>À commander</h2><span class="go" aria-hidden="true">›</span></div>
-    <div id="cmd"><div class="empty">Chargement…</div></div>
-  </a>
-
-  <a class="card c4" href="chiffres.html" id="cHier">
-    <div class="card-h"><span class="ico" aria-hidden="true">📊</span><h2 id="hierT">Hier</h2><span class="go" aria-hidden="true">›</span></div>
+  <a class="card" href="chiffres.html" id="cHier">
+    <div class="ch"><span class="ic" aria-hidden="true"><svg><use href="#i-chart"/></svg></span><h2 id="hierT">Hier</h2><span class="go" aria-hidden="true">›</span></div>
     <div id="hier"><div class="empty">Chargement…</div></div>
   </a>
 
+  <p class="sect" id="tools" hidden>Mes outils</p>
+  <div class="grid2" id="toolsG" hidden>
+    <a class="tile tool" href="fidelite.html" id="cFid">
+      <div class="th"><span class="ic" aria-hidden="true"><svg><use href="#i-star"/></svg></span></div>
+      <h2>Fidélité</h2>
+      <span class="sub">Tampons et burgers offerts</span>
+    </a>
+    <a class="tile tool" href="prospection.html" id="cPro">
+      <div class="th"><span class="ic" aria-hidden="true"><svg><use href="#i-hand"/></svg></span></div>
+      <h2>Prospection</h2>
+      <span class="sub">Traiteur : mails et contacts</span>
+    </a>
+  </div>
+  <script>/* Fidélité et prospection : profil Julien seulement */
+  try{const j=window.Profil&&Profil.get()==="julien";document.getElementById("tools").hidden=!j;document.getElementById("toolsG").hidden=!j}catch(e){}</script>
 </div>
 
 <script>
@@ -208,10 +250,13 @@ $("#news").onclick=()=>window.Profil&&Profil.notifs.open();
 /* Au programme : aujourd'hui et demain */
 const TYPES={privatisation:"🏠",traiteur:"🚚",theme:"🎉",note:"📌"};
 const STAT={option:"En option",confirme:"Confirmé"};
+const TLAB={privatisation:"Privatisation",traiteur:"Traiteur",theme:"Soirée à thème",note:"Pense-bête"};
 function drawEv(list){
   list=(list||[]).filter(e=>e.statut!=="annule");
+  const hm=t=>String(t||"").slice(0,5).replace(":","h");
   const part=(d,l)=>{const xs=list.filter(e=>e.jour===d).sort((a,b)=>(a.heure||"99").localeCompare(b.heure||"99"));if(!xs.length)return "";
-    return `<div class="dayl">${l}</div>`+xs.map(e=>`<div class="ev ${esc(e.type)}" data-ev="${esc(e.id)}" data-j="${esc(e.jour)}"><span class="e" aria-hidden="true">${TYPES[e.type]||"📅"}</span><span class="t"><b>${esc(e.client)}</b><small>${[e.heure,e.personnes?e.personnes+" pers.":"",e.type==="traiteur"&&e.lieu?e.lieu:""].filter(Boolean).map(esc).join(" · ")||(e.type==="note"?"Pense-bête":"&nbsp;")}</small></span>${e.type!=="note"&&STAT[e.statut]?`<span class="st ${esc(e.statut)}">${STAT[e.statut]}</span>`:""}</div>`).join("")};
+    return `<div class="dayl">${l}</div>`+xs.map(e=>{const det=[TLAB[e.type]||"",e.personnes?e.personnes+" pers.":"",e.type==="traiteur"&&e.lieu?e.lieu:""].filter(Boolean).map(esc).join(" · ");
+      return `<div class="ev ${esc(e.type)}" data-ev="${esc(e.id)}" data-j="${esc(e.jour)}"><span class="e${e.heure?"":" emo"}" aria-hidden="true">${e.heure?esc(hm(e.heure)):(TYPES[e.type]||"📅")}</span><span class="t"><b>${esc(e.client)}</b><small>${det||"&nbsp;"}</small></span>${e.type!=="note"&&STAT[e.statut]?`<span class="st ${esc(e.statut)}">${STAT[e.statut]}</span>`:"<span></span>"}</div>`}).join("")};
   const html=part(TODAY,"Aujourd'hui")+part(TOMORROW,"Demain");
   $("#evs").innerHTML=html||`<div class="empty">Rien de prévu aujourd'hui ni demain.</div>`;
 }
@@ -220,15 +265,16 @@ $("#cEv").addEventListener("click",e=>{const x=e.target.closest("[data-ev]");if(
 /* À commander : total et par fournisseur (Cuisine et Bar & Salle) */
 function drawCmd(d){
   const ps=((d&&d.produits)||[]).filter(p=>p.acommander);
-  if(!ps.length){$("#cmd").innerHTML=`<div class="empty"><b>✓</b> Rien à commander pour l'instant.</div>`;return}
+  $("#cCmd").classList.toggle("cmd0",!ps.length);
+  if(!ps.length){$("#cmd").innerHTML=`<div class="big">✓</div><div class="sub">Rien à commander pour l'instant</div>`;return}
   const by={};ps.forEach(p=>by[p.fournisseur]=(by[p.fournisseur]||0)+1);
-  $("#cmd").innerHTML=`<div class="big"><b class="num">${ps.length}</b><span>article${ps.length>1?"s":""} à commander</span></div>
-    <div class="chips">${Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([f,n])=>`<span>${esc(f)}<i>${n}</i></span>`).join("")}</div>`;
+  const top=Object.entries(by).sort((a,b)=>b[1]-a[1]);
+  $("#cmd").innerHTML=`<div class="big num">${ps.length}</div><div class="sub">article${ps.length>1?"s":""} · ${top.slice(0,2).map(([f,n])=>esc(f)+" "+n).join(" · ")}${top.length>2?" · …":""}</div>`;
 }
-
 /* Hier : CA et clients ; si rien n'est noté, un gros bouton pour le faire */
 const v=(r,k)=>r&&typeof r[k]==="number"?r[k]:null;
 const add=(...a)=>{const x=a.filter(n=>n!=null);return x.length?x.reduce((s,n)=>s+n,0):null};
+const jca=r=>!r?null:v(r,"ca_jour")!=null?v(r,"ca_jour"):add(v(r,"ca_midi"),v(r,"ca_soir"));   // CA d'un jour (caisse)
 function drawHier(month){
   $("#hierT").textContent=(VEILLE?"Hier, ":"Dernier service, ")+Y.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric"});
   const r=(month||{})[YESTERDAY];
@@ -236,7 +282,8 @@ function drawHier(month){
   const cl=add(v(r,"clients_midi_sp"),v(r,"clients_midi_emp"),v(r,"clients_midi"),v(r,"clients_soir_sp"),v(r,"clients_soir_emp"),v(r,"clients_soir"));
   $("#cHier").href="chiffres.html#j="+YESTERDAY;
   if(ca==null&&cl==null){$("#hier").innerHTML=`<div class="empty">Les chiffres ${VEILLE?"d'hier":"de "+Y.toLocaleDateString("fr-FR",{weekday:"long"})} ne sont pas encore notés.</div><div class="fill">✍️ Les noter maintenant</div>`;return}
-  $("#hier").innerHTML=`<div class="kp"><div><small>Chiffre d'affaires</small><b class="num">${ca==null?"–":nf0.format(ca)+" €"}</b></div><div><small>Clients</small><b class="num">${cl==null?"–":nf0.format(cl)}</b></div></div>`;
+  const all=Object.values(month||{}).map(jca).filter(x=>x!=null&&x>0),best=ca!=null&&all.length>=3&&ca>=Math.max(...all);
+  $("#hier").innerHTML=`<div class="kp"><div><small>Chiffre d'affaires</small><b class="num">${ca==null?"–":nf0.format(ca)+" €"}</b></div><div><small>Clients</small><b class="num">${cl==null?"–":nf0.format(cl)}</b></div>${best?`<div class="best">🏆 Meilleure journée du mois !</div>`:""}</div>`;
 }
 
 /* Hygiène : Julien et Eric voient tout ; Claire et Thierry la vitrine */
@@ -249,24 +296,26 @@ function drawHyg(d){
   const anomalie=rel.some(r=>!r.ok&&!r.action);
   const ferme=OUV&&!OUV.ouvert(TODAY,MOMENT==="matin"?"midi":"soir")&&!tous;   // fermé : pas de relevé à faire
   const c=$("#cHyg");c.classList.toggle("todo",!tous&&!ferme);c.classList.toggle("fine",tous);c.classList.toggle("ferme",!!ferme);
-  $("#hygS").textContent=tous?"✓ fait":ferme?"fermé":"à faire";
-  let h=ferme?`<div class="hl"><em aria-hidden="true">😌</em><span>Fermé ${MOMENT==="matin"?"ce midi":"ce soir"} : pas de relevé à faire</span></div>`
-    :`<div class="hl"><em aria-hidden="true">${FULL?"🌡️":"🍰"}</em><span>${FULL?"Frigos et congélateurs":"Vitrine"} · ${MOMENT}</span><b class="${tous?"ok":"no"}">${tous?"✓":faits+"/"+NAPP}</b></div>`;
+  const pl=$("#hygS");pl.className="pill"+(tous?" ok":ferme?"":" todo");pl.textContent=tous?"✓ Fait":ferme?"Fermé":"À faire";
+  let h=ferme?`<div class="big" aria-hidden="true">😌</div><div class="sub">Fermé ${MOMENT==="matin"?"ce midi":"ce soir"} : pas de relevé</div>`
+    :`<div class="big num">${Math.min(faits,NAPP)}<small> / ${NAPP}</small></div><div class="sub">${FULL?"Frigos et congélateurs":"Vitrine"} · relevé du ${MOMENT}</div>`;
+  const mini=[];
   if(FULL){
     const days=f=>{const h=(d.huile||[]).filter(x=>x.friteuse===f).sort((a,b)=>String(b.le).localeCompare(String(a.le)))[0];if(!h)return "–";const a=new Date(h.le);a.setHours(0,0,0,0);const b=new Date();b.setHours(0,0,0,0);const n=Math.round((b-a)/864e5);return n===0?"neuve":n+" j"};
-    h+=`<div class="hl"><em aria-hidden="true">🍟</em><span>Huile friteuses</span><b>F1 ${days(1)} · F2 ${days(2)}</b></div>`;
+    mini.push(`<span>🍟 Huile : F1 ${days(1)} · F2 ${days(2)}</span>`);
     const lav=[["frigo_c1","Frigo cuisine 1"],["frigo_p","Frigo plonge"]].filter(([k])=>!(d.nettoyage||[]).some(n=>n.appareil===k&&Date.now()-new Date(n.le)<7*864e5));
-    h+=`<div class="hl"><em aria-hidden="true">🧽</em><span>Nettoyage des frigos</span><b class="${lav.length?"no":"ok"}">${lav.length?lav.length+" à faire":"✓"}</b></div>`;
+    if(lav.length)mini.push(`<span class="no">🧽 ${lav.length} frigo${lav.length>1?"s":""} à laver</span>`);
     const run=(d.refroid||[]).filter(x=>!x.fin);
-    if(run.length){const m=Math.max(...run.map(x=>Math.floor((Date.now()-new Date(x.debut))/60000)));h+=`<div class="hl"><em aria-hidden="true">❄️</em><span>En cellule : ${run.length} produit${run.length>1?"s":""}</span><b class="${m>120?"no":""}">${m<60?m+" min":Math.floor(m/60)+" h "+pad(m%60)}</b></div>`}
+    if(run.length){const m=Math.max(...run.map(x=>Math.floor((Date.now()-new Date(x.debut))/60000)));mini.push(`<span class="${m>120?"no":""}">❄️ En cellule : ${run.length} · ${m<60?m+" min":Math.floor(m/60)+" h "+pad(m%60)}</span>`)}
   }
-  if(anomalie)h+=`<div class="hl"><em aria-hidden="true">⚠️</em><span>Une température est trop haute</span></div>`;
+  if(anomalie)mini.push(`<span class="bad">⚠️ Température trop haute</span>`);
+  if(mini.length)h+=`<div class="mini">${mini.join("")}</div>`;
   $("#hyg").innerHTML=h;
 }
 
 /* Ouverture : aujourd'hui, modifiable d'un geste ; « Changer les jours » pour la suite et la semaine habituelle */
 let HYG=null;
-function drawOuv(){if(!OUV){$("#cOuv").hidden=true;return}
+function drawOuv(){if(!OUV){$("#ouvP").hidden=true;$("#ouvGo").hidden=true;return}
   const x=OUV.jour(TODAY);
   $("#ouvT").textContent=!x.midi&&!x.soir?"Fermé aujourd'hui":"Aujourd'hui";
   $("#ouvP").innerHTML=OUV.pills(x,`data-j="${TODAY}"`)+(x.ev?`<p class="ouvn">🎉 ${esc(x.ev)}</p>`:"");
@@ -275,11 +324,43 @@ $("#ouvP").addEventListener("click",e=>{const p=e.target.closest(".opill");if(!p
 $("#ouvGo").onclick=()=>OUV&&OUV.ouvrir();
 document.addEventListener("2b-horaires",drawOuv);
 
+/* Objectif du mois (mêmes règles que Chiffres) : CA de la caisse + prestations payées ; objectif tapé ou calculé
+   (ce qui reste à faire sur l'année ÷ mois restants) ; avance comptée en jours (lundi = ½ journée). Positif seulement. */
+const SERVW=d=>[0,.5,1,1,1,1,0][d];
+const ymk=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}`;
+const eur0=x=>nf0.format(Math.round(x))+" €";
+function drawGoal(g){const el=$("#goal");if(!g||!g.obj){el.hidden=true;return}el.hidden=false;
+  const pc=g.done/g.obj,ok=pc>=1;el.classList.toggle("win",ok);
+  const html=`<div class="row"><span>🎯 Objectif ${/^[aeiou]/.test(g.mois)?"d'":"de "}${esc(g.mois)}</span><em class="num">${Math.floor(pc*100)} %</em></div>
+    <div class="row"><b class="num">${eur0(g.done)}</b><span>/ ${eur0(g.obj)}</span></div>
+    <div class="bar" role="progressbar" aria-label="Objectif du mois" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.min(100,Math.round(pc*100))}"><i style="--w:${Math.min(100,pc*100)}%"></i></div>
+    ${ok?`<p>🏆 Objectif atteint ! Bravo l'équipe</p>`:g.diff>=50?`<p>✅ ${eur0(g.diff)} d'avance sur le rythme, bravo !</p>`:`<p class="n">Le détail dans Chiffres ›</p>`}`;
+  if(el.dataset.h===html)return;if(el.dataset.h)el.classList.add("still");el.dataset.h=html;el.innerHTML=html}   // la barre ne s'anime qu'au premier affichage
+async function loadGoal(){
+  const y=now.getFullYear(),m=now.getMonth(),mk=ymk(now),first=mk+"-01";
+  const [o,d,ev]=await Promise.all([rpc("objectifs_liste"),rpc("suivi_mois",{p_mois:first}),rpc("evenements_liste",{p_debut:first,p_fin:TODAY}).catch(()=>[])]);
+  if(!o||!+o.annuel){cache("accueil2b-goal",null);drawGoal(null);return}
+  let done=0;Object.values(d||{}).forEach(r=>{const c=jca(r);if(c!=null)done+=c});
+  (ev||[]).forEach(e=>{if((e.type==="privatisation"||e.type==="traiteur")&&e.statut!=="annule"&&e.budget!=null&&e.jour<=TODAY)done+=+e.budget});
+  if(o["ca:"+mk]!=null)done=+o["ca:"+mk];
+  const y0=m>=6?y:y-1;let before=0,left=0;
+  for(let i=0;i<12;i++){const k=ymk(new Date(y0,6+i,1));if(k>=mk){left++;continue}
+    if(o["ca:"+k]!=null){before+=+o["ca:"+k];continue}
+    try{const x=await rpc("suivi_mois",{p_mois:k+"-01"});Object.values(x||{}).forEach(r=>{const c=jca(r);if(c!=null)before+=c})}catch{}}
+  const obj=o["obj:"+mk]!=null?+o["obj:"+mk]:Math.max(0,Math.round((+o.annuel-before)/Math.max(1,left)/100)*100);
+  const n=new Date(y,m+1,0).getDate();let tot=0,gone=0;
+  for(let dd=1;dd<=n;dd++){const w=SERVW(new Date(y,m,dd).getDay());tot+=w;if(dd<now.getDate())gone+=w}
+  if(jca((d||{})[TODAY])!=null)gone+=SERVW(now.getDay());
+  const g={mk,mois:now.toLocaleDateString("fr-FR",{month:"long"}),done,obj,diff:tot?done-obj*gone/tot:0};
+  cache("accueil2b-goal",g);drawGoal(g);
+}
+
 /* Affichage immédiat avec les dernières valeurs connues, puis mise à jour */
 const MK=`${Y.getFullYear()}-${pad(Y.getMonth()+1)}-01`;
 drawEv(cache("accueil2b-ev-"+TODAY));
 HYG=cache("hyg2b-cache");drawOuv();
 drawCmd(cache("commande2b-cache"));
+{const g=cache("accueil2b-goal");if(g&&g.mk===ymk(now))drawGoal(g)}
 drawHier(cache("chiffres2b-cache-"+MK)&&cache("chiffres2b-cache-"+MK).d);
 async function load(){
   const [ev,et,mo,hy]=await Promise.allSettled([rpc("evenements_liste",{p_debut:TODAY,p_fin:TOMORROW}),rpc("etat"),rpc("suivi_mois",{p_mois:MK}),rpc("hyg_etat",{p_debut:TODAY,p_fin:TODAY})]);
@@ -289,6 +370,7 @@ async function load(){
   if(ev.status==="fulfilled"){cache("accueil2b-ev-"+TODAY,ev.value);drawEv(ev.value)}
   if(et.status==="fulfilled"&&et.value){cache("commande2b-cache",et.value);drawCmd(et.value)}
   if(mo.status==="fulfilled"){drawHier(mo.value)}
+  loadGoal().catch(e=>{lost(e)});
   if(ev.status==="rejected"&&!cache("accueil2b-ev-"+TODAY))$("#evs").innerHTML=`<div class="empty">Pas de connexion pour l'instant.</div>`;
 }
 load();
