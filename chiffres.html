@@ -65,6 +65,41 @@ header.top{display:flex;align-items:center;gap:14px}
 .today-btn{height:36px;border-radius:10px;border:1px solid var(--line);background:var(--sunken);padding:0 12px;font-size:14px;font-weight:700}
 
 /* Chiffres clés */
+/* Barre d'objectif : le mois en grand, l'année en fin */
+.goal{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px 16px 12px;position:relative;overflow:hidden}
+.goal.win{border-color:color-mix(in srgb,var(--go) 55%,var(--line));background:linear-gradient(180deg,color-mix(in srgb,var(--go) 9%,var(--surface)),var(--surface))}
+.gh{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.gh span{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.gedit{border:1px solid var(--line);background:var(--sunken);color:var(--fg);border-radius:10px;height:32px;padding:0 10px;font-size:13px;font-weight:700;flex:none}
+.gbig{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 8px;margin-top:4px}
+.gbig b{font-family:var(--display);font-size:30px;font-weight:800;line-height:1.1}
+.gbig small{font-size:15px;font-weight:700;color:var(--muted)}
+.gbig .gp{margin-left:auto;font-family:var(--display);font-size:22px;font-weight:800;color:var(--accent)}
+.goal.win .gbig .gp{color:var(--go)}
+.gbar{position:relative;height:20px;border-radius:99px;background:var(--sunken);border:1px solid var(--line);margin:10px 0 4px}
+.gbar i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:linear-gradient(90deg,#f7c04a,var(--accent));transition:width 1s cubic-bezier(.2,.8,.2,1);min-width:0}
+.gbar.ok i{background:linear-gradient(90deg,#6cc58f,var(--go))}
+.gbar .tk{position:absolute;top:-6px;bottom:-6px;width:3px;margin-left:-1.5px;border-radius:2px;background:var(--fg)}
+.gtk{position:relative;height:16px;font-size:11px;font-weight:700;color:var(--muted)}
+.gtk span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.gl{margin:4px 0 0;font-size:15px;font-weight:600;line-height:1.45}
+.gl b{font-weight:800}
+.gpill{display:inline-block;margin-top:8px;padding:5px 10px;border-radius:99px;font-size:14px;font-weight:800;background:var(--accent-soft);color:var(--fg)}
+.gpill.ok{background:color-mix(in srgb,var(--go) 16%,var(--surface));color:var(--go)}
+.gmsg{margin-top:8px;font-size:15px;font-weight:800}
+.gyr{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)}
+.gyr .gl{font-size:13px;color:var(--muted);margin:0}
+.gyr .gl b{color:var(--fg)}
+.gyr .gbar{height:9px;margin:6px 0 0}
+.gyr .gbar .tk{top:-4px;bottom:-4px;width:2px;margin-left:-1px}
+.gf{display:flex;flex-direction:column;gap:4px;font-size:14px;font-weight:700}
+.gf input{height:44px;border:1px solid var(--line);border-radius:12px;padding:0 12px;font-size:17px;font-weight:700;background:var(--sunken);color:var(--fg);width:100%}
+.gf small{font-weight:600;color:var(--muted);font-size:12px}
+.gml{display:grid;grid-template-columns:1fr 130px;gap:6px 10px;align-items:center;font-size:14px;font-weight:700}
+.gml input{height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font-size:15px;font-weight:700;background:var(--sunken);color:var(--fg);width:100%;text-align:right}
+.gcf{position:fixed;top:-12px;width:9px;height:14px;border-radius:2px;z-index:60;pointer-events:none;animation:gcf linear forwards}
+@keyframes gcf{to{transform:translateY(105vh) rotate(720deg);opacity:.7}}
+@media (prefers-reduced-motion:reduce){.gbar i{transition:none}.gcf{display:none}}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
 @media (max-width:640px){.kpis{grid-template-columns:repeat(2,1fr)}}
 .kpi{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
@@ -430,6 +465,7 @@ html.vue-plats #vPlats{display:block} html.vue-plats #vMois{display:none}
     <button class="arrow" id="mNext" aria-label="Mois suivant"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
   </div>
 
+  <section class="goal" id="goal" aria-label="Objectif du mois" hidden></section>
   <div class="kpis" id="kpis"></div>
   <section class="day" aria-label="Saisie du jour">
     <div class="dayhead">
@@ -632,7 +668,7 @@ async function load(){
     if(mk!==key(S.y,S.m,1))return;
     S.data=d||{};S.prev=dp||{};S.ly=dl||{};if(ev&&!CAI.size)S.evs=ev;try{localStorage.setItem(CC+mk,JSON.stringify({d:S.data,p:S.prev,l:S.ly,e:S.evs}))}catch{}
     DIRTY.forEach((v,id)=>{const [dk,k]=id.split("|");if(v!=="…"&&dk.slice(0,7)===mk.slice(0,7)){S.data[dk]={...(S.data[dk]||{})};if(v==null)delete S.data[dk][k];else S.data[dk][k]=v}});
-    S.loaded=mk;if(!S.pending)setSync("À jour","ok");render();loadCorr(mk);
+    S.loaded=mk;if(!S.pending)setSync("À jour","ok");render();loadCorr(mk);loadObj();
   }catch(e){if(lost(e))return;setSync("Hors ligne","err");render()}
 }
 /* Historique des corrections : chaque valeur notée est gardée dans la base, une correction n'efface jamais l'original */
@@ -728,10 +764,9 @@ function renderTotals(){
   $("#dayTot").innerHTML=pj+`<span>Clients <b class="num">${t.clients==null?"–":int(t.clients)}</b>${t.emp?` <small>(dont ${int(t.emp)} à emporter)</small>`:""}</span><span>CA de la journée <b class="num">${t.ca==null?"–":eur(t.ca)}</b></span><span>Plats du jour <b class="num">${t.plats==null?"–":int(t.plats)}</b></span>${t.carte!=null?`<span>Plats de la carte <b class="num">${int(t.carte)}</b></span>`:""}<span>Burgers <b class="num">${t.bg==null?"–":int(t.bg)}</b>${t.burgers?` <small>(dont ${int(t.burgers)} du mois)</small>`:""}</span>`;
   const nc=(S.corr||{})[key(S.y,S.m,S.d)];$("#hBtn").hidden=!nc;$("#hBtn").textContent=`🕘 ${nc} correction${nc>1?"s":""} ce jour-là : voir l'historique`;
   const s=monthSums();
-  const cp=compare();
-  const kp=[["CA du mois",s.total==null?"–":eur(s.total),[s.presta?`dont ${eur(s.presta)} de prestations`:"",cp.ca].filter(Boolean).join("<br>")],["Clients du mois",s.clients==null?"–":int(s.clients),[s.emp?`dont ${int(s.emp)} à emporter`:"",cp.cl].filter(Boolean).join("<br>")],["Ticket moyen",s.ca&&s.clients?eur(Math.round(s.ca/s.clients*100)/100):"–",""],["Burgers vendus",s.bg==null?"–":int(s.bg),s.burgers?`dont ${int(s.burgers)} burger du mois`:""]];
+  const kp=[["CA du mois",s.total==null?"–":eur(s.total),s.presta?`dont ${eur(s.presta)} de prestations`:""],["Clients du mois",s.clients==null?"–":int(s.clients),s.emp?`dont ${int(s.emp)} à emporter`:""],["Ticket moyen",s.ca&&s.clients?eur(Math.round(s.ca/s.clients*100)/100):"–",""],["Burgers vendus",s.bg==null?"–":int(s.bg),s.burgers?`dont ${int(s.burgers)} burger du mois`:""]];
   $("#kpis").innerHTML=kp.map(([a,b,c])=>`<div class="kpi"><small>${a}</small><b class="num">${b}</b>${c?`<em>${c}</em>`:""}</div>`).join("");
-  $("#tbl").innerHTML=tableHTML(true);$("#cmp").innerHTML=compactHTML();drawChart();renderRep();
+  $("#tbl").innerHTML=tableHTML(true);$("#cmp").innerHTML=compactHTML();drawChart();renderRep();renderGoal(s.total);
 }
 /* Le CA du mois en détail + la liste des prestations (case « En caisse » pour ne pas oublier de les taper dans la caisse) */
 function prestaItem(e){
@@ -872,6 +907,93 @@ async function pvSave(dk,c){
   renderTotals();
   if(err){toast("Plat hors carte pas enregistré : vérifie la connexion");load()}else toast("Enregistré ✓");
 }
+/* ===== Objectif : barre du mois + barre de l'année (exercice de juillet à juin) =====
+   Base : table objectifs (cle → valeur) : « annuel », « obj:AAAA-MM » (objectif d'un mois, sinon calculé),
+   « ca:AAAA-MM » (CA d'un mois passé tapé d'après la caisse ; sinon calculé depuis les jours notés). */
+const GK="chiffres2b-objectifs";
+let OBJ=(()=>{try{return JSON.parse(localStorage.getItem(GK)||"{}")}catch{return {}}})();
+const MCA={};   // CA calculé par l'appli pour les mois passés sans chiffre tapé
+const ym=(y,m)=>{const d=new Date(y,m,1);return d.getFullYear()+"-"+pad(d.getMonth()+1)};
+const exStart=(y,m)=>m>=6?y:y-1;                              // l'exercice commence en juillet
+const SERV=d=>[0,1,2,2,2,2,0][d];                            // lundi midi ; mardi → vendredi midi et soir
+const servIn=(y,m,from,to)=>{let n=0;for(let d=from;d<=to;d++)n+=SERV(new Date(y,m,d).getDay());return n};
+const r100=v=>Math.round(v/100)*100;
+const mLong=(y,m)=>new Date(y,m,1).toLocaleDateString("fr-FR",{month:"long"});
+async function loadObj(){
+  try{const o=await rpc("objectifs_liste");if(o&&typeof o==="object"){OBJ=o;try{localStorage.setItem(GK,JSON.stringify(o))}catch{}}}catch(e){if(lost(e))return}
+  const y0=exStart(S.y,S.m),cur=ym(S.y,S.m);
+  for(let i=0;i<12;i++){const k=ym(y0,6+i);if(k>=cur)break;if(OBJ["ca:"+k]!=null||MCA[k]!=null)continue;
+    try{const d=await rpc("suivi_mois",{p_mois:k+"-01"});let t=null;Object.values(d||{}).forEach(r=>{t=add(t,jourCA(r))});MCA[k]=t||0}catch{MCA[k]=0}}
+  renderGoal(monthSums().total);
+}
+const caOf=k=>OBJ["ca:"+k]!=null?+OBJ["ca:"+k]:(MCA[k]??0);
+function goalCalc(live){
+  const y0=exStart(S.y,S.m),cur=ym(S.y,S.m),annuel=+OBJ.annuel||0;
+  let before=0,left=0;for(let i=0;i<12;i++){const k=ym(y0,6+i);if(k<cur)before+=caOf(k);else left++}
+  const done=OBJ["ca:"+cur]!=null?+OBJ["ca:"+cur]:(live||0);
+  const auto=annuel&&left?Math.max(0,r100((annuel-before)/left)):0;
+  const obj=OBJ["obj:"+cur]!=null?+OBJ["obj:"+cur]:auto;
+  return {y0,cur,annuel,before,done,obj,auto,yDone:before+done};
+}
+function renderGoal(live){
+  const el=$("#goal");const g=goalCalc(live);if(!g.obj){el.hidden=true;return}el.hidden=false;
+  const n=daysIn(S.y,S.m),isCur=S.y===now.getFullYear()&&S.m===now.getMonth(),past=ym(S.y,S.m)<ym(now.getFullYear(),now.getMonth());
+  const tot=servIn(S.y,S.m,1,n);
+  let gone=past?tot:isCur?servIn(S.y,S.m,1,now.getDate()-1)+(jourCA(S.data[TODAY]||{})!=null?SERV(now.getDay()):0):0;
+  const pc=g.done/g.obj,w=Math.min(100,pc*100),exp=tot?g.obj*gone/tot:0,diff=g.done-exp,ok=g.done>=g.obj;
+  const rest=Math.max(0,g.obj-g.done),sLeft=tot-gone;
+  const lyK=ym(S.y-1,S.m),ly=OBJ["ca:"+lyK]!=null?+OBJ["ca:"+lyK]:null,mo=mLong(S.y,S.m);
+  let lines="";
+  if(ok)lines+=`<p class="gl">Objectif dépassé de <b>${eur(Math.round(g.done-g.obj))}</b>.</p>`;
+  else if(past)lines+=`<p class="gl">Il a manqué <b>${eur(Math.round(rest))}</b>.</p>`;
+  else lines+=`<p class="gl">Il reste <b>${eur(Math.round(rest))}</b>${sLeft?` → environ <b>${eur(r10(rest/sLeft))}</b> par service <small style="color:var(--muted)">(${sLeft} service${sLeft>1?"s":""})</small>`:""}</p>`;
+  const pill=isCur&&gone&&!ok?`<span class="gpill${diff>=0?" ok":""}">${diff>=0?"✅ "+eur(Math.round(diff))+" d'avance":"⏳ "+eur(Math.round(-diff))+" de retard"} sur le rythme</span>`:"";
+  if(ly!=null)lines+=`<p class="gl">${g.done>=ly?`🏁 Déjà mieux que ${mo} ${S.y-1} (${eur(ly)}) !`:`🏁 ${cap(mo)} ${S.y-1} : ${eur(ly)} · encore <b>${eur(Math.round(ly-g.done))}</b> pour faire mieux`}</p>`;
+  const msg=ok?"🏆 Objectif atteint ! Bravo à toute l'équipe":!isCur?"":pc>=.75?"🔥 La dernière ligne droite !":pc>=.5?"🎉 La moitié est faite !":isCur&&pc>0?"💪 On y va, service après service":"";
+  // année
+  const yObj=g.annuel,yPc=yObj?g.yDone/yObj:0,y0=g.y0;
+  const t0=new Date(y0,6,1),t1=new Date(y0+1,6,1),tPc=Math.min(1,Math.max(0,(now-t0)/(t1-t0)));
+  const yTick=ym(S.y,S.m)===ym(now.getFullYear(),now.getMonth());
+  el.className="goal"+(ok?" win":"");
+  el.innerHTML=`<div class="gh"><span>🎯 Objectif ${/^[aeiou]/.test(mo)?"d'":"de "}${esc(mo)}</span><button class="gedit" type="button" id="gEdit">✏️ Modifier</button></div>
+    <div class="gbig"><b class="num">${eur(Math.round(g.done))}</b><small>sur ${eur(g.obj)}</small><span class="gp num">${Math.floor(pc*100)} %</span></div>
+    <div class="gbar${ok?" ok":""}" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(w)}"><i style="width:${w}%"></i>${isCur&&!ok&&gone<tot?`<span class="tk" style="left:${Math.min(100,exp/g.obj*100)}%"></span>`:""}</div>
+    ${isCur&&!ok&&gone<tot?`<div class="gtk"><span style="left:${Math.min(92,Math.max(8,exp/g.obj*100))}%">▲ où on devrait être</span></div>`:""}
+    ${lines}${pill}${msg?`<div class="gmsg">${msg}</div>`:""}
+    ${yObj?`<div class="gyr"><p class="gl">📅 Année ${y0}-${String(y0+1).slice(2)} (juillet → juin) : <b class="num">${eur(Math.round(g.yDone))}</b> sur ${eur(yObj)} · <b>${Math.floor(yPc*100)} %</b></p>
+      <div class="gbar${yPc>=1?" ok":""}"><i style="width:${Math.min(100,yPc*100)}%"></i>${yTick&&yPc<1?`<span class="tk" style="left:${tPc*100}%" title="Où on devrait être aujourd'hui"></span>`:""}</div></div>`:""}`;
+  if(ok&&isCur){const k="chiffres2b-goal-"+g.cur;try{if(!localStorage.getItem(k)){localStorage.setItem(k,"1");confetti()}}catch{}}
+}
+const r10=v=>Math.ceil(v/10)*10;
+function confetti(){const C=["#f2a516","#2f7d4f","#c2410c","#7c3aed","#0e7490","#e8705f"];
+  for(let i=0;i<70;i++){const c=document.createElement("i");c.className="gcf";c.style.left=Math.random()*100+"vw";c.style.background=C[i%C.length];
+    c.style.animationDuration=2+Math.random()*2+"s";c.style.animationDelay=Math.random()*.6+"s";document.body.appendChild(c);setTimeout(()=>c.remove(),5000)}}
+const pNum=v=>{v=String(v||"").replace(/[\s €]/g,"").replace(",",".");if(v==="")return null;const x=+v;return isFinite(x)&&x>=0?x:NaN};
+function goalEdit(){
+  const g=goalCalc(monthSums().total),mo=mLong(S.y,S.m),y0=g.y0;
+  const past=[];for(let i=0;i<12;i++){const k=ym(y0,6+i);if(k>=g.cur)break;past.push(k)}
+  const lyK=ym(S.y-1,S.m);
+  const f=(k,v)=>v==null?"":String(v).replace(".",",");
+  const c=document.createElement("div");c.className="modal";
+  c.innerHTML=`<div class="box" style="max-height:88vh;overflow:auto"><b style="font-size:19px">🎯 Objectifs</b>
+    <label class="gf">Objectif de l'année (juillet → juin)<input inputmode="decimal" data-k="annuel" value="${f(0,OBJ.annuel)}"><small>Au moins autant que l'an dernier.</small></label>
+    <label class="gf">Objectif ${/^[aeiou]/.test(mo)?"d'":"de "}${esc(mo)}<input inputmode="decimal" data-k="obj:${g.cur}" value="${f(0,OBJ["obj:"+g.cur])}" placeholder="Automatique : ${esc(eur(g.auto))}"><small>Laisse vide : l'appli répartit ce qui reste à faire sur les mois restants.</small></label>
+    <label class="gf">${esc(cap(mo))} ${S.y-1} (pour comparer)<input inputmode="decimal" data-k="ca:${lyK}" value="${f(0,OBJ["ca:"+lyK])}" placeholder="Pas connu"></label>
+    ${past.length?`<details><summary style="font-weight:800;font-size:14px;cursor:pointer;padding:6px 0">CA des mois passés (chiffre de la caisse)</summary><div class="gml">${past.map(k=>{const [yy,mm]=k.split("-");return `<span>${esc(cap(mLong(+yy,+mm-1)))} ${yy}</span><input inputmode="decimal" data-k="ca:${k}" value="${f(0,OBJ["ca:"+k])}" placeholder="${MCA[k]!=null?esc(nf0.format(Math.round(MCA[k]))):""}">`}).join("")}</div>
+      <small style="color:var(--muted);font-size:12px;display:block;margin-top:6px">Vide = calculé avec les jours notés dans l'appli.</small></details>`:""}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn soft" type="button" data-n>Annuler</button><button class="btn" type="button" data-y>Enregistrer</button></div></div>`;
+  c.addEventListener("click",async e=>{if(e.target===c||e.target.closest("[data-n]")){c.remove();return}
+    if(!e.target.closest("[data-y]"))return;
+    const ch=[];for(const i of c.querySelectorAll("input[data-k]")){const v=pNum(i.value);if(Number.isNaN(v)){i.focus();toast("Ce montant n'est pas un nombre");return}
+      const o=OBJ[i.dataset.k]==null?null:+OBJ[i.dataset.k];if(v!==o)ch.push([i.dataset.k,v])}
+    if(ch.some(([k,v])=>k==="annuel"&&v==null)){toast("Il faut un objectif pour l'année");return}
+    c.remove();if(!ch.length)return;
+    try{for(const [k,v] of ch)OBJ=await rpc("objectif_maj",{p_cle:k,p_valeur:v,p_par:who()});try{localStorage.setItem(GK,JSON.stringify(OBJ))}catch{}toast("Enregistré ✓")}
+    catch(e){if(lost(e))return;toast("Pas enregistré : vérifie la connexion")}
+    renderGoal(monthSums().total)});
+  document.body.appendChild(c);
+}
+document.addEventListener("click",e=>{if(e.target.closest("#gEdit"))goalEdit()});
 function libSet(dk,list){S.data[dk]={...(S.data[dk]||{})};if(list&&list.length)S.data[dk].libres=list;else delete S.data[dk].libres;renderTotals()}
 
 function render(){
