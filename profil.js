@@ -34,6 +34,18 @@
   const set=v=>{try{localStorage.setItem(KEY,v)}catch{}};
 
   const css=`
+  /* ===== Style commun de toutes les pages de l'équipe (refonte du 2026-11-09, sur le modèle de la page Aujourd'hui) =====
+     Couleurs plus chaudes, ombres douces, en-têtes plus compacts. Injecté après le style de chaque page : il gagne. */
+  :root{--bg:#f5f2ea;--surface:#fffdf8;--sunken:#f1ece1;--line:#e6dfd0;--fg:#1f1b14;--muted:#71695a;--accent-soft:#fcefd2;
+    --sh2b:0 1px 0 rgba(60,40,0,.04),0 8px 22px -14px rgba(60,40,0,.25)}
+  @media (prefers-color-scheme:dark){:root{--bg:#13110d;--surface:#1d1a15;--sunken:#17150f;--line:#302b22;--fg:#f4efe3;--muted:#a59d8c;--accent-soft:#3a2e12;
+    --sh2b:0 1px 0 rgba(0,0,0,.3),0 10px 24px -14px rgba(0,0,0,.7)}}
+  body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+  header.top{gap:12px;align-items:center}
+  header.top .logo{display:none}   /* comme sur Aujourd'hui : le titre seul, plus d'espace pour le contenu */
+  header.top{margin-top:6px}
+  header.top h1,header.head h1{font-size:32px;letter-spacing:-.8px;line-height:1.05}
+  header.top .titles p,header.top .titles .date,header.top .ti p{font-size:14px;margin-top:4px}
   .pbar{height:58px;line-height:1.2;font-size:16px;box-sizing:border-box;display:flex;align-items:center;gap:10px;max-width:680px;margin:0 auto 10px;padding:6px 6px 6px 8px;background:var(--surface,#fff);border:1px solid var(--line,#e6e1d5);border-radius:16px}
   .pbar .who{display:flex;align-items:center;gap:10px;flex:1;min-width:0;font-weight:800;font-size:17px}
   .pbar .who small{display:block;font-size:12px;font-weight:600;color:var(--muted,#6f695d);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -85,7 +97,7 @@
   .btn.danger{box-shadow:0 6px 14px -8px var(--danger,#c23a2b)}
   .apps a[aria-current="page"]{background-image:linear-gradient(180deg,rgba(255,255,255,.25),rgba(255,255,255,0));box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 4px 12px -6px color-mix(in srgb,var(--accent,#f2a516) 90%,#000)}
   .tabs button[aria-selected="true"],.vue button[aria-selected="true"]{box-shadow:0 4px 12px -6px rgba(0,0,0,.45)}
-  .pbar,.apps,.tabs,.vue,.month,.sup,.panel,.pcard,.tblcard,.kpi,.chartbox,section.day,.ln,.pempty{box-shadow:0 1px 2px rgba(60,40,10,.04),0 6px 18px -10px rgba(60,40,10,.14)}
+  .pbar,.apps,.tabs,.vue,.month,.sup,.panel,.pcard,.tblcard,.kpi,.chartbox,section.day,.ln,.pempty,.qres,.add,.cmd-sup,.mode,.cal,details.card,.pv{box-shadow:var(--sh2b)}
   .pbar svg{border-radius:50%;box-shadow:0 0 0 2px var(--surface,#fff),0 0 0 4px color-mix(in srgb,var(--accent,#f2a516) 55%,transparent)}
   .sheet:not([hidden]),.modal{animation:fIn .18s ease-out}
   .sheet:not([hidden])>.box,.sheet:not([hidden])>.sh,.modal>.box{animation:upIn .28s cubic-bezier(.2,.85,.25,1)}

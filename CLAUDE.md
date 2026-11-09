@@ -86,3 +86,4 @@ But : décrocher des contrats réguliers (entreprises, CSE, associations, mairie
   Réservées à la fonction Edge (clé de service) : `_prosp_tout`, `_prosp_noter_envoi`, `_prosp_reglage_srv`.
 
 - Police : le lien Google Fonts se charge avec `onload="this.media='all'"` (avant le 2026-11-09 il y avait `\'all\'`, une erreur qui empêchait la police de se charger sur les téléphones).
+- **Style commun (2026-11-09)** : en tête du CSS injecté par `profil.js` (couleurs crème/sombre, ombre `--sh2b`, en-têtes sans logo avec titre seul, ombres sur les blocs principaux). Il est injecté après le style de chaque page, donc il gagne : changer une couleur générale = la changer là. Onglet choisi = pastille sombre (`var(--fg)`) partout. Objectif de Chiffres = carte sombre comme sur Aujourd'hui. `carte.html` (carte client) garde son propre style.
