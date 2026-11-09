@@ -6,7 +6,8 @@
 //   (annuaire compris) doit avoir un serveur de mail qui existe (MX). Le téléphone du standard est aussi relevé.
 // - « photo » : range une photo de dînatoire dans le dossier public « prospection ».
 // - « lot » : envoie par Brevo la file du jour (même règles que queue() et buildMail() de prospection.html).
-//   Lancée du lundi au vendredi par la tâche cron « prospection-envoi » (en-tête x-cle = secrets.cron).
+//   Lancée toutes les 20 minutes de 8 h à 15 h, du lundi au vendredi, par la tâche cron « prospection-envoi »
+//   (en-tête x-cle = secrets.cron) : un mail par passage, au plus « lots_par_jour » par jour, relances comprises.
 // - « test » : envoie un exemple de mail à l'adresse du restaurant seulement, sans rien noter.
 // - ?d=<jeton> : lien de désinscription en un clic (en-tête List-Unsubscribe), sans code.
 // Accès : code d'équipe vérifié par public._ok, comme les fonctions RPC.
@@ -284,7 +285,11 @@ async function lot() {
   const cle = await secret("brevo");
   const S = await rpcSR("_prosp_tout");
   if (!cle || S.reglages.envoi_auto !== "oui") return { envoyes: 0, raison: "envoi automatique arrêté" };
-  const jour = jourParis(), q = file(S, jour), erreurs: string[] = [];
+  const jour = jourParis(), lotJour = +S.reglages.lots_par_jour || 20;
+  // Un seul mail par passage : la tâche cron passe toutes les 20 minutes de 8 h à 15 h, les envois sont étalés sur la journée
+  const dejaJour = S.envois.filter((e: any) => jourParis(new Date(e.d)) === jour).length;
+  if (dejaJour >= lotJour) return { envoyes: 0, raison: "quota du jour atteint" };
+  const q = file(S, jour).slice(0, 1), erreurs: string[] = [];
   let n = 0;
   for (const { p, m } of q) {
     try {

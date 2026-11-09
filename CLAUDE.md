@@ -57,7 +57,7 @@ But : décrocher des contrats réguliers (entreprises, CSE, associations, mairie
   « Chercher les adresses » reprend aussi, une fois, les fiches notées « Non trouvée » par l'ancienne méthode (nouvelle note : « Pas trouvée »).
 - **Écran** : simplifié le 2026-11-04 (Julien trouvait l'outil trop complexe) : onglets À envoyer (un mail à la fois) / Prospects / Bilan / Réglages.
 - **Envoi automatique (Brevo, depuis le 2026-11-05)** : la fonction Edge `prospection` (action `lot`) envoie la file du jour par l'API
-  transactionnelle Brevo, du lundi au vendredi à 7 h UTC (tâche cron `prospection-envoi`, pg_cron + pg_net, en-tête `x-cle` = `secrets.cron`).
+  transactionnelle Brevo, un mail par passage, toutes les 20 min de 7 h à 13 h 40 UTC du lundi au vendredi, au plus `lots_par_jour` par jour (tâche cron `prospection-envoi`, pg_cron + pg_net, en-tête `x-cle` = `secrets.cron`).
   Même règles que `queue()` et `buildMail()` de la page (copiées dans la fonction : **modifier les deux ensemble**) : `lots_par_jour` premiers
   contacts (20) + les relances J+7 puis J+15, arrêtées dès « A répondu », un statut avancé ou une désinscription. Expéditeur
   « L'équipe du Double B » <traiteur@doubleb-folschviller.fr> (domaine du site chez o2switch, authentifié dans Brevo ; traiteur@ est redirigé

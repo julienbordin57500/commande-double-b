@@ -386,7 +386,7 @@ function queue(jour=TODAY){
   const seen=new Set();return [...rel,...nv,...faits].filter(x=>!seen.has(x.p.id)&&seen.add(x.p.id));
 }
 /* ---------- Envoi automatique (Brevo) ----------
-   La fonction Edge « prospection » envoie la file chaque matin du lundi au vendredi à 7 h UTC (tâche cron « prospection-envoi »).
+   La fonction Edge « prospection » envoie un mail toutes les 20 minutes de 8 h à 15 h, du lundi au vendredi (tâche cron « prospection-envoi »).
    Ici on montre seulement ce qui partira au prochain passage et ce qui est déjà parti. */
 const auto=()=>S.brevo&&S.reglages.envoi_auto==="oui";
 function prochainEnvoi(){const d=new Date();
@@ -404,7 +404,7 @@ function renderAuto(el){
   let corps="";
   if(vue==="avenir"){
     const jn=new Date(n.jour+"T12:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
-    corps=`<div class="jour">${esc(maj(jn))}<small>vers 8 h · ${q.length} mail${pl(q.length)}</small></div>
+    corps=`<div class="jour">${esc(maj(jn))}<small>de 8 h à 15 h · ${q.length} mail${pl(q.length)}</small></div>
       <div class="list" style="margin-top:0">${q.length?q.map(x=>ligne(x.p,x.m)).join(""):`<div class="empty">Rien de prévu : ${vivants().some(p=>p.email&&p.statut==="a_contacter")?"le lot du jour est déjà parti.":"plus de prospect à contacter avec une adresse mail. Va dans <b>Prospects › Chercher les adresses</b>."}</div>`}</div>`;
   }else{
     // Regroupés par jour, le plus récent en haut
@@ -413,7 +413,7 @@ function renderAuto(el){
       const t=j===TODAY?"Aujourd'hui":new Date(j+"T12:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
       return `<div class="jour">${esc(maj(t))}<small>${l.length} mail${pl(l.length)}</small></div><div class="list" style="margin-top:0">${l.map(e=>ligne(nomP(e.p),e.m)).join("")}</div>`}).join(""):`<div class="empty">Pas encore d'envoi automatique.</div>`;
   }
-  el.innerHTML=`<div class="auto"><span class="ic">✉️</span><div><b>Envoi automatique chaque matin</b><small>Du lundi au vendredi vers 8 h, avec la plaquette jointe. Les réponses arrivent dans Outlook.</small></div></div>
+  el.innerHTML=`<div class="auto"><span class="ic">✉️</span><div><b>Envoi automatique chaque matin</b><small>Du lundi au vendredi, un mail toutes les 20 minutes de 8 h à 15 h, avec la plaquette jointe. Les réponses arrivent dans Outlook.</small></div></div>
     ${dern.erreurs&&dern.erreurs.length?`<div class="alerte"><b>Dernier envoi (${fdate(dern.le)}) : ${dern.erreurs.length} mail${pl(dern.erreurs.length)} pas parti${pl(dern.erreurs.length)}.</b><br>${dern.erreurs.slice(0,3).map(esc).join("<br>")}</div>`:""}
     <div class="seg" role="group" aria-label="Mails"><button type="button" data-vue="avenir" aria-pressed="${vue==="avenir"}">À partir · ${q.length}</button><button type="button" data-vue="partis" aria-pressed="${vue==="partis"}">Déjà partis · ${partis.length}</button></div>
     ${corps}
