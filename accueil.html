@@ -172,23 +172,23 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
     <a class="tile hyg" href="hygiene.html" id="cHyg">
       <div class="th"><span class="ic" aria-hidden="true"><svg><use href="#i-thermo"/></svg></span><span class="pill" id="hygS"></span></div>
       <h2>Hygiène</h2>
-      <div id="hyg"><div class="sub">Chargement…</div></div>
+      <div id="hyg"><span class="sk big"></span><span class="sk" style="width:80%"></span></div>
     </a>
     <a class="tile" href="./#acommander" id="cCmd">
       <div class="th"><span class="ic" aria-hidden="true"><svg><use href="#i-cart"/></svg></span></div>
       <h2>À commander</h2>
-      <div id="cmd"><div class="sub">Chargement…</div></div>
+      <div id="cmd"><span class="sk big"></span><span class="sk" style="width:70%"></span></div>
     </a>
   </div>
 
   <a class="card" href="evenements.html" id="cEv">
     <div class="ch"><span class="ic" aria-hidden="true"><svg><use href="#i-cal"/></svg></span><h2>Au programme</h2><span class="go" aria-hidden="true">›</span></div>
-    <div id="evs"><div class="empty">Chargement…</div></div>
+    <div id="evs" style="padding:0 14px 10px"><span class="sk" style="width:85%"></span><span class="sk" style="width:60%"></span></div>
   </a>
 
   <a class="card" href="chiffres.html" id="cHier">
     <div class="ch"><span class="ic" aria-hidden="true"><svg><use href="#i-chart"/></svg></span><h2 id="hierT">Hier</h2><span class="go" aria-hidden="true">›</span></div>
-    <div id="hier"><div class="empty">Chargement…</div></div>
+    <div id="hier" style="padding:0 14px 10px"><span class="sk big" style="width:55%"></span></div>
   </a>
 
   <p class="sect" id="tools" hidden>Mes outils</p>
@@ -258,6 +258,7 @@ function drawEv(list){
     return `<div class="dayl">${l}</div>`+xs.map(e=>{const det=[TLAB[e.type]||"",e.personnes?e.personnes+" pers.":"",e.type==="traiteur"&&e.lieu?e.lieu:""].filter(Boolean).map(esc).join(" · ");
       return `<div class="ev ${esc(e.type)}" data-ev="${esc(e.id)}" data-j="${esc(e.jour)}"><span class="e${e.heure?"":" emo"}" aria-hidden="true">${e.heure?esc(hm(e.heure)):(TYPES[e.type]||"📅")}</span><span class="t"><b>${esc(e.client)}</b><small>${det||"&nbsp;"}</small></span>${e.type!=="note"&&STAT[e.statut]?`<span class="st ${esc(e.statut)}">${STAT[e.statut]}</span>`:"<span></span>"}</div>`}).join("")};
   const html=part(TODAY,"Aujourd'hui")+part(TOMORROW,"Demain");
+  $("#evs").style.padding="";
   $("#evs").innerHTML=html||`<div class="empty">Rien de prévu aujourd'hui ni demain.</div>`;
 }
 $("#cEv").addEventListener("click",e=>{const x=e.target.closest("[data-ev]");if(!x)return;e.preventDefault();location.href=`evenements.html#ev=${encodeURIComponent(x.dataset.ev)}&j=${x.dataset.j}`});
@@ -276,6 +277,7 @@ const v=(r,k)=>r&&typeof r[k]==="number"?r[k]:null;
 const add=(...a)=>{const x=a.filter(n=>n!=null);return x.length?x.reduce((s,n)=>s+n,0):null};
 const jca=r=>!r?null:v(r,"ca_jour")!=null?v(r,"ca_jour"):add(v(r,"ca_midi"),v(r,"ca_soir"));   // CA d'un jour (caisse)
 function drawHier(month){
+  $("#hier").style.padding="";
   $("#hierT").textContent=(VEILLE?"Hier, ":"Dernier service, ")+Y.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric"});
   const r=(month||{})[YESTERDAY];
   const ca=v(r,"ca_jour")!=null?v(r,"ca_jour"):add(v(r,"ca_midi"),v(r,"ca_soir"));   // total de la caisse s'il est noté
@@ -335,7 +337,8 @@ function drawGoal(g){const el=$("#goal");if(!g||!g.obj){el.hidden=true;return}el
     <div class="row"><b class="num">${eur0(g.done)}</b><span>/ ${eur0(g.obj)}</span></div>
     <div class="bar" role="progressbar" aria-label="Objectif du mois" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.min(100,Math.round(pc*100))}"><i style="--w:${Math.min(100,pc*100)}%"></i></div>
     ${ok?`<p>🏆 Objectif atteint ! Bravo l'équipe</p>`:g.diff>=50?`<p>✅ ${eur0(g.diff)} d'avance sur le rythme, bravo !</p>`:`<p class="n">Le détail dans Chiffres ›</p>`}`;
-  if(el.dataset.h===html)return;if(el.dataset.h)el.classList.add("still");el.dataset.h=html;el.innerHTML=html}   // la barre ne s'anime qu'au premier affichage
+  if(el.dataset.h===html)return;const first=!el.dataset.h;if(!first)el.classList.add("still");el.dataset.h=html;el.innerHTML=html;
+  if(first&&window.countUp)countUp(el.querySelector(".row b"),g.done,eur0)}   // la barre ne s'anime qu'au premier affichage
 async function loadGoal(){
   const y=now.getFullYear(),m=now.getMonth(),mk=ymk(now),first=mk+"-01";
   const [o,d,ev]=await Promise.all([rpc("objectifs_liste"),rpc("suivi_mois",{p_mois:first}),rpc("evenements_liste",{p_debut:first,p_fin:TODAY}).catch(()=>[])]);

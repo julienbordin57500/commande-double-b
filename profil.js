@@ -41,6 +41,10 @@
   @media (prefers-color-scheme:dark){:root{--bg:#13110d;--surface:#1d1a15;--sunken:#17150f;--line:#302b22;--fg:#f4efe3;--muted:#a59d8c;--accent-soft:#3a2e12;
     --sh2b:0 1px 0 rgba(0,0,0,.3),0 10px 24px -14px rgba(0,0,0,.7)}}
   body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+  .sk{display:block;height:14px;border-radius:7px;margin:6px 0;background:linear-gradient(90deg,var(--sunken),var(--line),var(--sunken));background-size:200% 100%;animation:sk2b 1.3s linear infinite}
+  .sk.big{height:30px;width:40%;border-radius:9px}
+  @keyframes sk2b{to{background-position:-200% 0}}
+  @media (prefers-reduced-motion:reduce){.sk{animation:none}}
   header.top{gap:12px;align-items:center}
   header.top .logo{display:none}   /* comme sur Aujourd'hui : le titre seul, plus d'espace pour le contenu */
   header.top{margin-top:6px}
@@ -296,6 +300,7 @@
     text(n){
       if(n.quoi==="temp")return {ic:"🌡️",t:`Températures du ${n.ev_type==="soir"?"soir":"matin"} pas encore relevées`,det:n.client==="vitrine"?"Vitrine salle":`Frigos et congélateurs : ${n.client} faits`};
       if(n.quoi==="nettoyage")return {ic:"🧽",t:"Nettoyage des frigos à faire cette semaine",det:n.client||""};
+      if(n.quoi==="bilan")return {ic:"📊",t:"Ta semaine au Double B",det:n.client||""};
       const T={privatisation:["🏠","privatisation"],traiteur:["🚚","traiteur"],theme:["🎉","soirée à thème"],note:["📌","pense-bête"]}[n.ev_type]||["📅","événement"];
       const today=new Date();today.setHours(0,0,0,0);const d=n.jour?new Date(n.jour+"T00:00"):null;const diff=d?Math.round((d-today)/864e5):null;
       const quand=diff===0?"aujourd'hui":diff===1?"demain":d?d.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"}):"";
@@ -327,6 +332,7 @@
         const dl=e.target.closest("[data-del]");if(dl){this.erase(dl.dataset.del);return}
         const b=e.target.closest("[data-n]");if(!b)return;const n=this.list.find(x=>x.id===b.dataset.n);if(!n)return;
         if(!n.lu)this.read([n.id]);close();
+        if(n.quoi==="bilan"){if(/chiffres\.html$/.test(location.pathname)&&window.semOpen)semOpen(new Date(n.jour+"T12:00"));else location.href="chiffres.html#semaine";return}
         if(n.quoi==="temp"||n.quoi==="nettoyage"){location.href="hygiene.html#t=temp"+(n.quoi==="nettoyage"?"&n=1":"");return}
         const h=`ev=${encodeURIComponent(n.ev||"")}&j=${encodeURIComponent(n.jour||"")}`;
         if(/evenements\.html$/.test(location.pathname))location.hash=h;else location.href="evenements.html#"+h});
@@ -508,7 +514,7 @@
   const Push={
     PUB:"BPZ56UYav4HDeqBDTsh1PD31OfV9qnB80yDXn1kQaMj0Nt06VCv8ZApQ6DcSjKpSGzg4Leen3YF8vpRRYQ_PrIY",
     FN:"https://kokjumjhpasxxxrpspng.supabase.co/functions/v1/rappels",
-    prefs(){const d={hygiene:true,evenements:true};try{return {...d,...JSON.parse(localStorage.getItem("2b-push")||"{}")}}catch{return d}},
+    prefs(){const d={hygiene:true,evenements:true,bilan:true};try{return {...d,...JSON.parse(localStorage.getItem("2b-push")||"{}")}}catch{return d}},
     setPrefs(p){try{localStorage.setItem("2b-push",JSON.stringify(p))}catch{}},
     ios:/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1),
     standalone:()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true,
@@ -518,7 +524,7 @@
       if(!this.ok())return this.ios&&!this.standalone()?"installer":"impossible";
       if(Notification.permission==="denied")return "bloque";
       const s=await this.sub().catch(()=>null);return s&&Notification.permission==="granted"?"actif":"inactif"},
-    async envoyer(s){const p=this.prefs();await call("push_abonner",{p_abo:s.toJSON(),p_profil:get(),p_hygiene:p.hygiene,p_evenements:p.evenements})},
+    async envoyer(s){const p=this.prefs();await call("push_abonner",{p_abo:s.toJSON(),p_profil:get(),p_hygiene:p.hygiene,p_evenements:p.evenements,p_bilan:p.bilan})},
     async activer(){
       const perm=await Notification.requestPermission();if(perm!=="granted")return false;
       const r=await navigator.serviceWorker.ready;let s=await r.pushManager.getSubscription();
@@ -545,6 +551,7 @@
       <div class="rgb"><h4>🔔 Notifications sur ce téléphone</h4><div id="rgEtat" style="display:flex;flex-direction:column;gap:8px"></div>
       ${row("hygiene","🌡️ Relevés d'hygiène","À 14 h et à 21 h, seulement si les températures ne sont pas notées. Jamais quand c'est fermé.")}
       ${row("evenements","📅 Événements","La veille à 10 h : privatisation ou traiteur prévu le lendemain.")}
+      ${row("bilan","📊 Bilan de la semaine","Le lundi à 8 h : le chiffre, les clients et la meilleure journée de la semaine passée.")}
       <p class="rgn" id="rgMsg">Une seule notification par contrôle ou par événement. Rien pour les commandes.</p></div></div>`;
     document.body.appendChild(m);
     const msg=t=>{const el=m.querySelector("#rgMsg");el.textContent=t};
@@ -566,6 +573,10 @@
       try{const s=await Push.sub();if(s&&Notification.permission==="granted")await Push.envoyer(s);msg(e.target.checked?"Activé ✓":"Coupé : plus de notification de ce type.")}
       catch{msg("Pas de réseau : le choix sera envoyé plus tard.");try{localStorage.removeItem("2b-push-t")}catch{}}});
   }
+  /* Un chiffre qui monte en douceur jusqu'à sa valeur (premier affichage seulement) */
+  window.countUp=(el,to,fmt,ms=750)=>{if(!el||!isFinite(to))return;
+    if(matchMedia("(prefers-reduced-motion: reduce)").matches){el.textContent=fmt(to);return}
+    const t0=performance.now();const step=t=>{const k=Math.min(1,(t-t0)/ms);el.textContent=fmt(to*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(step)};el.textContent=fmt(0);requestAnimationFrame(step)};
   window.Profil={reglages,push:Push,ouverture:Ouverture,saved,get,ensure,avatar,notifs:Notifs,noms:Object.fromEntries(Object.entries(AV).map(([k,v])=>[k,v.nom]))};
   let hasCode=false;try{hasCode=!!localStorage.getItem("commande2b-code")}catch{}
   if(hasCode)nav();
