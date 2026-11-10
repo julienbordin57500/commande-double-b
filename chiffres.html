@@ -451,6 +451,8 @@ html.vue-plats #vPlats{display:block} html.vue-plats #vMois{display:none}
 .pc-nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 .pc-nums span{background:var(--sunken);border-radius:10px;padding:6px 8px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;min-width:0}
 .pc-nums span b{display:block;font-size:17px;color:var(--fg);text-transform:none;letter-spacing:0;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc-est{font-size:13px;font-weight:700;color:#b85a0c;margin-top:6px}
+@media (prefers-color-scheme:dark){.pc-est{color:#f0954a}}
 .pc-chg{font-size:14px;font-weight:600;color:var(--muted)} .pc-chg.up b{color:var(--bad)} .pc-chg.down b{color:var(--ok)}
 .pc-warn{font-size:14px;font-weight:700;color:var(--mid)}
 .pempty{background:var(--surface);border:1px dashed var(--line);border-radius:18px;padding:22px 16px;text-align:center;color:var(--muted);font-size:16px}
@@ -1370,15 +1372,16 @@ function lineCost(L,pr=priceOf(L)){
 // « soit 2,70 €/kg » pour vérifier d'un coup d'œil
 function unitPrice(L,pr){const d=DIMOF[L.u];if(!pr||!d)return "";const q=qOf(L,pr);if(!(q[d[0]]>0))return "";const b=BASE[d[0]];return `soit ${eur2(pr.p/q[d[0]]*b[1])}/${b[0]}`}
 function platCost(pl){
-  let cost=0,miss=0,prev=0,chg=[],last="";
+  let cost=0,miss=0,prev=0,chg=[],last="",est=0;
   (pl.lignes||[]).forEach(L=>{const r=lineCost(L);if(r.err){miss++;return}cost+=r.v;
+    if(L.est){const pr=priceOf(L);if(pr&&pr.src==="main")est++}
     // Variation : dernier prix changé il y a moins de 60 jours → coût avec l'ancien prix
     const p=L.id&&P.prods.get(L.id);let pv=r.v;
     if(p&&p.prix&&p.avant&&!p.prix.promo&&Date.now()-new Date(p.prix.le)<60*864e5){
       const o=lineCost(L,{p:+p.avant.p,u:p.avant.u,c:p.avant.c||p.prix.c||null});if(!o.err&&Math.abs(o.v-r.v)>=0.005){pv=o.v;chg.push(L.nom);if(p.prix.le>last)last=p.prix.le}}
     prev+=pv});
   const ht=pl.prix_vente>0?pl.prix_vente/VAT:null;const pct=ht&&cost?cost/ht*100:null;
-  return {cost,miss,n:(pl.lignes||[]).length,ht,pct,marge:ht!=null?ht-cost:null,delta:cost-prev,chg,last};
+  return {cost,miss,n:(pl.lignes||[]).length,ht,pct,marge:ht!=null?ht-cost:null,delta:cost-prev,chg,last,est};
 }
 const level=p=>{if(p==null)return "n";const r=Math.round(p);return r<30?"g":r<=35?"o":"r"};
 const pctTxt=p=>p==null?"–":(level(p)==="g"?"✓ ":"! ")+Math.round(p)+" %";
@@ -1400,12 +1403,14 @@ function renderPlats(){
   const cs=P.plats.map(pl=>[pl,platCost(pl)]);
   const withPct=cs.filter(([,c])=>c.pct!=null);
   const avg=withPct.length?withPct.reduce((s,[,c])=>s+c.pct,0)/withPct.length:null;
-  $("#pSum").innerHTML=`${P.plats.length} plat${P.plats.length>1?"s":""}${avg!=null?` · en moyenne la marchandise fait <b class="t-${level(avg)}">${Math.round(avg)} %</b> du prix`:""}`;
+  const nEst=cs.reduce((n,[,c])=>n+c.est,0);
+  $("#pSum").innerHTML=`${P.plats.length} plat${P.plats.length>1?"s":""}${avg!=null?` · en moyenne la marchandise fait <b class="t-${level(avg)}">${Math.round(avg)} %</b> du prix`:""}${nEst?` · <span class="pc-est" style="display:inline">≈ ${nEst} prix estimé${nEst>1?"s":""} à vérifier</span>`:""}`;
   box.innerHTML=cs.map(([pl,c])=>`<button class="pcard" type="button" data-pid="${esc(pl.id)}">
     <div class="pc-top"><b>${esc(pl.nom)}</b><span class="pill ${level(c.pct)}">${pctTxt(c.pct)}</span></div>
     <div class="pc-nums"><span>Coût<b>${c.n?eur2(c.cost):"–"}</b></span><span>Vendu<b>${pl.prix_vente>0?eur(+pl.prix_vente):"–"}</b></span><span>Marge<b>${c.marge!=null&&c.n?eur2(c.marge):"–"}</b></span></div>
     ${Math.abs(c.delta)>=0.01?`<div class="pc-chg ${c.delta>0?"up":"down"}"><b>${c.delta>0?"▲ +":"▼ −"}${eur2(Math.abs(c.delta))}</b> depuis le ${esc(shortDate(c.last))} (${esc(c.chg.join(", "))})</div>`:""}
     ${c.miss?`<div class="pc-warn">⚠️ ${c.miss} ingrédient${c.miss>1?"s":""} à compléter</div>`:""}
+    ${c.est?`<div class="pc-est">≈ ${c.est} prix estimé${c.est>1?"s":""} à vérifier</div>`:""}
     ${!(pl.prix_vente>0)?`<div class="pc-warn">⚠️ Prix de vente à taper</div>`:""}</button>`).join("");
 }
 $("#pList").addEventListener("click",e=>{const b=e.target.closest("[data-pid]");if(b)openPlat(P.plats.find(p=>p.id===b.dataset.pid))});
@@ -1444,6 +1449,7 @@ function askBox(title,text,yes,fn){
 function priceInfo(L,pr){
   const p=L.id&&P.prods.get(L.id);const f=p&&p.fournisseur?p.fournisseur+" · ":"";
   if(!pr)return p?f+"pas encore de prix dans Commande : tape-le ici, il y sera enregistré":"Pas dans Commande : tape son prix";
+  if(pr.src==="main"&&L.est)return f+"≈ prix estimé, à vérifier : tape le vrai prix ici (ou dans Commande)";
   if(pr.src==="main")return f+(p?"prix tapé ici, enregistré dans Commande avec le plat":"prix tapé à la main");
   return `${f}${eur2(pr.p)} ${prixU(pr.u)}${pr.c?" · "+pr.c:""}${pr.promoOff?" (prix normal, la promo est ignorée)":p.prix.promo?" (prix promo)":""}`;
 }
@@ -1482,7 +1488,7 @@ $("#sheet").addEventListener("input",e=>{
   const ln=t.closest(".ln");if(!ln||!t.dataset.f)return;const L=E.lignes[+ln.dataset.i];E.dirty=true;
   const f=t.dataset.f;
   const setC=()=>{const cu=L.cu||t.closest(".ln").querySelector('[data-f="cu"]')?.value||"pièces";L.cu=cu;L.cc=L.cn>0?`${String(L.cn).replace(".",",")} ${cu}`:"";delete L.c};
-  if(f==="q")L.q=numIn(t.value);else if(f==="pm"){L.pm=numIn(t.value);L.np=true}
+  if(f==="q")L.q=numIn(t.value);else if(f==="pm"){L.pm=numIn(t.value);L.np=true;delete L.est}
   else if(f==="cn"){L.cn=numIn(t.value);setC()}
   if(f==="u"||f==="pu"||f==="cu"){if(f==="u")L.u=t.value;
     if(f==="pu"){L.pu=t.value;L.np=true;if(!qUnits({u:L.pu}).includes(L.u))L.u=defUnit({u:L.pu},L)}
@@ -1515,7 +1521,7 @@ $("#sheet").addEventListener("click",e=>{
 $("#sheet").addEventListener("keydown",e=>{if(e.key==="Escape")closePlat(false);if(e.key==="Enter"&&e.target.id==="eSrch"){e.preventDefault();const b=$("#eRes button");if(b)b.click()}});
 const clean=L=>{const o={id:L.id||null,nom:String(L.nom||"").slice(0,80),q:L.q>0?L.q:null,u:L.u};
   if(L.c&&L.c.n>0)o.c={n:L.c.n,u:L.c.u||"pièce"};if(L.cc)o.cc=L.cc;if(L.cn>0){o.cn=L.cn;o.cu=L.cu}
-  if(!L.id||L.pm>0){o.pm=L.pm>0?L.pm:null;o.pu=L.pu||"kg"}return o};
+  if(!L.id||L.pm>0){o.pm=L.pm>0?L.pm:null;o.pu=L.pu||"kg"}if(L.est)o.est=true;return o};
 // Ce qui est tapé dans le plat pour un article de Commande y est enregistré (prix, contenu du carton) :
 // le comparateur en profite, et le plat suit ensuite tout seul les changements de prix.
 async function versCommande(){
