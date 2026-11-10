@@ -136,7 +136,7 @@ header.top{display:flex;align-items:center;gap:14px}
 .wkhero::after{content:"";position:absolute;right:-60px;top:-70px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(245,178,50,.32),transparent 70%);z-index:-1}
 .wkhero small{font-size:13px;font-weight:700;color:#d8c8a6}
 .wkhero .big{font-family:var(--display);font-size:40px;font-weight:800;letter-spacing:-1px;line-height:1}
-.wkchips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.wkchips{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .wkchips div{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:8px 10px;min-width:0}
 .wkchips b{display:block;font-family:var(--display);font-size:19px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wkrec{margin:0;font-size:14px;font-weight:800;color:#8fe0b0}
@@ -989,8 +989,8 @@ const mLong=(y,m)=>new Date(y,m,1).toLocaleDateString("fr-FR",{month:"long"});
 async function loadObj(){
   try{const o=await rpc("objectifs_liste");if(o&&typeof o==="object"){OBJ=o;try{localStorage.setItem(GK,JSON.stringify(o))}catch{}}}catch(e){if(lost(e))return}
   const y0=exStart(S.y,S.m),cur=ym(S.y,S.m);
-  for(let i=0;i<12;i++){const k=ym(y0,6+i);if(k>=cur)break;if(OBJ["ca:"+k]!=null||MCA[k]!=null)continue;
-    try{const d=await rpc("suivi_mois",{p_mois:k+"-01"});let t=null;Object.values(d||{}).forEach(r=>{t=add(t,jourCA(r))});MCA[k]=t||0}catch{MCA[k]=0}}
+  // Mois passés : CA calculé par le serveur (caisse + prestations payées), même règle que le mois en cours et que le bilan de la semaine
+  if(ym(y0,6)<cur){try{const L=await rpc("ca_mois_liste",{p_du:ym(y0,6)+"-01",p_au:ym(S.y,S.m-1)+"-01"});Object.entries(L||{}).forEach(([k,v])=>MCA[k]=+v||0)}catch(e){if(lost(e))return}}
   renderGoal(monthSums().total);
 }
 const caOf=k=>OBJ["ca:"+k]!=null?+OBJ["ca:"+k]:(MCA[k]??0);
@@ -1113,7 +1113,7 @@ async function semOpen(lundi){
   const suite=L>=isoD(plusJ(lundiDe(new Date()),-7))?`<div class="wkc"><h4>📅 La semaine qui ${L===cetteSem?"suit":"commence"}</h4>${EV.length?EV.map(e=>{const d=new Date(e.jour+"T12:00");
       return `<div class="wke"><span>${PRESTA[e.type].e}</span><span>${esc(e.client||PRESTA[e.type].l)}<small>${esc(cap(d.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric"})))}${e.heure?" · "+esc(String(e.heure).slice(0,5)):""}${e.personnes?" · "+e.personnes+" pers.":""}</small></span></div>`}).join(""):`<p class="wkvide" style="padding:6px 0;text-align:left">Rien de prévu pour l'instant.</p>`}</div>`:"";
   box.innerHTML=`<div class="wkhero"><div><small>Chiffre d'affaires</small><div class="big num">${eur(Math.round(ca))}</div>${b.presta?`<small>dont ${eur(Math.round(+b.presta))} de prestations</small>`:""}</div>
-      <div class="wkchips"><div><small>Clients</small><b class="num">${cl?int(cl):"–"}</b></div><div><small>Ticket moyen</small><b class="num">${cl&&caisse?eur(Math.round(caisse/cl*10)/10):"–"}</b></div><div><small>Jours notés</small><b class="num">${b.jours_notes}</b></div></div>${rec}</div>
+      <div class="wkchips"><div><small>Clients</small><b class="num">${cl?int(cl):"–"}</b></div><div><small>Jours notés</small><b class="num">${b.jours_notes}</b></div></div>${rec}</div>
     <div class="wkc"><h4>Jour par jour</h4>${jours}</div>${plats}${suite}`;
   if(window.countUp)countUp(box.querySelector(".wkhero .big"),Math.round(ca),v=>eur(Math.round(v)));
 }

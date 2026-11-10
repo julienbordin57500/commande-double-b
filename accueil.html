@@ -354,9 +354,11 @@ async function loadGoal(){
   (ev||[]).forEach(e=>{if((e.type==="privatisation"||e.type==="traiteur")&&e.statut!=="annule"&&e.budget!=null&&e.jour<=TODAY)done+=+e.budget});
   if(o["ca:"+mk]!=null)done=+o["ca:"+mk];
   const y0=m>=6?y:y-1;let before=0,left=0;
+  // Mois passés : même calcul serveur que Chiffres (caisse + prestations payées) ; un chiffre tapé dans ✏️ passe avant
+  const p0=ymk(new Date(y0,6,1)),pm=ymk(new Date(y,m-1,1));
+  const L=p0<=pm?await rpc("ca_mois_liste",{p_du:p0+"-01",p_au:pm+"-01"}).catch(()=>({})):{};
   for(let i=0;i<12;i++){const k=ymk(new Date(y0,6+i,1));if(k>=mk){left++;continue}
-    if(o["ca:"+k]!=null){before+=+o["ca:"+k];continue}
-    try{const x=await rpc("suivi_mois",{p_mois:k+"-01"});Object.values(x||{}).forEach(r=>{const c=jca(r);if(c!=null)before+=c})}catch{}}
+    before+=o["ca:"+k]!=null?+o["ca:"+k]:(+(L||{})[k]||0)}
   const obj=o["obj:"+mk]!=null?+o["obj:"+mk]:Math.max(0,Math.round((+o.annuel-before)/Math.max(1,left)/100)*100);
   const n=new Date(y,m+1,0).getDate();let tot=0,gone=0;
   for(let dd=1;dd<=n;dd++){const w=SERVW(new Date(y,m,dd).getDay());tot+=w;if(dd<now.getDate())gone+=w}
