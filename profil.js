@@ -41,6 +41,8 @@
   @media (prefers-color-scheme:dark){:root{--bg:#13110d;--surface:#1d1a15;--sunken:#17150f;--line:#302b22;--fg:#f4efe3;--muted:#a59d8c;--accent-soft:#3a2e12;
     --sh2b:0 1px 0 rgba(0,0,0,.3),0 10px 24px -14px rgba(0,0,0,.7)}}
   body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+  .pbox::before,.npan .nbx::before{content:"";display:block;flex:none;width:42px;height:5px;border-radius:3px;background:var(--line,#e6e1d5);margin:0 auto 4px}
+  .npan .nbx::before{margin-top:8px;margin-bottom:-6px}
   .sk{display:block;height:14px;border-radius:7px;margin:6px 0;background:linear-gradient(90deg,var(--sunken),var(--line),var(--sunken));background-size:200% 100%;animation:sk2b 1.3s linear infinite}
   .sk.big{height:30px;width:40%;border-radius:9px}
   @keyframes sk2b{to{background-position:-200% 0}}
@@ -356,7 +358,8 @@
     document.body.appendChild(b);
   }
   // Onglet touché : il s'allume tout de suite, sans attendre que la page suivante arrive ; on retient le sens (gauche / droite) pour la transition
-  document.addEventListener("click",e=>{const a=e.target.closest(".bnav a");if(!a||a.getAttribute("aria-current"))return;
+  document.addEventListener("click",e=>{const a=e.target.closest(".bnav a");if(!a)return;
+    if(a.getAttribute("aria-current")){e.preventDefault();window.scrollTo({top:0,behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});return}
     const all=[...document.querySelectorAll(".bnav a")],from=all.findIndex(x=>x.getAttribute("aria-current")),to=all.indexOf(a);
     try{sessionStorage.setItem("2b-sens",to>from?"droite":"gauche")}catch{}
     document.querySelectorAll(".bnav a[aria-current]").forEach(x=>x.removeAttribute("aria-current"));a.setAttribute("aria-current","page")});
@@ -573,6 +576,20 @@
       try{const s=await Push.sub();if(s&&Notification.permission==="granted")await Push.envoyer(s);msg(e.target.checked?"Activé ✓":"Coupé : plus de notification de ce type.")}
       catch{msg("Pas de réseau : le choix sera envoyé plus tard.");try{localStorage.removeItem("2b-push-t")}catch{}}});
   }
+  /* Onglets du bas : le navigateur prépare la page dès que le doigt se pose (là où il sait le faire), l'arrivée est immédiate */
+  try{if(HTMLScriptElement.supports&&HTMLScriptElement.supports("speculationrules")){const sp=document.createElement("script");sp.type="speculationrules";
+    sp.textContent=JSON.stringify({prerender:[{where:{selector_matches:".bnav a"},eagerness:"moderate"}]});document.head.appendChild(sp)}}catch{}
+  /* Fenêtres du bas : on les ferme en les tirant vers le bas depuis leur haut (comme sur le téléphone).
+     Relâché assez bas, ou d'un geste vif : même effet qu'un appui à côté de la fenêtre (les garde-fous « Quitter sans enregistrer ? » restent). */
+  let dg=null;
+  document.addEventListener("touchstart",e=>{if(e.touches.length!==1)return;const box=e.target.closest(".pbox,.npan .nbx");if(!box)return;
+    const t=e.touches[0];if(t.clientY-box.getBoundingClientRect().top>60)return;dg={box,y:t.clientY,dy:0,t:Date.now()}},{passive:true});
+  document.addEventListener("touchmove",e=>{if(!dg)return;dg.dy=Math.max(0,e.touches[0].clientY-dg.y);if(dg.dy>6){dg.box.style.transition="none";dg.box.style.transform=`translateY(${dg.dy}px)`}},{passive:true});
+  const dgEnd=()=>{if(!dg)return;const {box,dy,t}=dg;dg=null;if(dy<=6)return;
+    if(dy>120||(dy>45&&Date.now()-t<260)){box.style.transition="transform .18s ease-in";box.style.transform="translateY(105%)";
+      setTimeout(()=>{const back=box.parentElement;box.style.transition="";box.style.transform="";if(back)back.dispatchEvent(new MouseEvent("click",{bubbles:true}))},175)}
+    else{box.style.transition="transform .22s cubic-bezier(.2,.85,.25,1)";box.style.transform="";setTimeout(()=>{box.style.transition=""},240)}};
+  document.addEventListener("touchend",dgEnd,{passive:true});document.addEventListener("touchcancel",dgEnd,{passive:true});
   /* Un chiffre qui monte en douceur jusqu'à sa valeur (premier affichage seulement) */
   window.countUp=(el,to,fmt,ms=750)=>{if(!el||!isFinite(to))return;
     if(matchMedia("(prefers-reduced-motion: reduce)").matches){el.textContent=fmt(to);return}

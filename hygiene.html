@@ -542,7 +542,7 @@ async function openHist(k){H.k=k;H.d=null;drawHist();
   try{const [a,b]=bornes(k);H.d=await rpc("hyg_etat",{p_debut:a,p_fin:b});if(H.k===k)drawHist()}
   catch(e){if(lost(e))return;const l=document.querySelector("#hList");if(l)l.innerHTML=`<div class="empty">Pas de connexion pour l'instant.</div>`}}
 function drawHist(){
-  const body=()=>{if(!H.d)return `<div class="empty">Chargement…</div>`;
+  const body=()=>{if(!H.d)return `<div style="padding:8px 4px"><span class="sk big"></span><span class="sk" style="width:85%"></span><span class="sk" style="width:60%"></span></div>`;
     const rel=H.d.releves.filter(r=>MINE.some(a=>a.k===r.appareil)).sort((a,b)=>String(b.le).localeCompare(String(a.le)));
     let ev=rel.map(r=>({le:r.le,h:`<div class="hrow"><span class="h">${hm(r.le)}</span><span class="t"><b>${esc(r.nom)} · ${r.moment}</b><small>${esc(NOMS[r.par]||r.par||"")} · ${TYPEL[r.type||"releve"]}${r.motif?" : "+esc(r.motif):""}${r.action?" · Action : "+esc(r.action):""}</small></span><span class="v ${r.ok?"ok":"bad"}">${fr1(+r.temp)} ${r.ok?"✓":"✗"}</span></div>`}));
     if(FULL){const [a,b]=bornes(H.k);const inP=s=>{const j=iso(new Date(s));return j>=a&&j<=b};

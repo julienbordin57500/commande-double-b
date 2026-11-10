@@ -1394,7 +1394,7 @@ async function loadPlats(){
 }
 function renderPlats(){
   const box=$("#pList");
-  if(!P.loaded){box.innerHTML=`<div class="pempty">Chargement…</div>`;$("#pSum").textContent="";return}
+  if(!P.loaded){box.innerHTML=`<div class="pempty" style="text-align:left"><span class="sk big"></span><span class="sk" style="width:85%"></span><span class="sk" style="width:60%"></span></div>`;$("#pSum").textContent="";return}
   if(!P.plats.length){$("#pSum").textContent="";box.innerHTML=`<div class="pempty"><b>🍔</b>Pas encore de plat.<br>Appuie sur « Nouveau plat » et ajoute ses ingrédients : le coût se calcule tout seul.</div>`;return}
   const cs=P.plats.map(pl=>[pl,platCost(pl)]);
   const withPct=cs.filter(([,c])=>c.pct!=null);
