@@ -430,7 +430,7 @@ function confirmBox(t,p,ok,fn){const m=modal(`<h3>${t}</h3><p>${p}</p><button ty
 let qrLib=null;
 const loadQr=()=>qrLib||(qrLib=new Promise((res,rej)=>{const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
   s.onload=res;s.onerror=()=>{qrLib=null;rej()};document.head.appendChild(s)}));
-const lien=c=>new URL("carte.html#"+c.jeton,location.href).href;
+const lien=c=>"https://carte.doubleb-folschviller.fr/#"+c.jeton; // carte client sur le domaine du restaurant (dépôt carte-double-b)
 async function qr(){if(!CUR)return;const c=CUR,url=lien(c);
   const sms=`sms:${c.tel}${/iPhone|iPad/.test(navigator.userAgent)?"&":"?"}body=${encodeURIComponent(`Bonjour ${c.prenom} ! Voici ta carte fidélité Double B 🍔 : ${url}`)}`;
   const m=modal(`<h3>📲 La carte de ${esc(c.prenom)}</h3><p>Le client scanne ce code avec l'appareil photo de son téléphone. Sa carte s'ouvre, il n'a rien à installer.</p>
