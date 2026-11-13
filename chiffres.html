@@ -1019,6 +1019,7 @@ function renderGoal(live){
   let nd=0,sum=0,best=null,bd=0;for(let d=1;d<=n;d++){const v=jourCA(S.data[key(S.y,S.m,d)]||{});if(v==null||v<=0)continue;nd++;sum+=v;if(best==null||v>best){best=v;bd=d}}
   let tiles="";
   if(ok)tiles=`<div class="gwin">🏆 Objectif atteint ! Bravo l'équipe</div>`;
+  if(ok&&window.Fete&&S.y===now.getFullYear()&&S.m===now.getMonth())Fete.once("obj-"+key(S.y,S.m,1),"🏆 Objectif du mois atteint ! Bravo l'équipe");
   if(nd)tiles+=`<div class="gtiles"><div class="gt"><small>Moyenne par jour</small><b class="num">${eur(r10(sum/nd))}</b></div><div class="gt ok"><small>🏆 Meilleure journée</small><b class="num">${eur(Math.round(best))}</b><small>${esc(wd(S.y,S.m,bd))} ${bd}</small></div></div>`;
   const ahead=isCur&&!ok&&gone&&diff>=50;
   if(ahead)tiles+=`<p class="gav">✅ ${eur(Math.round(diff))} d'avance sur le rythme, bravo !</p>`;

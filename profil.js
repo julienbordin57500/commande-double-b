@@ -640,3 +640,53 @@
   if(hasCode&&!document.getElementById("gate"))ensure();   // l'écran Commande l'appelle lui-même après le code
   else if(get())bar();                                      // barre remplie tout de suite : rien ne bouge à l'affichage
 })();
+
+/* ===== Un peu de vie (2026-11-14) : une couleur par onglet, confettis pour les belles nouvelles, chiffre sur l'icône ===== */
+(function(){
+  /* 1. Une couleur par onglet : barre du bas (icônes colorées, onglet ouvert plein) et trait sous le titre de la page */
+  const page=(location.pathname.split("/").pop()||"index.html").replace(".html","");
+  const KEY={accueil:"jour",index:"cmd",menus:"menu","menus-essai":"menu",chiffres:"chif",evenements:"ev",hygiene:"hyg",fidelite:"fid",prospection:"pro"}[page]||"jour";
+  document.documentElement.dataset.onglet=KEY;
+  const st=document.createElement("style");
+  st.textContent=`
+  :root{--c-jour:#e9a010;--c-cmd:#e8622c;--c-menu:#d43c70;--c-chif:#2b78db;--c-ev:#7a52d6;--c-hyg:#21976a;--c-fid:#c58b1e;--c-pro:#16949f}
+  @media (prefers-color-scheme:dark){:root{--c-jour:#f5b232;--c-cmd:#ff8754;--c-menu:#f2679a;--c-chif:#5ea4f7;--c-ev:#a385f2;--c-hyg:#46c48e;--c-fid:#e8b450;--c-pro:#3cc3cd}}
+  :root{--tab:var(--c-${KEY})}
+  .bnav a:nth-child(1){--tabc:var(--c-jour);--tabi:#2a1d00}.bnav a:nth-child(2){--tabc:var(--c-cmd)}.bnav a:nth-child(3){--tabc:var(--c-menu)}
+  .bnav a:nth-child(4){--tabc:var(--c-chif)}.bnav a:nth-child(5){--tabc:var(--c-ev)}
+  .bnav a .ic{color:color-mix(in srgb,var(--tabc) 78%,var(--muted,#6f695d))}
+  .bnav a[aria-current="page"] .ic{background:var(--tabc);color:var(--tabi,#fff);box-shadow:0 5px 14px -6px color-mix(in srgb,var(--tabc) 90%,#000)}
+  header.top h1::after,header.head h1::after,.hello h1::after{content:"";display:block;width:36px;height:4px;border-radius:3px;background:var(--tab);margin-top:9px}
+  .fete-msg{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translate(-50%,-20px);opacity:0;z-index:2147482500;
+    background:var(--fg,#1f1b14);color:var(--bg,#f5f2ea);font:800 16px/1.25 "Figtree",system-ui,sans-serif;padding:12px 18px;border-radius:16px;
+    box-shadow:0 14px 30px -10px rgba(0,0,0,.45);text-align:center;max-width:calc(100% - 32px);transition:opacity .3s ease,transform .35s cubic-bezier(.2,1.3,.4,1);pointer-events:none}
+  .fete-msg.on{opacity:1;transform:translate(-50%,0)}`;
+  document.head.appendChild(st);
+
+  /* 2. Confettis : Fete.go("message") ; Fete.once(clé, "message") une seule fois par téléphone (objectif du mois, record…) */
+  const COL=["#f2a516","#ffd54a","#e8622c","#d43c70","#2b78db","#7a52d6","#21976a","#ffffff"];
+  const calme=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function message(t){if(!t)return;const m=document.createElement("div");m.className="fete-msg";m.setAttribute("role","status");m.textContent=t;document.body.appendChild(m);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>m.classList.add("on")));setTimeout(()=>{m.classList.remove("on");setTimeout(()=>m.remove(),400)},3200)}
+  function pluie(){const c=document.createElement("canvas"),W=innerWidth,H=innerHeight,r=Math.min(2,devicePixelRatio||1);
+    c.width=W*r;c.height=H*r;c.style.cssText="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:2147482400";document.body.appendChild(c);
+    const g=c.getContext("2d");g.scale(r,r);
+    const P=Array.from({length:110},(_,i)=>{const gauche=i%2===0;return {x:gauche?-10:W+10,y:H*.62+Math.random()*H*.2,vx:(gauche?1:-1)*(4+Math.random()*7),vy:-(9+Math.random()*8),
+      w:6+Math.random()*6,h:3+Math.random()*4,a:Math.random()*6.28,va:(Math.random()-.5)*.35,col:COL[i%COL.length]}});
+    const t0=performance.now();
+    (function f(t){const dt=Math.min(2,(t-(f.l||t))/16.7);f.l=t;g.clearRect(0,0,W,H);const age=t-t0;
+      P.forEach(p=>{p.vy+=.32*dt;p.vx*=Math.pow(.985,dt);p.x+=p.vx*dt;p.y+=p.vy*dt;p.a+=p.va*dt;
+        g.save();g.globalAlpha=Math.max(0,1-Math.max(0,age-1700)/700);g.translate(p.x,p.y);g.rotate(p.a);g.fillStyle=p.col;g.fillRect(-p.w/2,-p.h/2,p.w,p.h*Math.abs(Math.cos(p.a*1.7)));g.restore()});
+      if(age<2400)requestAnimationFrame(f);else c.remove()})(t0);
+    try{navigator.vibrate&&navigator.vibrate([30,60,30])}catch{}}
+  window.Fete={
+    go(t){message(t);if(!calme())pluie()},
+    once(k,t){try{const K="2b-fete-"+k;if(localStorage.getItem(K))return false;localStorage.setItem(K,"1")}catch{return false}
+      setTimeout(()=>this.go(t),600);return true}
+  };
+
+  /* 3. Chiffre sur l'icône de l'appli = nouveautés non lues de la sonnette (aussi mis à jour par sw.js à chaque notification) */
+  function icone(n){try{if("setAppBadge" in navigator){n>0?navigator.setAppBadge(n).catch(()=>{}):navigator.clearAppBadge().catch(()=>{})}}catch{}
+    try{caches.open("2b-meta").then(c=>c.put("badge",new Response(String(n||0)))).catch(()=>{})}catch{}}
+  document.addEventListener("2b-notifs",e=>icone(+e.detail||0));
+})();

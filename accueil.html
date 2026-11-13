@@ -162,6 +162,17 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
 .relb{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px}
 .relb button{height:42px;border-radius:12px;border:1px solid var(--line);background:var(--sunken);color:var(--fg);font-weight:800;font-size:14px}
 .relb .ok{background:var(--go-soft);color:var(--go);border-color:transparent}
+/* Touche de saison */
+.hello .saison{margin:6px 0 0;font-size:15px;font-weight:800;color:var(--tab,var(--accent));color:var(--fg)}
+.hello.fx{position:relative}
+.fxl{position:absolute;left:-16px;right:-16px;top:-40px;height:190px;overflow:hidden;pointer-events:none}
+.fxl i{position:absolute;top:-14px;display:block;animation:tombe linear both;transform:scale(var(--s))}
+.fxl.neige i{width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 4px rgba(150,170,200,.7)}
+@media (prefers-color-scheme:light){.fxl.neige i{background:#cfdcec;box-shadow:none}}
+.fxl.feuilles i{width:10px;height:7px;border-radius:0 7px 0 7px;background:#d9822b}
+.fxl.feuilles i:nth-child(3n){background:#c0552a}.fxl.feuilles i:nth-child(4n){background:#e0a93a}
+.fxl.petales i{width:8px;height:6px;border-radius:50% 0 50% 0;background:#f4a7c0}
+@keyframes tombe{0%{translate:0 0;rotate:var(--r);opacity:0}10%{opacity:.9}100%{translate:24px 200px;rotate:calc(var(--r) + 220deg);opacity:0}}
 </style>
 </head>
 <body>
@@ -262,6 +273,19 @@ const h=now.getHours();
 $("#hi").textContent=`${h>=18||h<5?"Bonsoir":"Bonjour"}${prenom?" "+prenom:""} 👋`;
 const jour=cap(now.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"}));
 $("#date").innerHTML=`<b>${esc(jour)}</b> · ${h<15?"bon service !":h<18?"bonne fin de journée !":"bon service ce soir !"}`;
+/* Touche de saison (2026-11-14) : un petit mot les jours spéciaux, et quelques flocons / feuilles / pétales qui tombent quelques secondes */
+const SAISON=(()=>{const m=now.getMonth()+1,d=now.getDate();
+  const noel=Math.round((new Date(now.getFullYear(),11,25)-new Date(now.getFullYear(),m-1,d))/864e5);
+  const mot=m===12&&d<25?(noel===1?"🎄 Noël, c'est demain !":`🎄 J-${noel} avant Noël`):m===12?"✨ Bonnes fêtes à toute l'équipe":m===1&&d<=10?"🥂 Bonne année à toute l'équipe !"
+    :m===2&&d===14?"❤️ Joyeuse Saint-Valentin":m===6&&d===21?"🎶 Fête de la musique":m===10&&d===31?"🎃 Joyeux Halloween":m===7&&d===14?"🎆 Bon 14 juillet !":"";
+  const fx=m===12||m<=2?"neige":m>=10?"feuilles":m>=3&&m<=5?"petales":"";
+  return {mot,fx}})();
+if(SAISON.mot)$("#date").insertAdjacentHTML("afterend",`<p class="saison">${esc(SAISON.mot)}</p>`);
+(function tombe(){if(!SAISON.fx||matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  const box=document.querySelector(".hello");if(!box)return;box.classList.add("fx");
+  const L=document.createElement("div");L.className="fxl "+SAISON.fx;L.setAttribute("aria-hidden","true");
+  L.innerHTML=Array.from({length:14},(_,i)=>`<i style="left:${(i*7.3+Math.random()*5)%100}%;animation-delay:${(Math.random()*2.6).toFixed(2)}s;animation-duration:${(3.2+Math.random()*2.4).toFixed(2)}s;--r:${Math.round(Math.random()*360)}deg;--s:${(.6+Math.random()*.7).toFixed(2)}"></i>`).join("");
+  box.appendChild(L);setTimeout(()=>{L.style.transition="opacity 1s";L.style.opacity="0";setTimeout(()=>L.remove(),1100)},7000)})();
 
 /* Nouveautés de l'équipe (sonnette) */
 function news(k){const b=$("#news");if(k)b.hidden=false;$("#newsW").classList.toggle("on",!!k);if(!k)setTimeout(()=>{if(!$("#newsW").classList.contains("on"))b.hidden=true},320);$("#newsT").textContent=k===1?"1 nouveauté de l'équipe":`${k} nouveautés de l'équipe`}
@@ -322,6 +346,7 @@ function drawHier(month){
   $("#cHier").href="chiffres.html#j="+YESTERDAY;
   if(ca==null&&cl==null){$("#hier").innerHTML=`<div class="empty">Les chiffres ${VEILLE?"d'hier":"de "+Y.toLocaleDateString("fr-FR",{weekday:"long"})} ne sont pas encore notés.</div><div class="fill">✍️ Les noter maintenant</div>`;return}
   const all=Object.values(month||{}).map(jca).filter(x=>x!=null&&x>0),best=ca!=null&&all.length>=3&&ca>=Math.max(...all);
+  if(best&&window.Fete)Fete.once("best-"+YESTERDAY,"🏆 Meilleure journée du mois !");
   $("#hier").innerHTML=`<div class="kp"><div><small>Chiffre d'affaires</small><b class="num">${ca==null?"–":nf0.format(ca)+" €"}</b></div><div><small>Clients</small><b class="num">${cl==null?"–":nf0.format(cl)}</b></div>${best?`<div class="best">🏆 Meilleure journée du mois !</div>`:""}</div>`;
 }
 
@@ -374,6 +399,7 @@ function drawGoal(g){const el=$("#goal");if(!g||!g.obj){el.hidden=true;return}el
     <div class="row"><b class="num">${eur0(g.done)}</b><span>/ ${eur0(g.obj)}</span></div>
     <div class="bar" role="progressbar" aria-label="Objectif du mois" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.min(100,Math.round(pc*100))}"><i style="--w:${Math.min(100,pc*100)}%"></i></div>
     ${ok?`<p>🏆 Objectif atteint ! Bravo l'équipe</p>`:g.diff>=50?`<p>✅ ${eur0(g.diff)} d'avance sur le rythme, bravo !</p>`:`<p class="n">Le détail dans Chiffres ›</p>`}`;
+  if(ok&&window.Fete)Fete.once("obj-"+g.mois+"-"+now.getFullYear(),"🏆 Objectif du mois atteint ! Bravo l'équipe");
   if(el.dataset.h===html)return;const first=!el.dataset.h;if(!first)el.classList.add("still");el.dataset.h=html;el.innerHTML=html;
   if(first&&window.countUp)countUp(el.querySelector(".row b"),g.done,eur0)}   // la barre ne s'anime qu'au premier affichage
 async function loadGoal(){

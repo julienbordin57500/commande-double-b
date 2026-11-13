@@ -5,7 +5,7 @@
 // Polices et bibliothèques externes : rangées à part (STATIC), gardées d'une version à l'autre, sinon chaque mise à jour
 // obligeait les pages à les re-télécharger avant de s'afficher (pages bloquées si le réseau est faible).
 // Jamais plus de 5 s d'attente : sinon on affiche ce qu'on a. L'API Supabase passe toujours par le réseau.
-const CACHE = "commande-2b-v86";
+const CACHE = "commande-2b-v87";
 const STATIC = "2b-statique-v1";
 const SHELL = ["./", "index.html", "accueil.html", "hygiene.html", "menus.html", "chiffres.html", "evenements.html", "fidelite.html", "prospection.html", "manifest.webmanifest", "logo-hd.png", "icone-appli.svg", "profil.js", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 const STATIC_HOSTS = ["fonts.googleapis.com", "fonts.gstatic.com", "cdnjs.cloudflare.com"];
@@ -14,7 +14,7 @@ self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL.map(u => new Request(u, { cache: "reload" })))).then(() => self.skipWaiting()));
 });
 self.addEventListener("activate", e => {
-  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k !== STATIC).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k !== STATIC && k !== "2b-meta").map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
 
 function keep(name, req, res) { if (res && (res.ok || res.type === "opaque")) { const copy = res.clone(); caches.open(name).then(c => c.put(req, copy)); } return res; }
@@ -49,13 +49,21 @@ self.addEventListener("fetch", e => {
   })());
 });
 
+// Chiffre sur l'icône de l'appli : +1 à chaque notification (remis au bon nombre dès que l'appli s'ouvre, par profil.js)
+async function badgePlus() {
+  try {
+    const c = await caches.open("2b-meta"); const r = await c.match("badge");
+    const n = (r ? (+(await r.text()) || 0) : 0) + 1; await c.put("badge", new Response(String(n)));
+    if (self.navigator.setAppBadge) await self.navigator.setAppBadge(n);
+  } catch {}
+}
 // Notifications du téléphone (rappels d'hygiène, événement du lendemain) : même appli fermée
 self.addEventListener("push", e => {
   let d = {};
   try { d = e.data ? e.data.json() : {}; } catch { d = { texte: e.data && e.data.text() }; }
-  e.waitUntil(self.registration.showNotification(d.titre || "Double B", {
+  e.waitUntil(Promise.all([self.registration.showNotification(d.titre || "Double B", {
     body: d.texte || "", icon: "icon-192.png", badge: "icon-192.png", tag: d.cle || undefined, data: { url: d.url || "accueil.html" }
-  }));
+  }), badgePlus()]));
 });
 self.addEventListener("notificationclick", e => {
   e.notification.close();

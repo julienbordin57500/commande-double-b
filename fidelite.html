@@ -379,6 +379,7 @@ function show(c,anim){
   const s=c.solde,full=Math.min(s,10);
   $("#fSt").innerHTML=Array.from({length:10},(_,i)=>{const nw=anim!=null&&i<full&&i>=anim;
     return `<div class="stamp${i<full?" on":""}${nw?" new":""}${i===9?" gift":""}"${nw?` style="animation-delay:${(i-anim)*140}ms"`:""}>${i<full?"🍔":i===9?"🎁":""}</div>`}).join("");
+  if(anim!=null&&s>=10&&anim<10&&window.Fete)Fete.go("🎉 Burger offert débloqué !");
   if(anim!=null&&full>anim&&navigator.vibrate)try{navigator.vibrate(Array.from({length:full-anim},()=>[25,115]).flat())}catch{}
   $("#fStat").innerHTML=s>=10?`🎉 Burger offert disponible !<small>${s>10?`Et déjà ${s-10} tampon${s-10>1?"s":""} pour la carte suivante · `:""}Total : ${c.burgers} burgers achetés</small>`
     :`Plus que ${10-s} tampon${10-s>1?"s":""} avant son burger offert<small>${c.burgers} burger${c.burgers>1?"s":""} acheté${c.burgers>1?"s":""} · ${c.offerts} offert${c.offerts>1?"s":""}${c.aujourdhui?` · aujourd'hui : ${c.aujourdhui}`:""}</small>`;
