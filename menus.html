@@ -228,6 +228,18 @@ header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .pbar{view-transition-name:pbar}.apps{view-transition-name:apps}
 @media (prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}}
 .logo img{aspect-ratio:1000/403}
+/* Formule (menu unique / chacun choisit) et fenêtre « Préparer le mail » (2026-11-13) */
+.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px;padding:3px;border-radius:12px;background:var(--sunken);border:1px solid var(--line)}
+.seg button{min-height:44px;padding:4px 6px;border:0;border-radius:9px;background:transparent;font-size:13px;font-weight:700;color:var(--muted);line-height:1.15}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.p-form{font-style:italic}
+.p-form+.p-note{margin-top:0;padding-top:calc(4px * var(--fs))}
+.mailbox h3{font-family:var(--display);font-size:20px;font-weight:800;margin:0}
+.mailbox .field textarea{min-height:240px;font-size:15px}
+.chk{display:flex;gap:8px;flex-wrap:wrap}
+.chk label{display:flex;align-items:center;gap:7px;padding:9px 13px;border:1px solid var(--line);border-radius:999px;background:var(--sunken);font-weight:600;font-size:14px}
+.chk input{width:18px;height:18px;accent-color:var(--accent)}
+.mailbox .lnk{align-self:flex-start;padding:2px 0}
 </style>
 </head>
 <body>
@@ -258,12 +270,19 @@ header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
       </div>
       <div class="field"><label for="fSub">Sous-titre (facultatif)</label><input id="fSub" placeholder="ex. Mariage du 14 juin 2027" maxlength="60" lang="fr"></div>
       <div class="field"><label for="fNote">Mention en bas (facultatif)</label><input id="fNote" placeholder="ex. Boissons non comprises" maxlength="140" lang="fr"></div>
+      <div class="field"><span class="lbl">Formule</span>
+        <div class="seg" id="fForm" role="group" aria-label="Formule">
+          <button type="button" data-v="" aria-pressed="true">Non précisé</button>
+          <button type="button" data-v="unique" aria-pressed="false">Menu unique pour la table</button>
+          <button type="button" data-v="choix" aria-pressed="false">Chacun choisit</button>
+        </div></div>
       <button class="btn" id="go" type="button">Mettre en page</button>
       <div class="secs" id="secs"></div>
       <div class="btns">
         <button class="btn soft" id="pdf" type="button">Télécharger en PDF</button>
         <button class="btn soft" id="png" type="button">Télécharger en image</button>
       </div>
+      <button class="btn" type="button" data-mail>✉️ Préparer le mail</button>
       <p class="hint">Corrige ce que tu veux dans les cases ci-dessus ou directement sur la page : tes retouches sont gardées, même si tu changes le texte collé. Une erreur ? « ↶ Annuler ».</p>
     </section>
 
@@ -322,6 +341,7 @@ Monaco</textarea></div>
         <button class="btn" id="dpdf" type="button">Télécharger en PDF</button>
         <button class="btn soft" id="dpng" type="button">Télécharger en image</button>
       </div>
+      <button class="btn" type="button" data-mail>✉️ Préparer le mail</button>
       <button class="btn soft" id="dNew" type="button">Nouveau devis (tout vider)</button>
     </section>
 
@@ -547,7 +567,10 @@ function parseMenu(raw){
 const EXAMPLE_TXT="Entrée : tartine de pain de campagne, foie gras de canard et chutney de figues ou gravlax de saumon maison, crème citronnée à l'aneth, pickles d'oignons rouges et mini-blinis\nPlat : dodine de volaille farcie aux herbes, risotto croustillant, betterave rôtie et jus réduit en finition ou carré de porcelet rôti au miel et aux épices, brochette de légumes et jus corsé\nDessert : pavlova aux fruits exotiques, chantilly vanillée ou poire pochée au vin rouge, crumble de noisettes et glace vanille";
 let RAW=store.get("menus2b-texte");if(typeof RAW!=="string")RAW="";
 let MENU=store.get("menus2b-dernier");
-const opts=()=>({titre:$("#fTitle").value.trim(),sousTitre:$("#fSub").value.trim(),prix:priceNum($("#fPrice").value),note:$("#fNote").value.trim()});
+let FORM="";
+const opts=()=>({titre:$("#fTitle").value.trim(),sousTitre:$("#fSub").value.trim(),prix:priceNum($("#fPrice").value),note:$("#fNote").value.trim(),formule:FORM});
+/* Formule : phrase ajoutée en bas de la page du menu */
+const FPH={unique:"Un seul menu pour toute la table, à choisir ensemble parmi les propositions",choix:"Chaque convive choisit parmi les propositions"};
 /* Retouches : le menu reste modifiable à la main, et le texte collé ne les efface pas.
    Chaque partie (o, on, os, om) et chaque plat (po) garde ce qui a été trouvé dans le texte collé.
    Quand le texte collé change, on refait le menu mais on garde l'ordre, les ajouts et les corrections faits à la main
@@ -585,7 +608,7 @@ function build(){
   applyFields();
 }
 function applyFields(){const o=opts(),a=MENU.auto||{};
-  MENU.titre=o.titre||"Menu";MENU.sousTitre=o.sousTitre||a.sousTitre||"";MENU.prix=o.prix||a.prix||"";MENU.note=o.note||a.note||"";save()}
+  MENU.titre=o.titre||"Menu";MENU.sousTitre=o.sousTitre||a.sousTitre||"";MENU.prix=o.prix||a.prix||"";MENU.note=o.note||a.note||"";MENU.formule=o.formule||"";save()}
 const retouche=()=>(MENU.delS||[]).length>0||(MENU.sections||[]).some(s=>s.o===null||s.nom!==s.on||s.sousTitre!==s.os||s.mode!==s.om||s.del.length||s.plats.length!==s.po.length||s.plats.some((p,i)=>p!==s.po[i]));
 
 /* Annuler : on garde les 40 derniers états (menu, texte collé, champs) */
@@ -613,6 +636,7 @@ function menuPage(m){
     <h2 class="p-title" contenteditable="true" spellcheck="true" data-f="titre">${esc(m.titre||"Menu")}</h2>
     ${m.sousTitre?`<div class="p-sub" contenteditable="true" spellcheck="true" data-f="sousTitre">${esc(m.sousTitre)}</div>`:""}
     ${rule("r-title")}${secs}
+    ${FPH[m.formule]?`<div class="p-note p-form">${esc(FPH[m.formule])}</div>`:""}
     ${m.note?`<div class="p-note" contenteditable="true" spellcheck="true" data-f="note">${esc(m.note)}</div>`:""}
   </div>${priceText(m.prix)?`<div class="p-price">${esc(priceText(m.prix))}</div>`:""}</div>`;
 }
@@ -852,6 +876,101 @@ async function exportAs(kind,btn){
 $("#pdf").onclick=e=>exportAs("pdf",e.currentTarget);$("#png").onclick=e=>exportAs("png",e.currentTarget);
 $("#fpdf").onclick=e=>exportAs("pdf",e.currentTarget);$("#fpng").onclick=e=>exportAs("png",e.currentTarget);
 
+/* ---------- Formule : interrupteur ---------- */
+function setForm(v){FORM=FPH[v]?v:"";document.querySelectorAll("#fForm button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===FORM))}
+$("#fForm").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;snap();setForm(b.dataset.v);store.set("menus2b-champs",opts());applyFields();if(TAB==="menu")page()});
+
+/* ---------- Préparer le mail (2026-11-13) : le texte s'écrit tout seul, les PDF sont joints ----------
+   Téléphone : feuille de partage (Mail, Outlook, Gmail…) avec le texte et les PDF.
+   Ordinateur : les PDF sont téléchargés et la messagerie s'ouvre avec l'adresse, l'objet et le texte. */
+const JOURS=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"],MOIS=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+const jourTxt=iso=>{const m=String(iso||"").match(/^(\d{4})-(\d{2})-(\d{2})$/);if(!m)return "";const d=new Date(+m[1],+m[2]-1,+m[3]);return `${JOURS[d.getDay()]} ${+m[3]===1?"1er":+m[3]} ${MOIS[+m[2]-1]}`};
+const ART={"entree":"une entrée","entrees":"une entrée","entree chaude":"une entrée","entree froide":"une entrée","plat":"un plat","plats":"un plat","plat principal":"un plat","dessert":"un dessert","desserts":"un dessert","fromage":"un fromage","fromages":"un fromage","poisson":"un poisson","amuse-bouche":"un amuse-bouche","amuse bouche":"un amuse-bouche"};
+function choixTxt(){const u=[...new Set((MENU.sections||[]).map(s=>ART[fold(s.nom||"").replace(/\s+/g," ").trim()]).filter(Boolean))];
+  return !u.length?"vos plats":u.length===1?u[0]:u.slice(0,-1).join(", ")+" et "+u[u.length-1]}
+const signe=()=>`${PROF&&PROF!=="commun"?cap(PROF):"L'équipe"}\nDouble B\n59 avenue Foch, 57730 Folschviller\n06 13 10 05 03`;
+const traiteur=()=>/traiteur/i.test(DEVIS.objet||"");
+function mailObjet(s){return `${traiteur()?"Votre prestation":"Votre repas"}${s.jour?" du "+jourTxt(s.jour):""} au Double B`}
+function mailTexte(s){
+  const quand=[s.jour?"du "+jourTxt(s.jour):"",s.serv==="soir"?"au soir":s.serv==="midi"?"midi":""].filter(Boolean).join(" ");
+  const prix=priceNum(MENU.prix),hb=/hors boisson|boissons? non compris/.test(fold(MENU.note||"")),pers=n2(s.pers),f=s.menu?MENU.formule:"";
+  const L=[`Bonjour${s.nom?" "+s.nom:""},`,
+    `Merci beaucoup pour votre demande, nous serons ravis de vous accueillir au Double B pour ${traiteur()?"votre prestation":"votre repas"}${quand?" "+quand:""}.`];
+  if(s.menu)L.push(`Vous trouverez en pièce jointe notre proposition de menu${prix?`, au prix de ${prix} € par personne${hb?", hors boissons":""}`:""}.`);
+  if(s.devis){const t=devisTotals();L.push(`${s.menu?"Vous trouverez également":"Vous trouverez en pièce jointe"} notre devis n° ${DEVIS.num}${t.ttc?`, d'un montant de ${eurD(t.ttc)} TTC`:""}. Pour confirmer la réservation, il vous suffit de nous le retourner signé, accompagné d'un acompte de ${n2(DEVIS.acompte)||30} %.`)}
+  if(s.forf)L.push("Je vous joins aussi nos forfaits apéritifs, si vous souhaitez ajouter un apéritif.");
+  const gp=pers?`votre groupe de ${pers} personnes`:"votre groupe";
+  if(f==="unique")L.push(`Pour que tout se passe au mieux pour ${gp}, nous servons un menu unique à toute la table : je vous laisse choisir ensemble ${choixTxt()} parmi les propositions, et ce même menu sera servi à chacun de vos convives.`);
+  if(f==="choix")L.push(`Chaque convive pourra choisir ${choixTxt()} parmi les propositions : il vous suffira de me transmettre les choix de chacun quelques jours avant.`);
+  L.push((f==="unique"?"Il vous suffit de me répondre avec vos choix, et je m'occupe du reste. ":"")+"N'hésitez pas à me signaler une allergie ou un régime particulier, nous adapterons avec plaisir.");
+  L.push("Au plaisir de vous recevoir,",signe());
+  return L.join("\n\n");
+}
+async function pdfOf(which){const old=TAB;TAB=which;page();
+  try{const c=await capture();const {jsPDF}=window.jspdf;const pdf=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+    pdf.addImage(c.toDataURL("image/jpeg",0.95),"JPEG",0,0,210,297);return new File([pdf.output("blob")],fileBase()+".pdf",{type:"application/pdf"})}
+  finally{TAB=old;page()}}
+function openMail(){
+  const dv=TAB==="devis",hasMenu=(MENU.sections||[]).length>0;
+  const S={to:"",nom:"",jour:"",serv:"",pers:"",menu:TAB==="menu"||(dv&&hasMenu&&DEVIS.lignes.some(l=>/menu/i.test(l.d||""))),
+    devis:dv&&DEVIS.lignes.length>0,forf:TAB==="forfaits"||(dv&&DEVIS.lignes.some(l=>/forfait/i.test(l.d||"")))};
+  if(dv){const m=String(DEVIS.adr||"").match(/[^\s<>@]+@[^\s<>@]+\.[a-z]{2,}/i);S.to=m?m[0]:"";S.nom=DEVIS.client||"";S.jour=DEVIS.jour||"";S.pers=DEVIS.pers||""}
+  let edited=false;
+  const m=document.createElement("div");m.className="modal";
+  m.innerHTML=`<div class="box mailbox" role="dialog" aria-label="Préparer le mail"><h3>✉️ Préparer le mail</h3>
+    <div class="field"><label for="mTo">Adresse mail du client</label><input id="mTo" type="email" inputmode="email" autocomplete="off" placeholder="ex. client@orange.fr" value="${esc(S.to)}"></div>
+    <div class="field"><label for="mNom">Après « Bonjour » (facultatif)</label><input id="mNom" maxlength="60" placeholder="ex. Madame Dupont" value="${esc(S.nom)}"></div>
+    <div class="row2"><div class="field"><label for="mJour">Date du repas</label><input id="mJour" type="date" value="${esc(S.jour)}"></div>
+      <div class="field"><label for="mPers">Nombre de personnes</label><input id="mPers" inputmode="numeric" placeholder="ex. 10" value="${esc(String(S.pers))}"></div></div>
+    <div class="field"><span class="lbl">Service</span><div class="seg" id="mServ"><button type="button" data-v="" aria-pressed="true">Pas précisé</button><button type="button" data-v="midi" aria-pressed="false">Midi</button><button type="button" data-v="soir" aria-pressed="false">Soir</button></div></div>
+    <div class="field"><span class="lbl">Pièces jointes</span><div class="chk">
+      <label><input type="checkbox" id="mMenu"${S.menu?" checked":""}${hasMenu?"":" disabled"}> Le menu</label>
+      <label><input type="checkbox" id="mDevis"${S.devis?" checked":""}${DEVIS.lignes.length?"":" disabled"}> Le devis</label>
+      <label><input type="checkbox" id="mForf"${S.forf?" checked":""}> Forfaits apéritifs</label></div></div>
+    <div class="field"><label for="mObj">Objet</label><input id="mObj" maxlength="120"></div>
+    <div class="field"><label for="mTxt">Message</label><textarea id="mTxt" spellcheck="true" lang="fr"></textarea></div>
+    <button class="lnk" type="button" id="mRe" hidden>↺ Réécrire le texte avec les cases ci-dessus</button>
+    <button class="btn" type="button" id="mGo">Ouvrir ma messagerie</button>
+    <div class="btns"><button class="btn soft" type="button" id="mCopy">Copier le texte</button><button class="btn soft" type="button" id="mClose">Fermer</button></div></div>`;
+  document.body.appendChild(m);
+  const q=s=>m.querySelector(s);
+  const read=()=>({to:q("#mTo").value.trim(),nom:q("#mNom").value.trim(),jour:q("#mJour").value,pers:q("#mPers").value.trim(),serv:S.serv||"",
+    menu:q("#mMenu").checked,devis:q("#mDevis").checked,forf:q("#mForf").checked});
+  const redo=()=>{const r=read();q("#mObj").value=mailObjet(r);if(!edited)q("#mTxt").value=mailTexte(r)};
+  redo();
+  m.addEventListener("input",e=>{if(e.target.id==="mTxt"){edited=true;q("#mRe").hidden=false;return}if(e.target.id!=="mObj")redo()});
+  m.addEventListener("change",e=>{if(e.target.type==="checkbox")redo()});
+  q("#mServ").onclick=e=>{const b=e.target.closest("button");if(!b)return;S.serv=b.dataset.v;q("#mServ").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));redo()};
+  q("#mRe").onclick=()=>{edited=false;q("#mRe").hidden=true;redo()};
+  q("#mClose").onclick=()=>m.remove();
+  m.addEventListener("click",e=>{if(e.target===m)m.remove()});
+  q("#mCopy").onclick=async()=>{try{await navigator.clipboard.writeText(q("#mTxt").value);toast("Texte copié")}catch{q("#mTxt").select();toast("Sélectionné : copie-le")}};
+  q("#mGo").onclick=async()=>{
+    const r=read(),obj=q("#mObj").value.trim(),txt=q("#mTxt").value;
+    if(r.to&&!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(r.to)){toast("L'adresse mail semble incomplète");q("#mTo").focus();return}
+    const btn=q("#mGo");btn.disabled=true;btn.innerHTML='<span class="spin"></span> Préparation des PDF…';
+    let files=[];
+    try{await loadLibs().catch(()=>{throw new Error("libs")});
+      for(const [ok,w] of [[r.menu,"menu"],[r.devis,"devis"],[r.forf,"forfaits"]])if(ok)files.push(await pdfOf(w));}
+    catch(e){toast(e.message==="libs"?"Pas de connexion : les PDF ont besoin d'internet":"Les PDF n'ont pas pu être préparés, réessaie");btn.disabled=false;btn.textContent="Ouvrir ma messagerie";return}
+    const tel=/iPhone|iPad|Android/i.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&/Macintosh/.test(navigator.userAgent));
+    if(tel&&navigator.canShare&&(!files.length||navigator.canShare({files}))){
+      // le téléphone demande un nouveau toucher après la préparation des PDF
+      m.querySelector(".box").innerHTML=`<h3>✉️ Tout est prêt</h3><p class="hint">Appuie sur « Envoyer », choisis Mail ou Outlook : le texte et ${files.length>1?"les PDF sont":files.length?"le PDF est":"tout est"} déjà dedans.${r.to?` L'adresse <b>${esc(r.to)}</b> est copiée : colle-la dans « À ».`:""}</p>
+        <button class="btn" type="button" data-s>Envoyer</button><button class="btn soft" type="button" data-c>Fermer</button>`;
+      m.querySelector("[data-c]").onclick=()=>m.remove();
+      m.querySelector("[data-s]").onclick=()=>{if(r.to&&navigator.clipboard)navigator.clipboard.writeText(r.to).catch(()=>{});
+        navigator.share(Object.assign({title:obj,text:txt},files.length?{files}:{})).then(()=>m.remove()).catch(e=>{if(e.name!=="AbortError")toast("Le partage n'a pas marché, réessaie")})};
+      return;
+    }
+    files.forEach(f=>saveLink(f,f.name));
+    location.href=`mailto:${encodeURIComponent(r.to).replace("%40","@")}?subject=${encodeURIComponent(obj)}&body=${encodeURIComponent(txt)}`;
+    m.remove();toast(files.length?"Mail ouvert : joins le PDF qui vient d'être téléchargé":"Mail ouvert");
+  };
+  setTimeout(()=>q(S.to?"#mJour":"#mTo").focus(),50);
+}
+document.querySelectorAll("[data-mail]").forEach(b=>b.onclick=openMail);
+
 /* ---------- Onglets ---------- */
 document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{
   TAB=b.dataset.tab;document.querySelectorAll("[data-tab]").forEach(x=>x.setAttribute("aria-selected",x===b));
@@ -861,6 +980,7 @@ document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{
 
 /* Démarrage : on reprend le dernier menu */
 const ch=store.get("menus2b-champs");
+if(ch&&ch.formule)FORM=ch.formule;setForm(FORM);
 if(ch){$("#fTitle").value=ch.titre||"Menu";$("#fSub").value=ch.sousTitre||"";$("#fPrice").value=priceNum(ch.prix);$("#fNote").value=ch.note||""}
 $("#raw").value=RAW;
 if(!MENU||!Array.isArray(MENU.sections))build();else ready(MENU);
