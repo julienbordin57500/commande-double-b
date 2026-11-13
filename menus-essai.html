@@ -296,6 +296,7 @@ header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .dz-next .btn{height:56px;font-size:16.5px;font-weight:800;border-radius:16px}
 #nPrev{width:56px;padding:0;font-size:24px}
 #nPrev[hidden]+#nGo{grid-column:1/-1}
+#fForm{grid-template-columns:1fr 1fr}
 #dSv{max-width:420px;text-align:center}
 .seg.s2{grid-template-columns:1fr 1fr}
 details.more{border:1px solid var(--line);border-radius:14px;background:var(--sunken);padding:0 12px}
@@ -381,6 +382,7 @@ details.more summary em{font-style:normal;color:var(--muted);font-weight:600}
             <button type="button" data-v="" aria-pressed="true">Non précisé</button>
             <button type="button" data-v="unique" aria-pressed="false">Menu unique pour la table</button>
             <button type="button" data-v="choix" aria-pressed="false">Chacun choisit</button>
+            <button type="button" data-v="apero" aria-pressed="false">🥂 Apéro dînatoire</button>
           </div></div>
         <div class="field"><label for="fPrice">Prix par personne</label><div class="euro"><input id="fPrice" inputmode="decimal" placeholder="ex. 35" maxlength="8"><span>€</span></div></div>
         <details class="more"><summary>Titre, sous-titre et mention du bas</summary>
@@ -405,11 +407,10 @@ details.more summary em{font-style:normal;color:var(--muted);font-weight:600}
           <p class="hint" style="margin-top:-6px">Les lignes Menu et Apéritif se calculent toutes seules (prix × personnes).</p>
           <div id="dLignes" class="dl"></div>
           <button class="btn soft" type="button" data-qa="libre">＋ Ajouter une ligne</button>
-          <details class="more"><summary>Acompte, validité et conditions</summary>
-            <div class="row2">
-              <div class="field"><label for="dAcompte">Acompte</label><div class="euro"><input id="dAcompte" inputmode="numeric" value="30"><span>%</span></div></div>
-              <div class="field"><label for="dValid">Validité</label><div class="euro"><input id="dValid" inputmode="numeric" value="30"><span style="font-size:12px">jours</span></div></div>
-            </div>
+          <div class="field"><span class="lbl">Demander un acompte ?</span><div class="seg s2" id="dAc"><button type="button" data-v="0">Non</button><button type="button" data-v="1">Oui</button></div></div>
+          <div class="field" id="dAcF" hidden><label for="dAcompte">Acompte demandé</label><div class="euro"><input id="dAcompte" inputmode="numeric" value="30"><span>%</span></div></div>
+          <details class="more"><summary>Validité et conditions</summary>
+            <div class="field"><label for="dValid">Validité du devis</label><div class="euro"><input id="dValid" inputmode="numeric" value="30"><span style="font-size:12px">jours</span></div></div>
             <div class="field"><label for="dDate">Date du devis</label><input id="dDate" type="date"></div>
             <div class="field"><label for="dCond">Conditions</label><textarea id="dCond" style="min-height:90px"></textarea></div>
           </details>
@@ -631,7 +632,7 @@ function parseMenu(raw){
   const addBody=txt=>{
     txt=pullQty(txt,cur);if(!tidy(txt))return;
     if(!cur)newSec("",null);
-    const listy=LIST_KW.test(cur.key);                         // pièces, cocktail… : les virgules séparent aussi les pièces
+    const listy=FORM==="apero"||LIST_KW.test(cur.key);   // apéro dînatoire : virgules et retours à la ligne séparent les pièces                         // pièces, cocktail… : les virgules séparent aussi les pièces
     const pieces=txt.split(listy?/\s+ou\s+|\s*[;|•,]\s*|\s+\/\s+/i:/\s+ou\s+|\s*[;|•]\s*|\s+\/\s+/i);
     if(/\sou\s/i.test(" "+txt+" "))cur.ou=true;
     cur.lines++;
@@ -670,7 +671,7 @@ function parseMenu(raw){
   out.sections.forEach(s=>{
     const k=s.key;
     // « ou » → au choix ; pièces, cocktail, buffet… → liste ; entrée/plat/dessert sur plusieurs lignes → au choix
-    s.mode=LIST_KW.test(k)?"liste":s.ou||s.plats.length<=1?"choix":(COURSE_KW.test(k)||!k)&&s.lines>1&&s.plats.length<=4?"choix":"liste";
+    s.mode=FORM==="apero"||LIST_KW.test(k)?"liste":s.ou||s.plats.length<=1?"choix":(COURSE_KW.test(k)||!k)&&s.lines>1&&s.plats.length<=4?"choix":"liste";
     if(s.mode==="liste"&&s.plats.length>1&&/^(Entrée|Dessert|Fromage)$/.test(s.nom))s.nom+="s";
     delete s.key;delete s.ou;delete s.lines;
   });
@@ -721,6 +722,7 @@ function build(){
   const old=MENU&&Array.isArray(MENU.sections)?ready(MENU):null;
   MENU={auto:{sousTitre:p.sousTitre,prix:p.prix,note:p.note},sections:old?mergeSecs(old,p.sections):p.sections,
     delS:old?old.delS.filter(o=>p.sections.some(s=>s.o===o)):[]};
+  if(FORM==="apero")MENU.sections.forEach(s=>s.mode="liste");
   applyFields();
 }
 function applyFields(){const o=opts(),a=MENU.auto||{};
@@ -894,7 +896,7 @@ function devisTotals(){let ttc=0;const tva={10:0,20:0,5.5:0};
   const tv=Object.values(tva).reduce((a,b)=>a+b,0);return {ttc,ht:ttc-tv,tva}}
 function devisPage(dv){
   const t=devisTotals();const ac=t.ttc*n2(dv.acompte)/100;
-  const cond=(dv.cond||COND_DEF).replace("{v}",n2(dv.valid)||30).replace("{a}",n2(dv.acompte)||30);
+  const cond=(dv.cond||(dv.acOn?COND_DEF:COND_DEF.replace(" et d'un acompte de {a} % du montant TTC",""))).replace("{v}",n2(dv.valid)||30).replace("{a}",n2(dv.acompte)||30);
   const rows=dv.lignes.length?dv.lignes.map(l=>`<tr><td>${esc(l.d||"—")}</td><td>${esc(String(l.q||""))}</td><td>${n2(l.pu)?eurD(n2(l.pu)):""}</td><td>${esc(String(l.tva||10)).replace(".",",")} %</td><td><b>${eurD(n2(l.q)*n2(l.pu))}</b></td></tr>`).join("")
     :`<tr><td colspan="5" class="vide">Ajoute des lignes : menu, forfait apéritif, boissons…</td></tr>`;
   const tvaRows=Object.entries(t.tva).filter(([,v])=>v>0.004).map(([r,v])=>`<tr><td>TVA ${String(r).replace(".",",")} %</td><td>${eurD(v)}</td></tr>`).join("");
@@ -907,7 +909,7 @@ function devisPage(dv){
     </div>
     <div class="obj">${dv.objet?`<span>Objet : <b>${esc(dv.objet)}</b></span>`:""}${dv.jour?`<span>Date de l'événement : <b>${esc(dateFR(dv.jour))}</b></span>`:""}${dv.pers?`<span>Nombre de personnes : <b>${esc(String(dv.pers))}</b></span>`:""}${!dv.objet&&!dv.jour&&!dv.pers?"<span>Prestation Double B</span>":""}</div>
     <table><thead><tr><th>Désignation</th><th>Qté</th><th>Prix unit. TTC</th><th>TVA</th><th>Total TTC</th></tr></thead><tbody>${rows}</tbody></table>
-    <div class="tot"><table><tbody><tr><td>Total HT</td><td>${eurD(t.ht)}</td></tr>${tvaRows}<tr class="big"><td>Total TTC</td><td>${eurD(t.ttc)}</td></tr>${n2(dv.acompte)?`<tr class="ac"><td>Acompte à la signature (${String(n2(dv.acompte)).replace(".",",")} %)</td><td>${eurD(ac)}</td></tr>`:""}</tbody></table></div>
+    <div class="tot"><table><tbody><tr><td>Total HT</td><td>${eurD(t.ht)}</td></tr>${tvaRows}<tr class="big"><td>Total TTC</td><td>${eurD(t.ttc)}</td></tr>${dv.acOn&&n2(dv.acompte)?`<tr class="ac"><td>Acompte à la signature (${String(n2(dv.acompte)).replace(".",",")} %)</td><td>${eurD(ac)}</td></tr>`:""}</tbody></table></div>
     <div class="cond">${esc(cond)}</div>
     <div class="sign"><div>Bon pour accord<br>Date et signature du client :</div><div>Pour le Double B :</div></div>
     <div class="foot">DOUBLE B — SAS au capital de 10 000 € — Siège : 12 rue des Loriots, 57500 Saint-Avold — RCS Sarreguemines 915 267 595<br>SIRET 915 267 595 00022 — TVA intracommunautaire FR32915267595</div>
@@ -993,8 +995,11 @@ $("#pdf").onclick=e=>exportAs("pdf",e.currentTarget);$("#png").onclick=e=>export
 $("#fpdf").onclick=e=>exportAs("pdf",e.currentTarget);$("#fpng").onclick=e=>exportAs("png",e.currentTarget);
 
 /* ---------- Formule : interrupteur ---------- */
-function setForm(v){FORM=FPH[v]?v:"";document.querySelectorAll("#fForm button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===FORM))}
-$("#fForm").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;snap();setForm(b.dataset.v);store.set("menus2b-champs",opts());applyFields();if(TAB==="menu")page()});
+function setForm(v){FORM=FPH[v]||v==="apero"?v:"";document.querySelectorAll("#fForm button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===FORM))}
+$("#fForm").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;snap();const was=FORM;setForm(b.dataset.v);
+  // apéro dînatoire : titre adapté (s'il n'a pas été changé à la main) et pièces en liste
+  const t=$("#fTitle").value.trim();if(FORM==="apero"&&(!t||t==="Menu"))$("#fTitle").value="Apéritif dînatoire";else if(was==="apero"&&FORM!=="apero"&&t==="Apéritif dînatoire")$("#fTitle").value="Menu";
+  store.set("menus2b-champs",opts());if(was==="apero"||FORM==="apero"){MENU=null;build();show()}else{applyFields();if(TAB==="menu")page()}});
 
 /* ---------- Textes du mail (écrits tout seuls) ---------- */
 const JOURS=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"],MOIS=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
@@ -1010,8 +1015,8 @@ function mailTexte(s){
   const prix=priceNum(MENU.prix),pers=n2(s.pers),f=s.menu?MENU.formule:"",bo=s.boiss==="hors"?", hors boissons":s.boiss==="comp"?", boissons comprises":"";
   const L=[`Bonjour${s.nom?" "+s.nom:""},`,
     `Merci beaucoup pour votre demande, nous serons ravis de vous accueillir au Double B pour ${traiteur()?"votre prestation":"votre repas"}${quand?" "+quand:""}.`];
-  if(s.menu)L.push(`Vous trouverez en pièce jointe notre proposition de menu${prix?`, au prix de ${prix} € par personne${bo}`:""}.`);
-  if(s.devis){const t=devisTotals();L.push(`${s.menu?"Vous trouverez également":"Vous trouverez en pièce jointe"} notre devis n° ${DEVIS.num}${t.ttc?`, d'un montant de ${eurD(t.ttc)} TTC`:""}. Pour confirmer la réservation, il vous suffit de nous le retourner signé, accompagné d'un acompte de ${n2(DEVIS.acompte)||30} %.`)}
+  if(s.menu)L.push(`Vous trouverez en pièce jointe notre proposition ${MENU.formule==="apero"?"d'apéritif dînatoire":"de menu"}${prix?`, au prix de ${prix} € par personne${bo}`:""}.`);
+  if(s.devis){const t=devisTotals();L.push(`${s.menu?"Vous trouverez également":"Vous trouverez en pièce jointe"} notre devis n° ${DEVIS.num}${t.ttc?`, d'un montant de ${eurD(t.ttc)} TTC`:""}. Pour confirmer la réservation, il vous suffit de nous le retourner signé${DEVIS.acOn?`, accompagné d'un acompte de ${n2(DEVIS.acompte)||30} %`:""}.`)}
   if(s.forf)L.push("Je vous joins aussi nos forfaits apéritifs, si vous souhaitez ajouter un apéritif.");
   const gp=pers?`votre groupe de ${pers} personnes`:"votre groupe";
   if(f==="unique")L.push(`Pour que tout se passe au mieux pour ${gp}, nous servons un menu unique à toute la table : je vous laisse choisir ensemble ${choixTxt()} parmi les propositions, et ce même menu sera servi à chacun de vos convives.`);
@@ -1115,7 +1120,10 @@ document.querySelectorAll("#panel-client .seg").forEach(g=>g.addEventListener("c
 function devisUI(){const on=!DEVIS.off;$("#dBody").hidden=!on;
   $("#dOn").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String((b.dataset.v==="1")===on)));
   $("#dAper").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String((DEVIS.aper||"")===b.dataset.v)));
+  $("#dAc").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String((b.dataset.v==="1")===!!DEVIS.acOn)));$("#dAcF").hidden=!DEVIS.acOn;
   $("#dNumT").textContent=on&&DEVIS.num?"n° "+DEVIS.num:""}
+$("#dAc").onclick=e=>{const b=e.target.closest("button");if(!b)return;DEVIS.acOn=b.dataset.v==="1";if(DEVIS.acOn&&!n2(DEVIS.acompte)){DEVIS.acompte=30;$("#dAcompte").value=30}
+  saveDevis();devisUI();if(TAB==="devis")show()};
 $("#dOn").onclick=e=>{const b=e.target.closest("button");if(!b)return;DEVIS.off=b.dataset.v==="0";if(!DEVIS.off){syncLignes();if(!DEVIS.num)newNum()}
   saveDevis();devisUI();linesUI();TAB=DEVIS.off?"menu":"devis";show()};
 $("#dAper").onclick=e=>{const b=e.target.closest("button");if(!b)return;DEVIS.aper=b.dataset.v;syncLignes();saveDevis();devisUI();linesUI();show()};
