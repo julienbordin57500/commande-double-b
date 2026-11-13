@@ -6,7 +6,7 @@
 <script>/* Changement d'onglet : sens de la transition (gauche / droite) ; retour en arrière ou lien interne : pas d'effet */
 addEventListener("pagereveal",e=>{if(!e.viewTransition)return;let d=null;try{d=sessionStorage.getItem("2b-sens");sessionStorage.removeItem("2b-sens")}catch(x){}
 if(d)try{e.viewTransition.types.add(d)}catch(x){}else e.viewTransition.skipTransition()});</script>
-<title>Menus Double B</title>
+<title>Devis & menus · Double B</title>
 <meta name="description" content="Mise en page automatique des menus et forfaits apéritifs du Double B.">
 <meta name="theme-color" content="#f2a516">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -257,63 +257,193 @@ header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .dacts button{flex:1;height:44px;border:0;background:transparent;font-weight:700;font-size:14px;color:var(--fg)}
 .dacts button+button{border-left:1px solid var(--line)}
 .dacts .del{color:#c0392b}
+/* ===== Refonte « dossiers clients » (2026-11-13) ===== */
+.home{display:flex;flex-direction:column;gap:12px;margin-top:16px;max-width:680px}
+.dz-new{display:flex;align-items:center;gap:14px;padding:16px 18px;border:0;border-radius:22px;background:var(--fg);color:var(--bg);text-align:left;box-shadow:0 12px 28px rgba(0,0,0,.14)}
+.dz-new:active{transform:scale(.985)}
+.dz-new .plus{width:48px;height:48px;border-radius:15px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-size:28px;font-weight:800;flex:none}
+.dz-new b{display:block;font-family:var(--display);font-size:20px;font-weight:800;line-height:1.1}
+.dz-new small{display:block;opacity:.72;font-size:14px;font-weight:600;margin-top:3px}
+.dz-filt{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.dz-filt button{height:40px;border:0;border-radius:10px;background:transparent;font-weight:700;color:var(--muted)}
+.dz-filt button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.dz-list{display:flex;flex-direction:column;gap:8px}
+.dz-list .sk{display:block;height:74px;border-radius:18px;margin:0}
+.dz-card{display:grid;grid-template-columns:46px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:18px;background:var(--surface);text-align:left;color:var(--fg);width:100%}
+.dz-card:active{transform:scale(.99)}
+.dz-card .av{width:46px;height:46px;border-radius:50%;background:var(--accent-soft);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:16px}
+.dz-card b{display:block;font-size:16.5px;font-weight:800;line-height:1.2;overflow-wrap:anywhere}
+.dz-card small{display:block;color:var(--muted);font-size:13.5px;font-weight:600;margin-top:2px}
+.dz-card .m{font-family:var(--display);font-weight:800;font-size:15px;white-space:nowrap;align-self:start;margin-top:3px}
+.dz-pill{display:inline-block;margin-top:7px;font-size:12px;font-weight:800;padding:3px 9px;border-radius:99px;background:var(--sunken);color:var(--muted)}
+.dz-pill.env{background:#fff1d6;color:#9a5b00}.dz-pill.rel{background:#ffe1d6;color:#b23c17}.dz-pill.acc{background:#dcf3e4;color:#1e7a43}.dz-pill.ref{background:#f6e1df;color:#a33a2c}
+@media (prefers-color-scheme:dark){.dz-pill.env{background:#3a2c10;color:#f5c26b}.dz-pill.rel{background:#40200f;color:#ff9d76}.dz-pill.acc{background:#123222;color:#7ddca4}.dz-pill.ref{background:#3a1a16;color:#f09a8c}}
+.dz-empty{padding:26px 18px;text-align:center;color:var(--muted);border:1.5px dashed var(--line);border-radius:18px;font-weight:600;line-height:1.5}
+.dz-set{align-self:center;border:0;background:transparent;color:var(--muted);font-weight:700;padding:12px;text-decoration:underline;text-underline-offset:3px}
+.dz-top{display:flex;align-items:center;gap:10px;margin-top:14px;max-width:680px}
+.dz-back,.dz-more{flex:none;width:46px;height:46px;border-radius:15px;border:1px solid var(--line);background:var(--surface);font-size:26px;font-weight:700;line-height:1;display:grid;place-items:center;color:var(--fg);padding:0}
+.dz-name{flex:1;min-width:0}
+.dz-name b{display:block;font-family:var(--display);font-size:22px;font-weight:800;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dz-name small{display:block;color:var(--muted);font-weight:600;font-size:13.5px;margin-top:2px}
+.dz-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:16px;max-width:680px}
+.dz-steps button{border:0;background:transparent;padding:0 0 8px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--muted);border-bottom:3px solid var(--line);transition:border-color .2s,color .2s}
+.dz-steps i{font-style:normal;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--surface);border:1px solid var(--line);font-weight:800;font-size:13px;transition:background .2s}
+.dz-steps button.done{color:var(--fg);border-bottom-color:var(--accent-soft)}
+.dz-steps button.done i{background:var(--accent-soft);border-color:transparent}
+.dz-steps button[aria-current="step"]{color:var(--fg);border-bottom-color:var(--accent)}
+.dz-steps button[aria-current="step"] i{background:var(--accent);color:var(--accent-ink);border-color:transparent;box-shadow:0 4px 12px rgba(242,165,22,.35)}
+.dz-next{position:sticky;bottom:calc(var(--bnh,76px) + 8px);z-index:6;display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;margin-top:16px;max-width:420px;padding:6px;border-radius:20px;background:color-mix(in srgb,var(--bg) 82%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.dz-next .btn{height:56px;font-size:16.5px;font-weight:800;border-radius:16px}
+#nPrev{width:56px;padding:0;font-size:24px}
+#nPrev[hidden]+#nGo{grid-column:1/-1}
+#fForm{grid-template-columns:1fr 1fr}
+#dSv{max-width:420px;text-align:center}
+.seg.s2{grid-template-columns:1fr 1fr}
+details.more{border:1px solid var(--line);border-radius:14px;background:var(--sunken);padding:0 12px}
+details.more>summary{list-style:none;cursor:pointer;padding:14px 0;font-weight:700;font-size:15px;display:flex;align-items:center;gap:6px}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary::after{content:"›";margin-left:auto;transform:rotate(90deg);transition:transform .2s;color:var(--muted);font-size:22px;line-height:1}
+details.more[open]>summary::after{transform:rotate(-90deg)}
+details.more[open]{padding-bottom:12px}
+details.more>.field+.field,details.more>.row2+.field,details.more>.field+.row2{margin-top:10px}
+details.more summary em{font-style:normal;color:var(--muted);font-weight:600}
+.panel h2 small{font-family:var(--body);font-size:14px;color:var(--muted);font-weight:700;margin-left:6px}
+.dz-stat{padding:12px 14px;border-radius:14px;background:var(--accent-soft);font-weight:700;display:flex;flex-direction:column;gap:10px}
+.dz-stat .r{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.dz-links{display:flex;justify-content:space-between;gap:8px}
+.dz-menu .btn{justify-content:flex-start}
+.pvsw{margin-bottom:8px}
+#panel-client,#panel-menu,#panel-devis,#panel-send{animation:dzIn .25s ease-out}
+@keyframes dzIn{from{opacity:0;transform:translateY(6px)}}
+@media (prefers-reduced-motion:reduce){#panel-client,#panel-menu,#panel-devis,#panel-send{animation:none}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="pbar" id="pbar"></div><script src="profil.js"></script>
   <header class="top">
-    <div class="logo"><img src="logo-hd.png" alt="Double B" width="1000" height="403"></div>
-    <div class="titles"><h1>Menus</h1><p>Colle ton menu, il se met tout seul dans la trame des devis.</p></div>
+    <div class="titles"><h1>Devis &amp; menus</h1><p>Un dossier par client : le menu, le devis et le mail au même endroit.</p></div>
   </header>
-  <div class="tabs" role="tablist">
-    <button role="tab" data-tab="menu" aria-selected="true">Menu</button>
-    <button role="tab" data-tab="forfaits" aria-selected="false">Forfaits apéritifs</button>
-    <button role="tab" data-tab="devis" aria-selected="false">Devis</button>
-  </div>
 
-  <div class="grid">
-    <!-- Saisie : Menu -->
-    <section class="panel" id="panel-menu">
-      <h2>Ton menu</h2>
-      <div class="docbar"><button class="btn soft" type="button" data-list="menu">📂 Mes menus</button><button class="btn soft" type="button" data-newdoc="menu">＋ Nouveau</button></div>
-      <p class="sv" data-sv></p>
-      <div class="field">
-        <label for="raw">Colle, écris ou dicte le menu</label>
-        <textarea id="raw" spellcheck="true" lang="fr" placeholder="ex.&#10;Entrée : tartine de pain de campagne, foie gras, chutney de figues ou gravlax de saumon maison&#10;Plat : dodine de volaille farcie aux herbes ou carré de porcelet rôti au miel&#10;Dessert : pavlova aux fruits exotiques ou poire pochée au vin rouge"></textarea>
-      </div>
-      <p class="hint">Mets le nom de chaque partie suivi de « : » (Entrée :, Plat :, Dessert :, Pièces salées :…) et sépare les choix par « ou » ou par un retour à la ligne. La page se met à jour pendant que tu écris.</p>
-      <div class="row2">
-        <div class="field"><label for="fTitle">Titre</label><input id="fTitle" value="Menu" maxlength="40" lang="fr"></div>
-        <div class="field"><label for="fPrice">Prix par personne</label><div class="euro"><input id="fPrice" inputmode="decimal" placeholder="ex. 35" maxlength="8" aria-describedby="fPriceU"><span id="fPriceU">€</span></div></div>
-      </div>
-      <div class="field"><label for="fSub">Sous-titre (facultatif)</label><input id="fSub" placeholder="ex. Mariage du 14 juin 2027" maxlength="60" lang="fr"></div>
-      <div class="field"><label for="fNote">Mention en bas (facultatif)</label><input id="fNote" placeholder="ex. Boissons non comprises" maxlength="140" lang="fr"></div>
-      <div class="field"><span class="lbl">Formule</span>
-        <div class="seg" id="fForm" role="group" aria-label="Formule">
-          <button type="button" data-v="" aria-pressed="true">Non précisé</button>
-          <button type="button" data-v="unique" aria-pressed="false">Menu unique pour la table</button>
-          <button type="button" data-v="choix" aria-pressed="false">Chacun choisit</button>
-        </div></div>
-      <button class="btn" id="go" type="button">Mettre en page</button>
-      <div class="secs" id="secs"></div>
-      <div class="btns">
-        <button class="btn soft" id="pdf" type="button">Télécharger en PDF</button>
-        <button class="btn soft" id="png" type="button">Télécharger en image</button>
-      </div>
-      <button class="btn" type="button" data-mail>✉️ Préparer le mail</button>
-      <p class="hint">Corrige ce que tu veux dans les cases ci-dessus ou directement sur la page : tes retouches sont gardées, même si tu changes le texte collé. Une erreur ? « ↶ Annuler ».</p>
-    </section>
+  <!-- Accueil : les dossiers -->
+  <section id="home" class="home">
+    <button type="button" class="dz-new" id="hNew"><span class="plus" aria-hidden="true">＋</span><span><b>Nouveau dossier client</b><small>Repas, privatisation ou traiteur</small></span></button>
+    <div class="dz-filt" role="group" aria-label="Filtrer">
+      <button type="button" data-f="cours" aria-pressed="true">En cours</button>
+      <button type="button" data-f="fini" aria-pressed="false">Terminés</button>
+    </div>
+    <div class="dz-list" id="hList"><span class="sk big"></span><span class="sk"></span><span class="sk"></span></div>
+    <button type="button" class="dz-set" id="hSet"><span aria-hidden="true">⚙︎</span> Réglages : forfaits apéritifs</button>
+  </section>
 
-    <!-- Saisie : Forfaits -->
-    <section class="panel" id="panel-forfaits" hidden>
-      <h2>Forfaits apéritifs</h2>
-      <p class="hint">Ta page de forfaits, prête à joindre aux devis. Modifie les prix ou les boissons ici ; tout le reste est fixe.</p>
-      <div class="row2">
-        <div class="field"><label for="p1">Prix forfait classique</label><input id="p1" value="12 €"></div>
-        <div class="field"><label for="p2">Prix forfait réception</label><input id="p2" value="17 €"></div>
-      </div>
-      <div class="field"><label for="drinks">Boissons (une par ligne)</label><textarea id="drinks" spellcheck="true" lang="fr" style="min-height:220px">Bière
+  <!-- Un dossier -->
+  <section id="dos" hidden>
+    <div class="dz-top">
+      <button type="button" class="dz-back" id="dBack" aria-label="Retour aux dossiers">‹</button>
+      <div class="dz-name"><b id="dName">Nouveau dossier</b><small id="dInfo"></small></div>
+      <button type="button" class="dz-more" id="dMore" aria-label="Plus d'actions">⋯</button>
+    </div>
+    <nav class="dz-steps" id="steps" aria-label="Étapes">
+      <button type="button" data-step="client"><i>1</i>Client</button>
+      <button type="button" data-step="menu"><i>2</i>Menu</button>
+      <button type="button" data-step="devis"><i>3</i>Devis</button>
+      <button type="button" data-step="send"><i>4</i>Envoyer</button>
+    </nav>
+
+    <div class="grid">
+      <!-- 1. Client -->
+      <section class="panel" id="panel-client">
+        <h2>Le client</h2>
+        <div class="field"><label for="cNom">Nom</label><input id="cNom" maxlength="80" autocomplete="off" placeholder="ex. Mme Dupont"></div>
+        <div class="field"><label for="cMail">Adresse mail</label><input id="cMail" type="email" inputmode="email" autocomplete="off" placeholder="ex. dupont@orange.fr"></div>
+        <div class="row2">
+          <div class="field"><label for="cJour">Date du repas</label><input id="cJour" type="date"></div>
+          <div class="field"><label for="cPers">Personnes</label><input id="cPers" inputmode="numeric" maxlength="4" placeholder="ex. 10"></div>
+        </div>
+        <div class="field"><span class="lbl">Service</span><div class="seg s2" data-c="serv"><button type="button" data-v="midi">☀️ Midi</button><button type="button" data-v="soir">🌙 Soir</button></div></div>
+        <div class="field"><span class="lbl">Où ?</span><div class="seg s2" data-c="type"><button type="button" data-v="resto">🏠 Au restaurant</button><button type="button" data-v="traiteur">🚚 Traiteur</button></div></div>
+        <div class="field"><span class="lbl">Boissons</span><div class="seg s2" data-c="boiss"><button type="button" data-v="hors">Hors boissons</button><button type="button" data-v="comp">Boissons comprises</button></div></div>
+        <details class="more"><summary>Téléphone et adresse <em>(facultatif)</em></summary>
+          <div class="field"><label for="cTel">Téléphone</label><input id="cTel" type="tel" inputmode="tel" autocomplete="off" placeholder="ex. 06 12 34 56 78"></div>
+          <div class="field"><label for="cAdr">Adresse (ou lieu de la prestation)</label><textarea id="cAdr" style="min-height:70px" placeholder="ex. 3 rue des Roses, 57730 Folschviller"></textarea></div>
+        </details>
+      </section>
+
+      <!-- 2. Menu -->
+      <section class="panel" id="panel-menu" hidden>
+        <h2>Le menu</h2>
+        <div class="field">
+          <label for="raw">Colle, écris ou dicte le menu</label>
+          <textarea id="raw" spellcheck="true" lang="fr" placeholder="Entrée : foie gras, chutney de figues ou gravlax de saumon&#10;Plat : dodine de volaille ou carré de porcelet&#10;Dessert : pavlova ou poire pochée"></textarea>
+        </div>
+        <p class="hint">« Entrée : », « Plat : », « Dessert : »… et « ou » entre les choix. La page se fait toute seule.</p>
+        <div class="field"><span class="lbl">Formule</span>
+          <div class="seg" id="fForm" role="group" aria-label="Formule">
+            <button type="button" data-v="" aria-pressed="true">Non précisé</button>
+            <button type="button" data-v="unique" aria-pressed="false">Menu unique pour la table</button>
+            <button type="button" data-v="choix" aria-pressed="false">Chacun choisit</button>
+            <button type="button" data-v="apero" aria-pressed="false">🥂 Apéro dînatoire</button>
+          </div></div>
+        <div class="field"><label for="fPrice">Prix par personne</label><div class="euro"><input id="fPrice" inputmode="decimal" placeholder="ex. 35" maxlength="8"><span>€</span></div></div>
+        <details class="more"><summary>Titre, sous-titre et mention du bas</summary>
+          <div class="field"><label for="fTitle">Titre</label><input id="fTitle" value="Menu" maxlength="40" lang="fr"></div>
+          <div class="field"><label for="fSub">Sous-titre</label><input id="fSub" placeholder="se remplit avec la date" maxlength="60" lang="fr"></div>
+          <div class="field"><label for="fNote">Mention en bas</label><input id="fNote" placeholder="ex. Boissons non comprises" maxlength="140" lang="fr"></div>
+        </details>
+        <details class="more" id="retDet"><summary>Retoucher plat par plat</summary>
+          <div class="secs" id="secs"></div>
+        </details>
+        <p class="hint">Tu peux aussi toucher un texte directement sur la page pour le corriger.</p>
+        <div hidden><button id="go" type="button"></button><button id="pdf" type="button"></button><button id="png" type="button"></button></div>
+      </section>
+
+      <!-- 3. Devis -->
+      <section class="panel" id="panel-devis" hidden>
+        <h2>Le devis <small id="dNumT"></small></h2>
+        <div class="field"><span class="lbl">Faire un devis ?</span><div class="seg s2" id="dOn"><button type="button" data-v="1">📄 Oui</button><button type="button" data-v="0">Non, juste le menu</button></div></div>
+        <div id="dBody">
+          <div class="field"><span class="lbl">Apéritif</span><div class="seg" id="dAper"><button type="button" data-v="">Aucun</button><button type="button" data-v="f1">Classique</button><button type="button" data-v="f2">Réception</button></div></div>
+          <span class="lbl">Lignes du devis</span>
+          <p class="hint" style="margin-top:-6px">Les lignes Menu et Apéritif se calculent toutes seules (prix × personnes). Tu peux les changer ou les supprimer : elles restent comme tu les as laissées.</p>
+          <div id="dLignes" class="dl"></div>
+          <button class="btn soft" type="button" data-qa="libre">＋ Ajouter une ligne</button>
+          <button class="lnk" type="button" id="dRecalc" style="align-self:center">↺ Recalculer les lignes Menu et Apéritif</button>
+          <div class="field"><span class="lbl">Demander un acompte ?</span><div class="seg s2" id="dAc"><button type="button" data-v="0">Non</button><button type="button" data-v="1">Oui</button></div></div>
+          <div class="field" id="dAcF" hidden><label for="dAcompte">Acompte demandé</label><div class="euro"><input id="dAcompte" inputmode="numeric" value="30"><span>%</span></div></div>
+          <details class="more"><summary>Validité et conditions</summary>
+            <div class="field"><label for="dValid">Validité du devis</label><div class="euro"><input id="dValid" inputmode="numeric" value="30"><span style="font-size:12px">jours</span></div></div>
+            <div class="field"><label for="dDate">Date du devis</label><input id="dDate" type="date"></div>
+            <div class="field"><label for="dCond">Conditions</label><textarea id="dCond" style="min-height:90px"></textarea></div>
+          </details>
+        </div>
+        <div hidden><input id="dNum"><input id="dClient"><textarea id="dAdr"></textarea><input id="dObjet"><input id="dJour"><input id="dPers">
+          <button type="button" data-qa="menu"></button><button type="button" data-qa="f1"></button><button type="button" data-qa="f2"></button>
+          <button id="dpdf" type="button"></button><button id="dpng" type="button"></button><button id="dNew" type="button"></button></div>
+      </section>
+
+      <!-- 4. Envoyer -->
+      <section class="panel" id="panel-send" hidden>
+        <h2>Envoyer au client</h2>
+        <div class="dz-stat" id="sStat" hidden></div>
+        <div class="field"><label for="sTo">À</label><input id="sTo" type="email" inputmode="email" autocomplete="off" placeholder="adresse mail du client"></div>
+        <div class="field"><span class="lbl">Pièces jointes</span><div class="chk">
+          <label><input type="checkbox" id="sMenu" checked> Le menu</label>
+          <label><input type="checkbox" id="sDevis"> Le devis</label>
+          <label><input type="checkbox" id="sForf"> Forfaits apéritifs</label></div></div>
+        <div class="field"><label for="sObj">Objet</label><input id="sObj" maxlength="120"></div>
+        <div class="field"><label for="sTxt">Message</label><textarea id="sTxt" spellcheck="true" lang="fr" style="min-height:300px;font-size:15px"></textarea></div>
+        <div class="dz-links"><button class="lnk" type="button" id="sRe" hidden>↺ Réécrire le message</button><button class="lnk" type="button" id="sCopy">Copier le message</button></div>
+      </section>
+
+      <!-- Réglages : forfaits apéritifs -->
+      <section class="panel" id="panel-forfaits" hidden>
+        <h2>Forfaits apéritifs</h2>
+        <p class="hint">Ta page de forfaits, jointe aux mails quand tu la coches. Modifie les prix ou les boissons ici ; tout le reste est fixe.</p>
+        <div class="row2">
+          <div class="field"><label for="p1">Prix forfait classique</label><input id="p1" value="12 €"></div>
+          <div class="field"><label for="p2">Prix forfait réception</label><input id="p2" value="17 €"></div>
+        </div>
+        <div class="field"><label for="drinks">Boissons (une par ligne)</label><textarea id="drinks" spellcheck="true" lang="fr" style="min-height:220px">Bière
 Picon bière
 Kir vin blanc
 Kir crémant
@@ -322,56 +452,23 @@ Soft
 Aperol Spritz
 Panaché
 Monaco</textarea></div>
-      <div class="btns">
-        <button class="btn" id="fpdf" type="button">Télécharger en PDF</button>
-        <button class="btn soft" id="fpng" type="button">Télécharger en image</button>
-      </div>
-      <button class="btn soft" id="freset" type="button">Revenir au modèle d'origine</button>
-    </section>
-
-    <!-- Saisie : Devis -->
-    <section class="panel" id="panel-devis" hidden>
-      <h2>Devis</h2>
-      <div class="docbar"><button class="btn soft" type="button" data-list="devis">📂 Mes devis</button><button class="btn soft" type="button" data-newdoc="devis">＋ Nouveau</button></div>
-      <p class="sv" data-sv></p>
-      <div class="row2">
-        <div class="field"><label for="dNum">N° de devis</label><input id="dNum" maxlength="20"></div>
-        <div class="field"><label for="dDate">Date du devis</label><input id="dDate" type="date"></div>
-      </div>
-      <div class="field"><label for="dClient">Client</label><input id="dClient" maxlength="80" placeholder="ex. Mme Claire Dupont"></div>
-      <div class="field"><label for="dAdr">Adresse / contact du client <span style="text-transform:none;font-weight:600">(facultatif)</span></label><textarea id="dAdr" style="min-height:70px" placeholder="ex. 3 rue des Roses, 57730 Folschviller&#10;06 12 34 56 78"></textarea></div>
-      <div class="field"><label for="dObjet">Objet</label><input id="dObjet" maxlength="80" placeholder="ex. Privatisation – anniversaire"></div>
-      <div class="row2">
-        <div class="field"><label for="dJour">Date de l'événement</label><input id="dJour" type="date"></div>
-        <div class="field"><label for="dPers">Nombre de personnes</label><input id="dPers" inputmode="numeric" placeholder="ex. 40"></div>
-      </div>
-      <span class="lbl">Lignes du devis</span>
-      <div id="dLignes" class="dl"></div>
-      <div class="qadd">
-        <button class="btn soft" type="button" data-qa="menu">＋ Menu</button>
-        <button class="btn soft" type="button" data-qa="f1">＋ Forfait apéritif classique</button>
-        <button class="btn soft" type="button" data-qa="f2">＋ Forfait apéritif réception</button>
-        <button class="btn soft" type="button" data-qa="libre">＋ Ligne libre</button>
-      </div>
-      <div class="row2">
-        <div class="field"><label for="dAcompte">Acompte demandé</label><div class="euro"><input id="dAcompte" inputmode="numeric" value="30"><span>%</span></div></div>
-        <div class="field"><label for="dValid">Validité</label><div class="euro"><input id="dValid" inputmode="numeric" value="30"><span style="font-size:12px">jours</span></div></div>
-      </div>
-      <div class="field"><label for="dCond">Conditions</label><textarea id="dCond" style="min-height:90px"></textarea></div>
-      <div class="btns">
-        <button class="btn" id="dpdf" type="button">Télécharger en PDF</button>
-        <button class="btn soft" id="dpng" type="button">Télécharger en image</button>
-      </div>
-      <button class="btn" type="button" data-mail>✉️ Préparer le mail</button>
-      <button class="btn soft" id="dNew" type="button">Nouveau devis (tout vider)</button>
-    </section>
+        <div class="btns">
+          <button class="btn soft" id="fpdf" type="button">Télécharger en PDF</button>
+          <button class="btn soft" id="fpng" type="button">Télécharger en image</button>
+        </div>
+        <button class="lnk" id="freset" type="button" style="align-self:center">Revenir au modèle d'origine</button>
+      </section>
 
     <!-- Aperçu -->
     <section class="preview" id="preview">
+      <div class="seg s2 pvsw" id="pvSw" hidden><button type="button" data-v="menu" aria-pressed="true">Aperçu du menu</button><button type="button" data-v="devis" aria-pressed="false">Aperçu du devis</button></div>
       <div class="stage" id="stage"><div class="scaler" id="scaler"></div></div>
       <div class="pvbar"><p class="editnote" id="editnote">Aperçu au format A4.</p><button type="button" class="undo" data-undo hidden>↶ Annuler</button></div>
     </section>
-  </div>
+    </div>
+    <div class="dz-next" id="next"><button class="btn soft" type="button" id="nPrev" aria-label="Étape précédente">‹</button><button class="btn" type="button" id="nGo">Suivant</button></div>
+    <p class="sv" id="dSv"></p>
+  </section>
 </div>
 <div class="toast" id="toast" hidden></div>
 
@@ -536,7 +633,7 @@ function parseMenu(raw){
   const addBody=txt=>{
     txt=pullQty(txt,cur);if(!tidy(txt))return;
     if(!cur)newSec("",null);
-    const listy=LIST_KW.test(cur.key);                         // pièces, cocktail… : les virgules séparent aussi les pièces
+    const listy=FORM==="apero"||LIST_KW.test(cur.key);   // apéro dînatoire : virgules et retours à la ligne séparent les pièces                         // pièces, cocktail… : les virgules séparent aussi les pièces
     const pieces=txt.split(listy?/\s+ou\s+|\s*[;|•,]\s*|\s+\/\s+/i:/\s+ou\s+|\s*[;|•]\s*|\s+\/\s+/i);
     if(/\sou\s/i.test(" "+txt+" "))cur.ou=true;
     cur.lines++;
@@ -575,7 +672,7 @@ function parseMenu(raw){
   out.sections.forEach(s=>{
     const k=s.key;
     // « ou » → au choix ; pièces, cocktail, buffet… → liste ; entrée/plat/dessert sur plusieurs lignes → au choix
-    s.mode=LIST_KW.test(k)?"liste":s.ou||s.plats.length<=1?"choix":(COURSE_KW.test(k)||!k)&&s.lines>1&&s.plats.length<=4?"choix":"liste";
+    s.mode=FORM==="apero"||LIST_KW.test(k)?"liste":s.ou||s.plats.length<=1?"choix":(COURSE_KW.test(k)||!k)&&s.lines>1&&s.plats.length<=4?"choix":"liste";
     if(s.mode==="liste"&&s.plats.length>1&&/^(Entrée|Dessert|Fromage)$/.test(s.nom))s.nom+="s";
     delete s.key;delete s.ou;delete s.lines;
   });
@@ -626,6 +723,7 @@ function build(){
   const old=MENU&&Array.isArray(MENU.sections)?ready(MENU):null;
   MENU={auto:{sousTitre:p.sousTitre,prix:p.prix,note:p.note},sections:old?mergeSecs(old,p.sections):p.sections,
     delS:old?old.delS.filter(o=>p.sections.some(s=>s.o===o)):[]};
+  if(FORM==="apero")MENU.sections.forEach(s=>s.mode="liste");
   applyFields();
 }
 function applyFields(){const o=opts(),a=MENU.auto||{};
@@ -799,7 +897,7 @@ function devisTotals(){let ttc=0;const tva={10:0,20:0,5.5:0};
   const tv=Object.values(tva).reduce((a,b)=>a+b,0);return {ttc,ht:ttc-tv,tva}}
 function devisPage(dv){
   const t=devisTotals();const ac=t.ttc*n2(dv.acompte)/100;
-  const cond=(dv.cond||COND_DEF).replace("{v}",n2(dv.valid)||30).replace("{a}",n2(dv.acompte)||30);
+  const cond=(dv.cond||(dv.acOn?COND_DEF:COND_DEF.replace(" et d'un acompte de {a} % du montant TTC",""))).replace("{v}",n2(dv.valid)||30).replace("{a}",n2(dv.acompte)||30);
   const rows=dv.lignes.length?dv.lignes.map(l=>`<tr><td>${esc(l.d||"—")}</td><td>${esc(String(l.q||""))}</td><td>${n2(l.pu)?eurD(n2(l.pu)):""}</td><td>${esc(String(l.tva||10)).replace(".",",")} %</td><td><b>${eurD(n2(l.q)*n2(l.pu))}</b></td></tr>`).join("")
     :`<tr><td colspan="5" class="vide">Ajoute des lignes : menu, forfait apéritif, boissons…</td></tr>`;
   const tvaRows=Object.entries(t.tva).filter(([,v])=>v>0.004).map(([r,v])=>`<tr><td>TVA ${String(r).replace(".",",")} %</td><td>${eurD(v)}</td></tr>`).join("");
@@ -812,7 +910,7 @@ function devisPage(dv){
     </div>
     <div class="obj">${dv.objet?`<span>Objet : <b>${esc(dv.objet)}</b></span>`:""}${dv.jour?`<span>Date de l'événement : <b>${esc(dateFR(dv.jour))}</b></span>`:""}${dv.pers?`<span>Nombre de personnes : <b>${esc(String(dv.pers))}</b></span>`:""}${!dv.objet&&!dv.jour&&!dv.pers?"<span>Prestation Double B</span>":""}</div>
     <table><thead><tr><th>Désignation</th><th>Qté</th><th>Prix unit. TTC</th><th>TVA</th><th>Total TTC</th></tr></thead><tbody>${rows}</tbody></table>
-    <div class="tot"><table><tbody><tr><td>Total HT</td><td>${eurD(t.ht)}</td></tr>${tvaRows}<tr class="big"><td>Total TTC</td><td>${eurD(t.ttc)}</td></tr>${n2(dv.acompte)?`<tr class="ac"><td>Acompte à la signature (${String(n2(dv.acompte)).replace(".",",")} %)</td><td>${eurD(ac)}</td></tr>`:""}</tbody></table></div>
+    <div class="tot"><table><tbody><tr><td>Total HT</td><td>${eurD(t.ht)}</td></tr>${tvaRows}<tr class="big"><td>Total TTC</td><td>${eurD(t.ttc)}</td></tr>${dv.acOn&&n2(dv.acompte)?`<tr class="ac"><td>Acompte à la signature (${String(n2(dv.acompte)).replace(".",",")} %)</td><td>${eurD(ac)}</td></tr>`:""}</tbody></table></div>
     <div class="cond">${esc(cond)}</div>
     <div class="sign"><div>Bon pour accord<br>Date et signature du client :</div><div>Pour le Double B :</div></div>
     <div class="foot">DOUBLE B — SAS au capital de 10 000 € — Siège : 12 rue des Loriots, 57500 Saint-Avold — RCS Sarreguemines 915 267 595<br>SIRET 915 267 595 00022 — TVA intracommunautaire FR32915267595</div>
@@ -840,9 +938,11 @@ function fillDevisForm(){
 }
 const DMAP={dNum:"num",dDate:"date",dClient:"client",dAdr:"adr",dObjet:"objet",dJour:"jour",dPers:"pers",dAcompte:"acompte",dValid:"valid",dCond:"cond"};
 Object.keys(DMAP).forEach(id=>$("#"+id).addEventListener("input",()=>{DEVIS[DMAP[id]]=$("#"+id).value;saveDevis();clearTimeout(saveDevis.t);saveDevis.t=setTimeout(()=>{if(TAB==="devis")show()},250)}));
-$("#dLignes").addEventListener("input",e=>{const r=e.target.closest("[data-li]");if(!r)return;if(e.target.tagName==="TEXTAREA"){e.target.style.height="auto";e.target.style.height=e.target.scrollHeight+2+"px"}const i=+r.dataset.li,l=DEVIS.lignes[i];l[e.target.dataset.k]=e.target.value;const lt=r.querySelector(`[data-lt="${i}"]`);if(lt)lt.textContent=eurD(n2(l.q)*n2(l.pu));saveDevis();clearTimeout(saveDevis.t);saveDevis.t=setTimeout(()=>show(),250)});
+$("#dLignes").addEventListener("input",e=>{const r=e.target.closest("[data-li]");if(!r)return;if(e.target.tagName==="TEXTAREA"){e.target.style.height="auto";e.target.style.height=e.target.scrollHeight+2+"px"}const i=+r.dataset.li,l=DEVIS.lignes[i];l[e.target.dataset.k]=e.target.value;if(l.auto){l.man=l.auto;delete l.auto}/* retouchée à la main : on n'y touche plus */const lt=r.querySelector(`[data-lt="${i}"]`);if(lt)lt.textContent=eurD(n2(l.q)*n2(l.pu));saveDevis();clearTimeout(saveDevis.t);saveDevis.t=setTimeout(()=>show(),250)});
 $("#dLignes").addEventListener("change",e=>{const r=e.target.closest("[data-li]");if(!r||e.target.tagName!=="SELECT")return;DEVIS.lignes[+r.dataset.li].tva=e.target.value;saveDevis();show()});
-$("#dLignes").addEventListener("click",e=>{const x=e.target.closest("[data-lx]");if(!x)return;DEVIS.lignes.splice(+x.dataset.lx,1);saveDevis();linesUI();show()});
+$("#dLignes").addEventListener("click",e=>{const x=e.target.closest("[data-lx]");if(!x)return;const l=DEVIS.lignes[+x.dataset.lx],k=l&&(l.auto||l.man);
+  if(k==="aper")DEVIS.aper="";else if(k){DEVIS.noAuto=DEVIS.noAuto||{};DEVIS.noAuto[k]=1}   // supprimée : elle ne revient pas toute seule
+  DEVIS.lignes.splice(+x.dataset.lx,1);saveDevis();linesUI();if(typeof devisUI==="function")devisUI();show()});
 document.querySelectorAll("[data-qa]").forEach(b=>b.onclick=()=>{
   const pers=n2(DEVIS.pers)||"";const f=readF();let l;
   if(b.dataset.qa==="menu"){const nom=["Menu",MENU.sousTitre].filter(Boolean).join(" – ");l={d:nom+(MENU.sections&&MENU.sections.length?" (voir menu joint)":""),q:pers,pu:priceNum(MENU.prix)||"",tva:10}}
@@ -898,207 +998,285 @@ $("#pdf").onclick=e=>exportAs("pdf",e.currentTarget);$("#png").onclick=e=>export
 $("#fpdf").onclick=e=>exportAs("pdf",e.currentTarget);$("#fpng").onclick=e=>exportAs("png",e.currentTarget);
 
 /* ---------- Formule : interrupteur ---------- */
-function setForm(v){FORM=FPH[v]?v:"";document.querySelectorAll("#fForm button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===FORM))}
-$("#fForm").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;snap();setForm(b.dataset.v);store.set("menus2b-champs",opts());applyFields();if(TAB==="menu")page()});
+function setForm(v){FORM=FPH[v]||v==="apero"?v:"";document.querySelectorAll("#fForm button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===FORM))}
+$("#fForm").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;snap();const was=FORM;setForm(b.dataset.v);
+  // apéro dînatoire : titre adapté (s'il n'a pas été changé à la main) et pièces en liste
+  const t=$("#fTitle").value.trim();if(FORM==="apero"&&(!t||t==="Menu"))$("#fTitle").value=aperoTitre();else if(was==="apero"&&FORM!=="apero"&&/^Apéritif (dînatoire|déjeunatoire)$/.test(t))$("#fTitle").value="Menu";
+  store.set("menus2b-champs",opts());if(was==="apero"||FORM==="apero"){MENU=null;build();show()}else{applyFields();if(TAB==="menu")page()}});
 
-/* ---------- Préparer le mail (2026-11-13) : le texte s'écrit tout seul, les PDF sont joints ----------
-   Téléphone : feuille de partage (Mail, Outlook, Gmail…) avec le texte et les PDF.
-   Ordinateur : les PDF sont téléchargés et la messagerie s'ouvre avec l'adresse, l'objet et le texte. */
+/* ---------- Textes du mail (écrits tout seuls) ---------- */
 const JOURS=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"],MOIS=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
 const jourTxt=iso=>{const m=String(iso||"").match(/^(\d{4})-(\d{2})-(\d{2})$/);if(!m)return "";const d=new Date(+m[1],+m[2]-1,+m[3]);return `${JOURS[d.getDay()]} ${+m[3]===1?"1er":+m[3]} ${MOIS[+m[2]-1]}`};
 const ART={"entree":"une entrée","entrees":"une entrée","entree chaude":"une entrée","entree froide":"une entrée","plat":"un plat","plats":"un plat","plat principal":"un plat","dessert":"un dessert","desserts":"un dessert","fromage":"un fromage","fromages":"un fromage","poisson":"un poisson","amuse-bouche":"un amuse-bouche","amuse bouche":"un amuse-bouche"};
 function choixTxt(){const u=[...new Set((MENU.sections||[]).map(s=>ART[fold(s.nom||"").replace(/\s+/g," ").trim()]).filter(Boolean))];
   return !u.length?"vos plats":u.length===1?u[0]:u.slice(0,-1).join(", ")+" et "+u[u.length-1]}
 const signe=()=>`${PROF&&PROF!=="commun"?cap(PROF):"L'équipe"}\nDouble B\n59 avenue Foch, 57730 Folschviller\n06 13 10 05 03`;
-const traiteur=()=>/traiteur/i.test(DEVIS.objet||"");
-function mailObjet(s){return `${traiteur()?"Votre prestation":"Votre repas"}${s.jour?" du "+jourTxt(s.jour):""} au Double B`}
+const traiteur=()=>CLI.type==="traiteur";
+const apero=()=>(MENU&&MENU.formule||FORM)==="apero";
+const aperoTitre=()=>CLI.serv==="midi"?"Apéritif déjeunatoire":"Apéritif dînatoire";
+const quoi=()=>apero()?aperoTitre().toLowerCase():traiteur()?"prestation traiteur":"repas";   // « votre … »
+function mailObjet(s){return `Votre ${quoi()}${s.jour?" du "+jourTxt(s.jour):""}${traiteur()?" – Double B":" au Double B"}`}
 function mailTexte(s){
   const quand=[s.jour?"du "+jourTxt(s.jour):"",s.serv==="soir"?"au soir":s.serv==="midi"?"midi":""].filter(Boolean).join(" ");
   const prix=priceNum(MENU.prix),pers=n2(s.pers),f=s.menu?MENU.formule:"",bo=s.boiss==="hors"?", hors boissons":s.boiss==="comp"?", boissons comprises":"";
   const L=[`Bonjour${s.nom?" "+s.nom:""},`,
-    `Merci beaucoup pour votre demande, nous serons ravis de vous accueillir au Double B pour ${traiteur()?"votre prestation":"votre repas"}${quand?" "+quand:""}.`];
-  if(s.menu)L.push(`Vous trouverez en pièce jointe notre proposition de menu${prix?`, au prix de ${prix} € par personne${bo}`:""}.`);
-  if(s.devis){const t=devisTotals();L.push(`${s.menu?"Vous trouverez également":"Vous trouverez en pièce jointe"} notre devis n° ${DEVIS.num}${t.ttc?`, d'un montant de ${eurD(t.ttc)} TTC`:""}. Pour confirmer la réservation, il vous suffit de nous le retourner signé, accompagné d'un acompte de ${n2(DEVIS.acompte)||30} %.`)}
+    traiteur()?`Merci beaucoup pour votre demande, nous serons ravis de préparer votre ${quoi()}${quand?" "+quand:""}${apero()?" en prestation traiteur":""}.`
+      :`Merci beaucoup pour votre demande, nous serons ravis de vous accueillir au Double B pour votre ${quoi()}${quand?" "+quand:""}.`];
+  if(s.menu)L.push(`Vous trouverez en pièce jointe notre proposition ${apero()?"d'"+aperoTitre().toLowerCase():"de menu"}${prix?`, au prix de ${prix} € par personne${bo}`:""}.`);
+  if(s.devis){const t=devisTotals();L.push(`${s.menu?"Vous trouverez également":"Vous trouverez en pièce jointe"} notre devis n° ${DEVIS.num}${t.ttc?`, d'un montant de ${eurD(t.ttc)} TTC`:""}. Pour confirmer la réservation, il vous suffit de nous le retourner signé${DEVIS.acOn?`, accompagné d'un acompte de ${n2(DEVIS.acompte)||30} %`:""}.`)}
   if(s.forf)L.push("Je vous joins aussi nos forfaits apéritifs, si vous souhaitez ajouter un apéritif.");
   const gp=pers?`votre groupe de ${pers} personnes`:"votre groupe";
   if(f==="unique")L.push(`Pour que tout se passe au mieux pour ${gp}, nous servons un menu unique à toute la table : je vous laisse choisir ensemble ${choixTxt()} parmi les propositions, et ce même menu sera servi à chacun de vos convives.`);
   if(f==="choix")L.push(`Chaque convive pourra choisir ${choixTxt()} parmi les propositions : il vous suffira de me transmettre les choix de chacun quelques jours avant.`);
   L.push((f==="unique"?"Il vous suffit de me répondre avec vos choix, et je m'occupe du reste. ":"")+"N'hésitez pas à me signaler une allergie ou un régime particulier, nous adapterons avec plaisir.");
-  L.push("Au plaisir de vous recevoir,",signe());
+  L.push(traiteur()?"Au plaisir de vous régaler,":"Au plaisir de vous recevoir,",signe());
   return L.join("\n\n");
 }
-async function pdfOf(which){const old=TAB;TAB=which;page();
+async function pdfOf(which){const old=TAB,hd=$("#preview").hidden;$("#preview").hidden=false;TAB=which;page();
   try{const c=await capture();const {jsPDF}=window.jspdf;const pdf=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
     pdf.addImage(c.toDataURL("image/jpeg",0.95),"JPEG",0,0,210,297);return new File([pdf.output("blob")],fileBase()+".pdf",{type:"application/pdf"})}
-  finally{TAB=old;page()}}
-function openMail(){
-  const dv=TAB==="devis",hasMenu=(MENU.sections||[]).length>0;
-  const S={to:"",nom:"",jour:"",serv:"",pers:"",menu:TAB==="menu"||(dv&&hasMenu&&DEVIS.lignes.some(l=>/menu/i.test(l.d||""))),
-    devis:dv&&DEVIS.lignes.length>0,forf:TAB==="forfaits"||(dv&&DEVIS.lignes.some(l=>/forfait/i.test(l.d||"")))};
-  const nf=fold(MENU.note||"");S.boiss=/hors boisson|boissons? non compris/.test(nf)?"hors":/boissons? compris/.test(nf)?"comp":"";
-  if(!dv&&MENU.jour)S.jour=MENU.jour;
-  if(dv){const m=String(DEVIS.adr||"").match(/[^\s<>@]+@[^\s<>@]+\.[a-z]{2,}/i);S.to=m?m[0]:"";S.nom=DEVIS.client||"";S.jour=DEVIS.jour||"";S.pers=DEVIS.pers||""}
-  let edited=false;
-  const m=document.createElement("div");m.className="modal";
-  m.innerHTML=`<div class="box mailbox" role="dialog" aria-label="Préparer le mail"><h3>✉️ Préparer le mail</h3>
-    <div class="field"><label for="mTo">Adresse mail du client</label><input id="mTo" type="email" inputmode="email" autocomplete="off" placeholder="ex. client@orange.fr" value="${esc(S.to)}"></div>
-    <div class="field"><label for="mNom">Après « Bonjour » (facultatif)</label><input id="mNom" maxlength="60" placeholder="ex. Madame Dupont" value="${esc(S.nom)}"></div>
-    <div class="row2"><div class="field"><label for="mJour">Date du repas</label><input id="mJour" type="date" value="${esc(S.jour)}"></div>
-      <div class="field"><label for="mPers">Nombre de personnes</label><input id="mPers" inputmode="numeric" placeholder="ex. 10" value="${esc(String(S.pers))}"></div></div>
-    <div class="field"><span class="lbl">Service</span><div class="seg" id="mServ"><button type="button" data-v="" aria-pressed="true">Pas précisé</button><button type="button" data-v="midi" aria-pressed="false">Midi</button><button type="button" data-v="soir" aria-pressed="false">Soir</button></div></div>
-    <div class="field"><span class="lbl">Boissons</span><div class="seg" id="mBoiss"><button type="button" data-v="" aria-pressed="${!S.boiss}">Pas précisé</button><button type="button" data-v="hors" aria-pressed="${S.boiss==="hors"}">Hors boissons</button><button type="button" data-v="comp" aria-pressed="${S.boiss==="comp"}">Boissons comprises</button></div></div>
-    <div class="field"><span class="lbl">Pièces jointes</span><div class="chk">
-      <label><input type="checkbox" id="mMenu"${S.menu?" checked":""}${hasMenu?"":" disabled"}> Le menu</label>
-      <label><input type="checkbox" id="mDevis"${S.devis?" checked":""}${DEVIS.lignes.length?"":" disabled"}> Le devis</label>
-      <label><input type="checkbox" id="mForf"${S.forf?" checked":""}> Forfaits apéritifs</label></div></div>
-    <div class="field"><label for="mObj">Objet</label><input id="mObj" maxlength="120"></div>
-    <div class="field"><label for="mTxt">Message</label><textarea id="mTxt" spellcheck="true" lang="fr"></textarea></div>
-    <button class="lnk" type="button" id="mRe" hidden>↺ Réécrire le texte avec les cases ci-dessus</button>
-    <button class="btn" type="button" id="mGo">Ouvrir ma messagerie</button>
-    <div class="btns"><button class="btn soft" type="button" id="mCopy">Copier le texte</button><button class="btn soft" type="button" id="mClose">Fermer</button></div></div>`;
-  document.body.appendChild(m);
-  const q=s=>m.querySelector(s);
-  const read=()=>({to:q("#mTo").value.trim(),nom:q("#mNom").value.trim(),jour:q("#mJour").value,pers:q("#mPers").value.trim(),serv:S.serv||"",boiss:S.boiss||"",
-    menu:q("#mMenu").checked,devis:q("#mDevis").checked,forf:q("#mForf").checked});
-  const redo=()=>{const r=read();q("#mObj").value=mailObjet(r);if(!edited)q("#mTxt").value=mailTexte(r)};
-  redo();
-  m.addEventListener("input",e=>{if(e.target.id==="mTxt"){edited=true;q("#mRe").hidden=false;return}if(e.target.id!=="mObj")redo()});
-  m.addEventListener("change",e=>{if(e.target.type==="checkbox")redo()});
-  q("#mServ").onclick=e=>{const b=e.target.closest("button");if(!b)return;S.serv=b.dataset.v;q("#mServ").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));redo()};
-  q("#mBoiss").onclick=e=>{const b=e.target.closest("button");if(!b)return;S.boiss=b.dataset.v;q("#mBoiss").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));redo()};
-  q("#mRe").onclick=()=>{edited=false;q("#mRe").hidden=true;redo()};
-  q("#mClose").onclick=()=>m.remove();
-  m.addEventListener("click",e=>{if(e.target===m)m.remove()});
-  q("#mCopy").onclick=async()=>{try{await navigator.clipboard.writeText(q("#mTxt").value);toast("Texte copié")}catch{q("#mTxt").select();toast("Sélectionné : copie-le")}};
-  q("#mGo").onclick=async()=>{
-    const r=read(),obj=q("#mObj").value.trim(),txt=q("#mTxt").value;
-    if(r.to&&!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(r.to)){toast("L'adresse mail semble incomplète");q("#mTo").focus();return}
-    const btn=q("#mGo");btn.disabled=true;btn.innerHTML='<span class="spin"></span> Préparation des PDF…';
-    let files=[];
-    try{await loadLibs().catch(()=>{throw new Error("libs")});
-      for(const [ok,w] of [[r.menu,"menu"],[r.devis,"devis"],[r.forf,"forfaits"]])if(ok)files.push(await pdfOf(w));}
-    catch(e){toast(e.message==="libs"?"Pas de connexion : les PDF ont besoin d'internet":"Les PDF n'ont pas pu être préparés, réessaie");btn.disabled=false;btn.textContent="Ouvrir ma messagerie";return}
-    // le menu garde la date et le client ; on note l'envoi (relance proposée 5 jours après sur la page Aujourd'hui)
-    if(r.menu){MENU.jour=r.jour||MENU.jour||"";MENU.client=r.nom||r.to||MENU.client||"";save()}
-    const noter=()=>{flushSaves().then(()=>{for(const k of ["menu","devis"])if(r[k]&&CUR[k])rpc("proposition_suivi",{p_id:CUR[k],p_action:"envoye",p_contact:r.to}).catch(()=>{})})};
-    const tel=/iPhone|iPad|Android/i.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&/Macintosh/.test(navigator.userAgent));
-    if(tel&&navigator.canShare&&(!files.length||navigator.canShare({files}))){
-      // le téléphone demande un nouveau toucher après la préparation des PDF
-      m.querySelector(".box").innerHTML=`<h3>✉️ Tout est prêt</h3><p class="hint">Appuie sur « Envoyer », choisis Mail ou Outlook : le texte et ${files.length>1?"les PDF sont":files.length?"le PDF est":"tout est"} déjà dedans.${r.to?` L'adresse <b>${esc(r.to)}</b> est copiée : colle-la dans « À ».`:""}</p>
-        <button class="btn" type="button" data-s>Envoyer</button><button class="btn soft" type="button" data-c>Fermer</button>`;
-      m.querySelector("[data-c]").onclick=()=>m.remove();
-      m.querySelector("[data-s]").onclick=()=>{if(r.to&&navigator.clipboard)navigator.clipboard.writeText(r.to).catch(()=>{});
-        navigator.share(Object.assign({title:obj,text:txt},files.length?{files}:{})).then(()=>{noter();m.remove()}).catch(e=>{if(e.name!=="AbortError")toast("Le partage n'a pas marché, réessaie")})};
-      return;
-    }
-    noter();files.forEach(f=>saveLink(f,f.name));
-    location.href=`mailto:${encodeURIComponent(r.to).replace("%40","@")}?subject=${encodeURIComponent(obj)}&body=${encodeURIComponent(txt)}`;
-    m.remove();toast(files.length?"Mail ouvert : joins le PDF qui vient d'être téléchargé":"Mail ouvert");
-  };
-  setTimeout(()=>q(S.to?"#mJour":"#mTo").focus(),50);
-}
-document.querySelectorAll("[data-mail]").forEach(b=>b.onclick=openMail);
+  finally{TAB=old;$("#preview").hidden=hd;page()}}
 
-/* ---------- Mes menus et devis : enregistrés dans Supabase (table propositions, 2026-11-13) ----------
-   Chaque menu / devis est enregistré tout seul (1 s après la dernière retouche) : retrouvé sur tous les téléphones et sur le Mac.
-   CUR = l'enregistrement en cours sur ce téléphone ; le n° de devis est donné par le serveur. */
+/* ---------- Dossiers clients (refonte 2026-11-13) ----------
+   Accueil = la liste des dossiers. Un dossier = 4 étapes (Client → Menu → Devis → Envoyer) et un seul gros bouton en bas.
+   Tout est enregistré tout seul dans Supabase (table propositions, kind « dossier » : data = {c: client, menu, devis}). */
 var API="https://kokjumjhpasxxxrpspng.supabase.co/rest/v1/rpc/",KEY="sb_publishable_HIJXH1eJ_CP-A4G3AecDKg_NbBUD0m2";
-var CUR=store.get("menus2b-ids")||{menu:null,devis:null},DOCS_ON=false,SAVING={},Q={};
+var CUR=store.get("menus2b-dossier")||null,DOCS_ON=false,SAVING={},Q={},STEP="home",STATUT="brouillon",ENVOYE=null,PV="menu",SEDIT=false;
+const CLI0=()=>({nom:"",mail:"",tel:"",adr:"",jour:"",pers:"",serv:"",type:"resto",boiss:"",evt:""});
+var CLI=Object.assign(CLI0(),store.get("menus2b-client")||{});
 async function rpc(fn,args={}){let code="";try{code=localStorage.getItem("commande2b-code")||""}catch{}
   const r=await fetch(API+fn,{method:"POST",headers:{"apikey":KEY,"Content-Type":"application/json"},body:JSON.stringify({p_code:code,...args})});
   if(!r.ok){let e={};try{e=await r.json()}catch{}const err=new Error(e.message||"net");err.code=e.code;
     if(e.code==="28000"){try{localStorage.removeItem("commande2b-code")}catch{}location.replace("./")}throw err}
   const t=await r.text();return t?JSON.parse(t):null}
 const menuVide=()=>!String(RAW||"").trim()&&!retouche();
-function payload(k){
-  if(k==="menu")return {titre:[MENU.titre,MENU.sousTitre].filter(Boolean).join(" · "),client:MENU.client||"",jour:MENU.jour||"",
-    montant:priceNum(MENU.prix).replace(",","."),data:{menu:MENU,raw:RAW,champs:opts()},par:PROF};
-  return {titre:DEVIS.objet||"Devis",client:DEVIS.client||"",jour:DEVIS.jour||"",montant:String(Math.round(devisTotals().ttc*100)/100),
-    num:DEVIS.num||"",evenement_id:DEVIS.evt||"",data:DEVIS,par:PROF};
+const avecDevis=()=>!DEVIS.off&&DEVIS.lignes.length>0;
+const dossierVide=()=>menuVide()&&!CLI.nom&&!CLI.mail&&!DEVIS.lignes.some(l=>!l.auto);
+function payload(){return {titre:[MENU.titre,MENU.sousTitre].filter(Boolean).join(" · ")||"Dossier",client:CLI.nom||CLI.mail||"",jour:CLI.jour||"",
+  montant:avecDevis()?String(Math.round(devisTotals().ttc*100)/100):"",num:DEVIS.num||"",avec_devis:avecDevis()?"1":"",evenement_id:CLI.evt||"",
+  data:{c:CLI,menu:menuVide()?null:{menu:MENU,raw:RAW,champs:opts()},devis:DEVIS},par:PROF}}
+function svState(st){const el=$("#dSv");if(!el)return;el.dataset.s=st;el.textContent=st==="ok"?"✓ Enregistré":st==="err"?"Pas encore enregistré (connexion) : ça réessaiera tout seul":"Enregistrement…"}
+function queueSave(){if(!DOCS_ON||STEP==="home"||STEP==="reglages"||dossierVide())return;clearTimeout(SAVING.t);svState("…");SAVING.t=setTimeout(saveNow,1000)}
+function saveNow(){clearTimeout(SAVING.t);SAVING.t=null;
+  Q.p=(Q.p||Promise.resolve()).then(async()=>{if(dossierVide())return;
+    try{const r=await rpc("proposition_enregistrer",{p_id:CUR,p_kind:"dossier",p_champs:payload()});
+      CUR=r.id;store.set("menus2b-dossier",CUR);
+      if(r.num&&r.num!==DEVIS.num){DEVIS.num=r.num;store.set("menus2b-devis",DEVIS);$("#dNum").value=r.num;$("#dNumT").textContent="n° "+r.num;if(TAB==="devis")page()}
+      svState("ok")}catch(e){svState("err")}});
+  return Q.p}
+async function flushSaves(){if(SAVING.t)saveNow();await Q.p}
+function newNum(){rpc("devis_numero").then(n=>{if(n&&!DEVIS.num){DEVIS.num=n;store.set("menus2b-devis",DEVIS);$("#dNum").value=n;$("#dNumT").textContent="n° "+n;if(TAB==="devis")page()}}).catch(()=>{})}
+
+/* Client → sous-titre et mention du menu, fiche du devis (tant qu'on ne les a pas changés à la main) */
+function autoSub(){const j=jourTxt(CLI.jour),p=n2(CLI.pers);return [j?cap(j)+" "+CLI.jour.slice(0,4):"",p?p+" personnes":""].filter(Boolean).join(" · ")}
+function syncAuto(){
+  const s=autoSub(),nt=CLI.boiss==="hors"?"Boissons non comprises":CLI.boiss==="comp"?"Boissons comprises":"";let ch=false;
+  const fs=$("#fSub").value;if((!fs.trim()||fs===CLI._sub)&&fs!==s){$("#fSub").value=s;ch=true}CLI._sub=s;
+  const n=$("#fNote").value;if((!n.trim()||n===CLI._note||/^boissons (non )?comprises$/i.test(n.trim()))&&n!==nt){$("#fNote").value=nt;ch=true}CLI._note=nt;
+  const t=$("#fTitle").value.trim();
+  if(FORM==="apero"&&(!t||t==="Menu"||/^Apéritif (dînatoire|déjeunatoire)$/.test(t))&&t!==aperoTitre()){$("#fTitle").value=aperoTitre();ch=true}
+  const ab=document.querySelector('#fForm [data-v="apero"]');if(ab)ab.textContent="🥂 "+aperoTitre().replace("Apéritif","Apéro");
+  if(ch){store.set("menus2b-champs",opts());applyFields()}
+  Object.assign(DEVIS,{client:CLI.nom,adr:[CLI.adr,CLI.tel,CLI.mail].filter(Boolean).join("\n"),objet:(apero()?aperoTitre():traiteur()?"Prestation traiteur":"Repas")+(traiteur()?(apero()?" – prestation traiteur":""):" au restaurant"),
+    jour:CLI.jour,pers:CLI.pers,evt:CLI.evt||DEVIS.evt||""});
 }
-function svState(st,k){document.querySelectorAll(`#panel-${k} [data-sv]`).forEach(el=>{el.dataset.s=st;el.textContent=st==="ok"?"✓ Enregistré dans « Mes "+(el.closest("#panel-devis")?"devis":"menus")+" »":st==="err"?"Pas encore enregistré (connexion), ça réessaiera tout seul":"Enregistrement…"})}
-function queueSave(k){if(!DOCS_ON||(k==="menu"&&menuVide()))return;clearTimeout(SAVING[k]);svState("…",k);SAVING[k]=setTimeout(()=>saveNow(k),1000)}
-function saveNow(k){clearTimeout(SAVING[k]);SAVING[k]=null;
-  Q[k]=(Q[k]||Promise.resolve()).then(async()=>{if(k==="menu"&&menuVide())return;
-    try{const r=await rpc("proposition_enregistrer",{p_id:CUR[k],p_kind:k,p_champs:payload(k)});
-      CUR[k]=r.id;store.set("menus2b-ids",CUR);
-      if(k==="devis"&&r.num&&r.num!==DEVIS.num){DEVIS.num=r.num;store.set("menus2b-devis",DEVIS);$("#dNum").value=r.num;if(TAB==="devis")page()}
-      svState("ok",k)}catch(e){svState("err",k)}});
-  return Q[k]}
-async function flushSaves(){for(const k of ["menu","devis"])if(SAVING[k])saveNow(k);await Q.menu;await Q.devis}
-function newNum(){rpc("devis_numero").then(n=>{if(n&&!DEVIS.num){DEVIS.num=n;store.set("menus2b-devis",DEVIS);$("#dNum").value=n;if(TAB==="devis")page()}}).catch(()=>{})}
-function goTab(k){const b=document.querySelector(`[data-tab="${k}"]`);if(TAB!==k)b.click();else{if(k==="devis")fillDevisForm();show()}}
-function loadMenu(d,id){DOCS_ON=false;d=d||{};const c=d.champs||{};
-  RAW=typeof d.raw==="string"?d.raw:"";$("#raw").value=RAW;MENU=d.menu||null;
-  $("#fTitle").value=c.titre||"Menu";$("#fSub").value=c.sousTitre||"";$("#fPrice").value=priceNum(c.prix);$("#fNote").value=c.note||"";setForm(c.formule||"");
+function syncLignes(){if(DEVIS.off)return;const pers=n2(CLI.pers)||"",f=readF(),auto=[],no=DEVIS.noAuto||{},man=k=>DEVIS.lignes.some(l=>l.man===k);
+  if(!no.menu&&!man("menu")&&!menuVide()&&(MENU.sections||[]).length)auto.push({auto:"menu",d:(MENU.titre&&MENU.titre!=="Menu"?MENU.titre:"Menu")+" (voir menu joint)",q:pers,pu:priceNum(MENU.prix)||"",tva:10});
+  if(!man("aper")&&DEVIS.aper==="f1")auto.push({auto:"aper",d:"Forfait apéritif classique (une consommation)",q:pers,pu:n2(f.p1)||"",tva:20});
+  if(!man("aper")&&DEVIS.aper==="f2")auto.push({auto:"aper",d:"Forfait apéritif réception (deux consommations)",q:pers,pu:n2(f.p2)||"",tva:20});
+  const hasM=auto.some(a=>a.auto==="menu");
+  DEVIS.lignes=auto.concat(DEVIS.lignes.filter(l=>!l.auto&&!(hasM&&!l.man&&/^menu\b/i.test(l.d||""))));
+  const rk=l=>({menu:0,aper:1})[l.auto||l.man]??2;DEVIS.lignes.sort((x,y)=>rk(x)-rk(y));   // menu, puis apéritif, puis le reste
+}
+
+/* En-tête du dossier et étapes */
+const STEPS=["client","menu","devis","send"];
+const NEXT={client:"Suivant : le menu ›",menu:"Suivant : le devis ›",devis:"Suivant : envoyer ›",send:"✉️ Envoyer au client"};
+const dCourte=iso=>{if(!iso)return "";const [y,m,d]=iso.split("-").map(Number);return new Date(y,m-1,d).toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"})};
+function headUI(){$("#dName").textContent=CLI.nom||CLI.mail||"Nouveau dossier";
+  $("#dInfo").textContent=[dCourte(CLI.jour),CLI.serv==="soir"?"soir":CLI.serv==="midi"?"midi":"",n2(CLI.pers)?n2(CLI.pers)+" pers.":""].filter(Boolean).join(" · ")||"Commence par le client";
+  document.querySelectorAll("#steps [data-step]").forEach((b,i)=>{const cur=b.dataset.step===STEP,done=STEPS.indexOf(STEP)>i;
+    b.setAttribute("aria-current",cur?"step":"false");b.classList.toggle("done",done);b.querySelector("i").textContent=done?"✓":String(i+1)})}
+function go(step){
+  STEP=step;$("#home").hidden=step!=="home";document.querySelector("header.top").hidden=step!=="home";$("#dos").hidden=step==="home";
+  for(const k of ["client","menu","devis","send"])$("#panel-"+k).hidden=k!==step;$("#panel-forfaits").hidden=step!=="reglages";
+  $("#steps").hidden=step==="reglages";$("#next").hidden=step==="reglages";$("#dMore").hidden=step==="reglages";
+  if(step==="home"){loadHome();scrollTo(0,0);return}
+  if(step==="reglages"){$("#dName").textContent="Réglages";$("#dInfo").textContent="Forfaits apéritifs";TAB="forfaits";$("#preview").hidden=false;$("#pvSw").hidden=true;$("#editnote").textContent="Aperçu au format A4.";show();scrollTo(0,0);return}
+  syncAuto();
+  if(step==="devis"){syncLignes();fillDevisForm();devisUI()}
+  if(step==="send")sendUI();
+  TAB=step==="devis"&&!DEVIS.off?"devis":step==="send"&&PV==="devis"&&avecDevis()?"devis":"menu";
+  $("#preview").hidden=step==="client";$("#pvSw").hidden=step!=="send"||!avecDevis();pvSwUI();
+  $("#editnote").textContent=TAB==="menu"?"Aperçu au format A4. Touche un texte de la page pour le corriger.":"Aperçu au format A4.";
+  $("#nGo").textContent=NEXT[step];$("#nPrev").hidden=step==="client";
+  headUI();show();scrollTo({top:0,behavior:"smooth"});
+}
+document.querySelectorAll("#steps [data-step]").forEach(b=>b.onclick=()=>go(b.dataset.step));
+$("#nPrev").onclick=()=>go(STEPS[Math.max(0,STEPS.indexOf(STEP)-1)]);
+$("#nGo").onclick=()=>{if(STEP==="client"&&!CLI.nom&&!CLI.mail)toast("Pense à mettre le nom du client (tu peux le faire plus tard)");
+  if(STEP==="send")doSend();else go(STEPS[STEPS.indexOf(STEP)+1])};
+$("#dBack").onclick=async()=>{await flushSaves();go("home")};
+
+/* 1. Client */
+const CMAP={cNom:"nom",cMail:"mail",cTel:"tel",cAdr:"adr",cJour:"jour",cPers:"pers"};
+function fillClient(){Object.entries(CMAP).forEach(([id,k])=>$("#"+id).value=CLI[k]||"");segUI()}
+function segUI(){document.querySelectorAll("#panel-client .seg").forEach(g=>g.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(CLI[g.dataset.c]===b.dataset.v))))}
+function clientChanged(){store.set("menus2b-client",CLI);headUI();clearTimeout(clientChanged.t);clientChanged.t=setTimeout(()=>{syncAuto();if(TAB==="menu")page();saveDevis()},300);queueSave()}
+Object.keys(CMAP).forEach(id=>$("#"+id).addEventListener("input",()=>{CLI[CMAP[id]]=$("#"+id).value.trim();clientChanged()}));
+document.querySelectorAll("#panel-client .seg").forEach(g=>g.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const k=g.dataset.c;
+  CLI[k]=CLI[k]===b.dataset.v&&k!=="type"?"":b.dataset.v;segUI();clientChanged()}));
+// le mail suit les boutons tant qu'il n'a pas été retouché à la main
+
+/* 3. Devis */
+function devisUI(){const on=!DEVIS.off;$("#dBody").hidden=!on;
+  $("#dOn").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String((b.dataset.v==="1")===on)));
+  $("#dAper").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String((DEVIS.aper||"")===b.dataset.v)));
+  $("#dAc").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String((b.dataset.v==="1")===!!DEVIS.acOn)));$("#dAcF").hidden=!DEVIS.acOn;
+  $("#dNumT").textContent=on&&DEVIS.num?"n° "+DEVIS.num:""}
+$("#dAc").onclick=e=>{const b=e.target.closest("button");if(!b)return;DEVIS.acOn=b.dataset.v==="1";if(DEVIS.acOn&&!n2(DEVIS.acompte)){DEVIS.acompte=30;$("#dAcompte").value=30}
+  saveDevis();devisUI();if(TAB==="devis")show()};
+$("#dOn").onclick=e=>{const b=e.target.closest("button");if(!b)return;DEVIS.off=b.dataset.v==="0";if(!DEVIS.off){syncLignes();if(!DEVIS.num)newNum()}
+  saveDevis();devisUI();linesUI();TAB=DEVIS.off?"menu":"devis";show()};
+$("#dRecalc").onclick=()=>{DEVIS.noAuto={};DEVIS.lignes=DEVIS.lignes.filter(l=>!l.man);syncLignes();saveDevis();linesUI();show();toast("Lignes recalculées")};
+$("#dAper").onclick=e=>{const b=e.target.closest("button");if(!b)return;DEVIS.aper=b.dataset.v;DEVIS.lignes=DEVIS.lignes.filter(l=>l.man!=="aper");syncLignes();saveDevis();devisUI();linesUI();show()};
+
+/* 4. Envoyer */
+function sendState(){return {to:$("#sTo").value.trim(),nom:CLI.nom,jour:CLI.jour,pers:CLI.pers,serv:CLI.serv,boiss:CLI.boiss,
+  menu:$("#sMenu").checked,devis:$("#sDevis").checked,forf:$("#sForf").checked}}
+function redoMail(){const s=sendState();$("#sObj").value=mailObjet(s);if(!SEDIT)$("#sTxt").value=mailTexte(s)}
+function sendUI(){if(!$("#sTo").value)$("#sTo").value=CLI.mail||"";
+  $("#sMenu").checked=!menuVide();$("#sMenu").disabled=menuVide();$("#sDevis").checked=avecDevis();$("#sDevis").disabled=!avecDevis();
+  redoMail();statUI()}
+const jj=s=>{const d=new Date(s);return isNaN(d)?"":d.toLocaleDateString("fr-FR",{day:"numeric",month:"long"})};
+function statUI(){const el=$("#sStat");
+  if(STATUT==="brouillon"){el.hidden=true;return}el.hidden=false;
+  el.innerHTML=STATUT==="envoye"?`<span>✉️ Envoyé${ENVOYE?" le "+esc(jj(ENVOYE)):""}. La réponse ?</span><div class="r"><button class="btn soft" type="button" data-st="accepte">✅ Accepté</button><button class="btn soft" type="button" data-st="refuse">Refusé</button></div>`
+    :STATUT==="accepte"?`<span>✅ Accepté par le client</span>`:`<span>Refusé par le client</span>`}
+$("#sStat").addEventListener("click",async e=>{const b=e.target.closest("[data-st]");if(!b||!CUR)return;
+  try{await rpc("proposition_suivi",{p_id:CUR,p_action:b.dataset.st});STATUT=b.dataset.st;statUI();toast(STATUT==="accepte"?"Bravo ! Dossier accepté":"Noté")}catch{toast("Pas de connexion : réessaie")}});
+$("#panel-send").addEventListener("input",e=>{if(e.target.id==="sTxt"){SEDIT=true;$("#sRe").hidden=false}});
+$("#panel-send").addEventListener("change",e=>{if(e.target.type==="checkbox")redoMail()});
+$("#sRe").onclick=()=>{SEDIT=false;$("#sRe").hidden=true;redoMail()};
+$("#sCopy").onclick=async()=>{try{await navigator.clipboard.writeText($("#sTxt").value);toast("Message copié")}catch{$("#sTxt").select();toast("Sélectionné : copie-le")}};
+async function doSend(){
+  const r=sendState(),obj=$("#sObj").value.trim(),txt=$("#sTxt").value;
+  if(r.to&&!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(r.to)){toast("L'adresse mail semble incomplète");$("#sTo").focus();return}
+  if(r.to&&r.to!==CLI.mail){CLI.mail=r.to;store.set("menus2b-client",CLI)}
+  const btn=$("#nGo");btn.disabled=true;btn.innerHTML='<span class="spin"></span> Préparation des PDF…';
+  let files=[];
+  try{await loadLibs().catch(()=>{throw new Error("libs")});
+    for(const [ok,w] of [[r.menu,"menu"],[r.devis,"devis"],[r.forf,"forfaits"]])if(ok)files.push(await pdfOf(w))}
+  catch(e){toast(e.message==="libs"?"Pas de connexion : les PDF ont besoin d'internet":"Les PDF n'ont pas pu être préparés, réessaie");btn.disabled=false;btn.textContent=NEXT.send;return}
+  btn.disabled=false;btn.textContent=NEXT.send;
+  const noter=()=>{flushSaves().then(()=>{if(!CUR)return;rpc("proposition_suivi",{p_id:CUR,p_action:"envoye",p_contact:r.to}).then(()=>{STATUT="envoye";ENVOYE=new Date().toISOString();statUI()}).catch(()=>{})})};
+  saveNow();
+  const tel=/iPhone|iPad|Android/i.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&/Macintosh/.test(navigator.userAgent));
+  if(tel&&navigator.canShare&&(!files.length||navigator.canShare({files}))){
+    // le téléphone demande un nouveau toucher après la préparation des PDF
+    const m=document.createElement("div");m.className="modal";
+    m.innerHTML=`<div class="box"><h3 style="margin:0;font-family:var(--display)">✉️ Tout est prêt</h3><p class="hint">Appuie sur « Envoyer », choisis Mail ou Outlook : le message et ${files.length>1?"les PDF sont":files.length?"le PDF est":"tout est"} déjà dedans.${r.to?` L'adresse <b>${esc(r.to)}</b> est copiée : colle-la dans « À ».`:""}</p>
+      <button class="btn" type="button" data-s>Envoyer</button><button class="btn soft" type="button" data-c>Fermer</button></div>`;
+    document.body.appendChild(m);
+    m.querySelector("[data-c]").onclick=()=>m.remove();
+    m.querySelector("[data-s]").onclick=()=>{if(r.to&&navigator.clipboard)navigator.clipboard.writeText(r.to).catch(()=>{});
+      navigator.share(Object.assign({title:obj,text:txt},files.length?{files}:{})).then(()=>{noter();m.remove()}).catch(e=>{if(e.name!=="AbortError")toast("Le partage n'a pas marché, réessaie")})};
+    return;
+  }
+  noter();files.forEach(f=>saveLink(f,f.name));
+  location.href=`mailto:${encodeURIComponent(r.to).replace("%40","@")}?subject=${encodeURIComponent(obj)}&body=${encodeURIComponent(txt)}`;
+  toast(files.length?"Mail ouvert : joins le PDF qui vient d'être téléchargé":"Mail ouvert");
+}
+
+/* Aperçu de l'étape Envoyer : menu ou devis */
+function pvSwUI(){$("#pvSw").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===PV)))}
+$("#pvSw").onclick=e=>{const b=e.target.closest("button");if(!b)return;PV=b.dataset.v;pvSwUI();TAB=PV==="devis"&&avecDevis()?"devis":"menu";show()};
+
+/* Charger / créer / dupliquer un dossier */
+function loadDossier(row,copie){DOCS_ON=false;const d=(row&&row.data)||{};
+  CLI=Object.assign(CLI0(),d.c||{});if(copie)Object.assign(CLI,{nom:"",mail:"",tel:"",adr:"",jour:"",evt:"",_sub:"",_note:CLI._note});
+  const m=d.menu||{},c=m.champs||{};RAW=typeof m.raw==="string"?m.raw:"";$("#raw").value=RAW;MENU=m.menu||null;
+  $("#fTitle").value=c.titre||"Menu";$("#fSub").value=copie?"":(c.sousTitre||"");$("#fPrice").value=priceNum(c.prix);$("#fNote").value=c.note||"";setForm(c.formule||"");
   if(!MENU||!Array.isArray(MENU.sections))build();else{ready(MENU);applyFields()}
-  store.set("menus2b-texte",RAW);store.set("menus2b-champs",opts());store.set("menus2b-dernier",MENU);
-  CUR.menu=id||null;store.set("menus2b-ids",CUR);HIST.length=0;undoUI();DOCS_ON=true;goTab("menu")}
-function loadDevis(d,id){DOCS_ON=false;DEVIS=Object.assign(blankDevis(),d||{});CUR.devis=id||null;store.set("menus2b-ids",CUR);store.set("menus2b-devis",DEVIS);DOCS_ON=true;goTab("devis")}
-async function newDoc(k){await flushSaves();
-  if(k==="menu"){loadMenu({},null);toast("Nouveau menu : colle ou écris-le")}
-  else{loadDevis({},null);newNum();toast("Nouveau devis")}}
-async function openDoc(id,copie){
+  DEVIS=Object.assign(blankDevis(),d.devis||{});if(copie)Object.assign(DEVIS,{num:"",date:todayISO()});else if(row&&row.num)DEVIS.num=row.num;
+  CUR=copie||!row?null:row.id;STATUT=copie||!row?"brouillon":row.statut||"brouillon";ENVOYE=copie||!row?null:row.envoye_le;
+  store.set("menus2b-dossier",CUR);store.set("menus2b-client",CLI);store.set("menus2b-texte",RAW);store.set("menus2b-champs",opts());store.set("menus2b-dernier",MENU);store.set("menus2b-devis",DEVIS);
+  HIST.length=0;undoUI();fillClient();SEDIT=false;$("#sRe").hidden=true;$("#sTo").value=CLI.mail||"";$("#sTxt").value="";PV="menu";
+  $("#retDet").open=false;DOCS_ON=true}
+async function openDossier(id,copie){
   let row;try{row=await rpc("proposition_lire",{p_id:id})}catch(e){toast("Pas de connexion : réessaie");return}
-  if(!row){toast("Introuvable (supprimé ?)");return}
-  await flushSaves();
-  const d=JSON.parse(JSON.stringify(row.data||{}));
-  if(row.kind==="menu"){if(copie&&d.menu){d.menu.client="";d.menu.jour=""}loadMenu(d,copie?null:row.id)}
-  else{if(copie)Object.assign(d,{num:"",client:"",adr:"",jour:"",evt:"",date:todayISO()});else d.num=row.num||d.num;loadDevis(d,copie?null:row.id);if(copie)newNum()}
-  if(copie){saveNow(row.kind);toast("Copie créée : change ce qu'il faut")}else toast((row.kind==="menu"?"Menu":"Devis")+" ouvert")}
-const STL={brouillon:"Pas encore envoyé",envoye:"Envoyé",accepte:"Accepté ✓",refuse:"Refusé"};
-const jj=s=>{const d=new Date(s);return isNaN(d)?"":d.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})};
-async function openList(k){
-  await flushSaves();
+  if(!row){toast("Introuvable (supprimé ?)");go("home");return}
+  await flushSaves();loadDossier(row,copie);
+  if(copie){saveNow();toast("Copie faite : change le client et c'est prêt");go("client");return}
+  go(STATUT!=="brouillon"?"send":CLI.nom||CLI.mail?"menu":"client")}
+async function newDossier(pre){await flushSaves();loadDossier(null);
+  if(pre){Object.assign(CLI,pre);store.set("menus2b-client",CLI);fillClient()}
+  go("client");setTimeout(()=>{if(!CLI.nom)$("#cNom").focus()},350)}
+$("#hNew").onclick=()=>newDossier();
+$("#hSet").onclick=()=>go("reglages");
+
+/* Accueil : la liste */
+let FILT="cours",ROWS=null;
+const STC={brouillon:["bro","À finir"],envoye:["env","Envoyé"],accepte:["acc","Accepté ✓"],refuse:["ref","Refusé"]};
+const ini=n=>{const w=String(n||"").replace(/^(mme|mlle|m\.|mr|madame|monsieur|mademoiselle)\s+/i,"").split(/[^\p{L}\d]+/u).filter(Boolean);return ((w[0]||"?")[0]+((w[1]||"")[0]||"")).toUpperCase()};
+function card(r){const nom=r.client||r.titre||"Sans nom";
+  const det=[dCourte(r.jour),r.pers?r.pers+" pers.":""].filter(Boolean).join(" · ");
+  const prix=+r.montant>0?eurD(+r.montant):r.prix?String(r.prix).replace(".",",")+" €/pers.":"";
+  const rel=r.statut==="envoye"&&r.relance_le&&new Date(r.relance_le)<=new Date();
+  const st=rel?["rel","🔔 À relancer"]:r.statut==="envoye"?["env","Envoyé le "+jj(r.envoye_le)]:STC[r.statut]||STC.brouillon;
+  return `<button type="button" class="dz-card" data-o="${esc(r.id)}"><span class="av" aria-hidden="true">${esc(ini(nom))}</span>
+    <span class="t"><b>${esc(nom)}</b><small>${esc(det||r.titre||"")}</small><span class="dz-pill ${st[0]}">${esc(st[1])}</span></span><span class="m">${esc(prix)}</span></button>`}
+function drawHome(){if(!ROWS)return;const fini=r=>r.statut==="accepte"||r.statut==="refuse";
+  const xs=ROWS.filter(r=>FILT==="fini"?fini(r):!fini(r)).sort((a,b)=>FILT==="fini"?0:(a.jour||"9999").localeCompare(b.jour||"9999"));
+  $("#hList").innerHTML=xs.length?xs.map(card).join(""):`<div class="dz-empty">${FILT==="fini"?"Aucun dossier terminé pour l'instant.":"Aucun dossier en cours.<br>Appuie sur « Nouveau dossier client » pour commencer."}</div>`}
+async function loadHome(){if(ROWS)drawHome();try{ROWS=await rpc("propositions_liste",{p_kind:"dossier"})||[];drawHome()}catch{if(!ROWS)$("#hList").innerHTML=`<div class="dz-empty">Pas de connexion pour l'instant.</div>`}}
+document.querySelector(".dz-filt").onclick=e=>{const b=e.target.closest("button");if(!b)return;FILT=b.dataset.f;
+  document.querySelectorAll(".dz-filt button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));drawHome()};
+$("#hList").onclick=e=>{const c=e.target.closest("[data-o]");if(c)openDossier(c.dataset.o)};
+
+/* ⋯ : les outils rares */
+async function dl(which,kind,btn){const old=TAB,hd=$("#preview").hidden;$("#preview").hidden=false;TAB=which;page();try{await exportAs(kind,btn)}finally{TAB=old;$("#preview").hidden=hd;page()}}
+$("#dMore").onclick=()=>{
   const m=document.createElement("div");m.className="modal";
-  m.innerHTML=`<div class="box listbox" role="dialog" aria-label="${k==="menu"?"Mes menus":"Mes devis"}"><h3>📂 ${k==="menu"?"Mes menus":"Mes devis"}</h3>
-    <button class="btn" type="button" data-n>＋ ${k==="menu"?"Nouveau menu":"Nouveau devis"}</button>
-    <div class="dlist"><p class="hint">Chargement…</p></div><button class="btn soft" type="button" data-c>Fermer</button></div>`;
-  document.body.appendChild(m);
-  const close=()=>m.remove();
-  m.querySelector("[data-c]").onclick=close;m.addEventListener("click",e=>{if(e.target===m)close()});
-  m.querySelector("[data-n]").onclick=()=>{close();newDoc(k)};
-  let rows=[];
-  const draw=()=>{m.querySelector(".dlist").innerHTML=rows.length?rows.map(r=>{
-      const det=[r.client,r.jour?dateFR(r.jour):"",r.montant!=null?(k==="menu"?String(+r.montant).replace(".",",")+" € / pers.":eurD(+r.montant)):"",r.num?"n° "+r.num:""].filter(Boolean).map(esc).join(" · ");
-      return `<div class="ditem${r.id===CUR[k]?" cur":""}"><button class="dopen" type="button" data-o="${esc(r.id)}"><b>${esc(r.titre||(k==="menu"?"Menu":"Devis"))}${r.id===CUR[k]?" · <small style='display:inline'>ouvert</small>":""}</b>${det?`<small>${det}</small>`:""}
-        <span class="dst ${esc(r.statut)}">${STL[r.statut]||""}${r.statut==="envoye"&&r.envoye_le?" le "+jj(r.envoye_le):""}</span></button>
-        <div class="dacts"><button type="button" data-d="${esc(r.id)}">Dupliquer</button><button type="button" class="del" data-x="${esc(r.id)}">Supprimer</button></div></div>`}).join("")
-    :`<p class="hint">${k==="menu"?"Aucun menu enregistré pour l'instant : ceux que tu prépares s'ajoutent ici tout seuls.":"Aucun devis enregistré pour l'instant."}</p>`};
-  try{rows=await rpc("propositions_liste",{p_kind:k})||[];draw()}catch(e){m.querySelector(".dlist").innerHTML=`<p class="hint">Pas de connexion pour l'instant.</p>`}
-  m.querySelector(".dlist").addEventListener("click",async e=>{
-    const o=e.target.closest("[data-o]"),d=e.target.closest("[data-d]"),x=e.target.closest("[data-x]");
-    if(o){close();if(o.dataset.o!==CUR[k])openDoc(o.dataset.o);else goTab(k)}
-    else if(d){close();openDoc(d.dataset.d,true)}
-    else if(x){const r=rows.find(y=>y.id===x.dataset.x);if(!confirm(`Supprimer « ${r&&r.titre||"ce document"} » ? Il disparaîtra pour toute l'équipe.`))return;
-      try{await rpc("proposition_supprimer",{p_id:x.dataset.x});rows=rows.filter(y=>y.id!==x.dataset.x);draw();
-        if(x.dataset.x===CUR[k]){CUR[k]=null;store.set("menus2b-ids",CUR);close();newDoc(k)}toast("Supprimé")}catch{toast("Pas supprimé : vérifie la connexion")}}
+  m.innerHTML=`<div class="box dz-menu"><h3 style="margin:0;font-family:var(--display)">${esc(CLI.nom||"Ce dossier")}</h3>
+    <button class="btn soft" type="button" data-a="dup">⧉ Dupliquer pour un autre client</button>
+    ${menuVide()?"":`<button class="btn soft" type="button" data-a="mpdf">⬇︎ Télécharger le menu (PDF)</button><button class="btn soft" type="button" data-a="mpng">⬇︎ Menu en image (réseaux sociaux)</button>`}
+    ${avecDevis()?`<button class="btn soft" type="button" data-a="dpdf">⬇︎ Télécharger le devis (PDF)</button>`:""}
+    ${CUR&&STATUT!=="accepte"?`<button class="btn soft" type="button" data-a="acc">✅ Marquer accepté</button>`:""}
+    ${CUR&&STATUT!=="refuse"?`<button class="btn soft" type="button" data-a="ref">Marquer refusé</button>`:""}
+    ${CUR?`<button class="btn soft" type="button" data-a="del" style="color:var(--danger)">Supprimer ce dossier</button>`:""}
+    <button class="btn" type="button" data-a="x">Fermer</button></div>`;
+  document.body.appendChild(m);m.addEventListener("click",async e=>{if(e.target===m){m.remove();return}const b=e.target.closest("[data-a]");if(!b)return;const a=b.dataset.a;
+    if(a==="x"){m.remove();return}
+    if(a==="mpdf")return dl("menu","pdf",b);if(a==="mpng")return dl("menu","png",b);if(a==="dpdf")return dl("devis","pdf",b);
+    m.remove();
+    if(a==="dup"){await flushSaves();if(CUR)openDossier(CUR,true);else toast("Rien à dupliquer pour l'instant");return}
+    if(a==="acc"||a==="ref"){try{await rpc("proposition_suivi",{p_id:CUR,p_action:a==="acc"?"accepte":"refuse"});STATUT=a==="acc"?"accepte":"refuse";statUI();toast("Noté")}catch{toast("Pas de connexion : réessaie")}return}
+    if(a==="del"){if(!confirm(`Supprimer le dossier « ${CLI.nom||"sans nom"} » ? Il disparaîtra pour toute l'équipe.`))return;
+      try{await rpc("proposition_supprimer",{p_id:CUR});CUR=null;store.set("menus2b-dossier",null);ROWS=null;toast("Dossier supprimé");go("home")}catch{toast("Pas supprimé : vérifie la connexion")}}
   });
-}
-document.querySelectorAll("[data-list]").forEach(b=>b.onclick=()=>openList(b.dataset.list));
-document.querySelectorAll("[data-newdoc]").forEach(b=>b.onclick=()=>newDoc(b.dataset.newdoc));
+};
 
-/* ---------- Onglets ---------- */
-document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{
-  TAB=b.dataset.tab;document.querySelectorAll("[data-tab]").forEach(x=>x.setAttribute("aria-selected",x===b));
-  $("#panel-menu").hidden=TAB!=="menu";$("#panel-forfaits").hidden=TAB!=="forfaits";$("#panel-devis").hidden=TAB!=="devis";if(TAB==="devis")fillDevisForm();
-  $("#editnote").textContent=TAB==="menu"?"Aperçu au format A4. Touche un texte de la page pour le retoucher.":"Aperçu au format A4.";show();
-});
+/* Hauteur de la barre du bas de l'appli : le gros bouton reste juste au-dessus */
+function bnh(){const n=document.querySelector(".bnav");document.documentElement.style.setProperty("--bnh",(n?n.offsetHeight:0)+"px")}
+addEventListener("resize",bnh);setTimeout(bnh,300);
 
-/* Démarrage : on reprend le dernier menu */
+/* Démarrage */
 const ch=store.get("menus2b-champs");
 if(ch&&ch.formule)FORM=ch.formule;setForm(FORM);
 if(ch){$("#fTitle").value=ch.titre||"Menu";$("#fSub").value=ch.sousTitre||"";$("#fPrice").value=priceNum(ch.prix);$("#fNote").value=ch.note||""}
 $("#raw").value=RAW;
 if(!MENU||!Array.isArray(MENU.sections))build();else ready(MENU);
-$("#editnote").textContent="Aperçu au format A4. Touche un texte de la page pour le retoucher.";
-show();
-DOCS_ON=true;
-if(location.hash==="#devis"){const pre=prefillFromEvent();history.replaceState(null,"",location.pathname);document.querySelector('[data-tab="devis"]').click();if(pre){toast("Devis préparé depuis la fiche événement");newNum();saveNow("devis")}}
-else if(location.hash.startsWith("#doc=")){const id=decodeURIComponent(location.hash.slice(5));history.replaceState(null,"",location.pathname);openDoc(id)}
-// ce qui était déjà en cours sur ce téléphone rejoint « Mes menus / Mes devis »
-if(!CUR.menu&&!menuVide())saveNow("menu");
-if(!CUR.devis&&(DEVIS.lignes.length||DEVIS.client))saveNow("devis");else if(!DEVIS.num)newNum();
+fillClient();DOCS_ON=true;
+if(location.hash==="#devis"){   // depuis une fiche Événement : nouveau dossier déjà rempli
+  let p=null;try{p=JSON.parse(localStorage.getItem("devis2b-prefill")||"null");localStorage.removeItem("devis2b-prefill")}catch{}
+  history.replaceState(null,"",location.pathname);
+  const lines=String((p&&p.adr)||"").split("\n"),telL=lines.find(l=>/^[\d\s+.()-]{8,}$/.test(l.trim())),lieu=lines.find(l=>/^Lieu : /.test(l));
+  newDossier(p?{nom:p.client||"",tel:(telL||"").trim(),adr:lieu?lieu.replace(/^Lieu : /,""):"",jour:p.jour||"",pers:p.pers||"",type:/traiteur/i.test(p.objet||"")?"traiteur":"resto",evt:p.evt||""}:null);
+  if(p)toast("Dossier préparé depuis la fiche événement");
+}
+else if(location.hash.startsWith("#doc=")){const id=decodeURIComponent(location.hash.slice(5));history.replaceState(null,"",location.pathname);openDossier(id)}
+else go("home");
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
 </body>
