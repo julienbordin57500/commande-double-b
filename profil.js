@@ -1,3 +1,43 @@
+/* Intro à l'ouverture de l'appli (2026-11-13) : le burger de l'icône se monte étage par étage dans le carré,
+   ~1,4 s, une seule fois par lancement (sessionStorage), touche = passer. Pas d'intro si « réduire les animations ». */
+(function(){
+  try{if(sessionStorage.getItem("2b-intro"))return;sessionStorage.setItem("2b-intro","1")}catch{return}
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches||document.visibilityState==="hidden")return;
+  const css=`#intro2b{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;background:radial-gradient(120% 80% at 50% 45%,#2d2722 0%,#13100d 70%);transition:opacity .28s ease;-webkit-tap-highlight-color:transparent}
+#intro2b.out{opacity:0}
+#intro2b .box{display:grid;justify-items:center;gap:18px;transition:transform .32s cubic-bezier(.3,.7,.4,1)}
+#intro2b.out .box{transform:scale(1.06)}
+#intro2b .ico{width:136px;height:136px;border-radius:31px;overflow:hidden;box-shadow:0 18px 44px rgba(0,0,0,.45),0 0 0 1px rgba(242,165,22,.18);animation:i2bIn .32s cubic-bezier(.2,.8,.3,1.15) both}
+#intro2b svg{display:block;width:100%;height:100%}
+#intro2b .l{animation:i2bDrop .42s cubic-bezier(.3,.9,.35,1.18) both}
+#intro2b .glow{animation:i2bGlow .6s ease-out .95s both}
+#intro2b .nom{font:800 22px/1 "Bricolage Grotesque","Avenir Next",system-ui,sans-serif;letter-spacing:.01em;color:#fff4dc;animation:i2bTxt .4s ease-out .75s both}
+#intro2b .nom b{color:#ffc54d}
+@keyframes i2bIn{from{opacity:0;transform:scale(.82)}}
+@keyframes i2bDrop{from{transform:translateY(-470px)}}
+@keyframes i2bGlow{0%{opacity:0}40%{opacity:1}100%{opacity:0}}
+@keyframes i2bTxt{from{opacity:0;transform:translateY(6px)}}`;
+  const d=(i)=>`style="animation-delay:${120+i*95}ms"`;
+  const html=`<style>${css}</style><div class="box"><div class="ico"><svg viewBox="0 0 512 512" aria-hidden="true">
+<defs><linearGradient id="i2bF" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2d2722"/><stop offset="1" stop-color="#13100d"/></linearGradient>
+<linearGradient id="i2bP" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc54d"/><stop offset="1" stop-color="#ee9812"/></linearGradient>
+<radialGradient id="i2bH" cx=".5" cy=".52" r=".5"><stop offset="0" stop-color="#f2a516" stop-opacity=".22"/><stop offset="1" stop-color="#f2a516" stop-opacity="0"/></radialGradient>
+<radialGradient id="i2bG" cx=".5" cy=".55" r=".5"><stop offset="0" stop-color="#ffc54d" stop-opacity=".45"/><stop offset="1" stop-color="#ffc54d" stop-opacity="0"/></radialGradient></defs>
+<rect width="512" height="512" fill="url(#i2bF)"/><rect width="512" height="512" fill="url(#i2bH)"/>
+<rect class="glow" width="512" height="512" fill="url(#i2bG)"/>
+<path class="l" ${d(0)} d="M120 366H392C392 394 371 412 342 412H170C141 412 120 394 120 366Z" fill="url(#i2bP)"/>
+<rect class="l" ${d(1)} x="106" y="310" width="300" height="46" rx="23" fill="#7a4120"/>
+<g class="l" ${d(2)}><rect x="106" y="254" width="300" height="46" rx="23" fill="#7a4120"/>
+<path d="M112 298H400L384 318L364 306L338 334L314 306L272 322L248 306L214 330L190 306L156 320L136 306Z" fill="#ffd54a"/></g>
+<g class="l" ${d(3)}><path d="M116 226C116 152 180 106 256 106C332 106 396 152 396 226C396 237 388 244 377 244H135C124 244 116 237 116 226Z" fill="url(#i2bP)"/></g>
+</svg></div><div class="nom">Double <b>B</b></div></div>`;
+  const el=document.createElement("div");el.id="intro2b";el.setAttribute("aria-hidden","true");el.innerHTML=html;
+  (document.body||document.documentElement).appendChild(el);
+  let fini=false;
+  const fin=()=>{if(fini)return;fini=true;el.classList.add("out");setTimeout(()=>el.remove(),340)};
+  el.addEventListener("pointerdown",fin);
+  setTimeout(fin,1250);
+})();
 /* Profils Double B : Julien, Eric, Thierry, Claire.
    Choisi une fois par téléphone, gardé ensuite. Barre « Changer de profil » en haut de chaque page. */
 (function(){
