@@ -293,7 +293,7 @@ function drawRel(list){
   const eur=v=>new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR",maximumFractionDigits:2}).format(+v||0);
   const jj=s=>new Date(s).toLocaleDateString("fr-FR",{day:"numeric",month:"long"});
   $("#rels").innerHTML=xs.map(r=>{const qui=r.client||r.contact||r.titre||"le client";
-    const det=[r.kind==="devis"?`Devis${r.num?" n° "+r.num:""}${r.montant!=null?" · "+eur(r.montant):""}`:`Menu${r.montant!=null?" · "+String(+r.montant).replace(".",",")+" € / pers.":""}`,"envoyé le "+jj(r.envoye_le)].join(" · ");
+    const det=[(r.kind==="devis"||r.num)?`Devis${r.num?" n° "+r.num:""}${r.montant!=null?" · "+eur(r.montant):""}`:`Menu${r.montant!=null?" · "+String(+r.montant).replace(".",",")+" € / pers.":""}`,"envoyé le "+jj(r.envoye_le)].join(" · ");
     return `<div class="relx"><a href="menus.html#doc=${encodeURIComponent(r.id)}"><b>Relancer ${esc(qui)}</b><small>${esc(det)}${r.contact&&r.contact!==qui?" · "+esc(r.contact):""}</small></a>
       <div class="relb"><button type="button" data-ra="relance" data-id="${esc(r.id)}">Relancé</button><button type="button" class="ok" data-ra="accepte" data-id="${esc(r.id)}">Accepté</button><button type="button" data-ra="refuse" data-id="${esc(r.id)}">Refusé</button></div></div>`}).join("");
 }

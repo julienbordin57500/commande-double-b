@@ -398,7 +398,7 @@ function openForm(ev,day){
     ${isNew?"":`<div class="docs" id="fDocs" hidden></div>`}
     <div class="acts">
       <button class="btn" type="button" id="fSave">${isNew?"Ajouter au calendrier":"Enregistrer"}</button>
-      ${isNew?"":`<button class="btn soft paye" type="button" id="fDevis">📄 Faire le devis</button>`}
+      ${isNew?"":`<button class="btn soft paye" type="button" id="fDevis">📄 Faire le menu et le devis</button>`}
       ${isNew?"":`<button class="btn danger" type="button" id="fDel">Supprimer l'événement</button>`}
       <button class="btn soft" type="button" id="fCancel">Annuler</button>
     </div></div>`;
@@ -439,11 +439,11 @@ function openForm(ev,day){
     catch(err){if(lost(err))return;toast("Pas enregistré : vérifie la connexion");$("#fSave").disabled=false}
   };
   // Devis liés à cet événement (page Menus › Devis) : n°, montant, où il en est
-  if(!isNew)rpc("propositions_liste",{p_kind:"devis"}).then(list=>{
+  if(!isNew)rpc("propositions_liste",{p_kind:null}).then(list=>{
     const xs=(list||[]).filter(d=>d.evenement_id===e.id),box=$("#fDocs");if(!xs.length||!box)return;
     const ST={brouillon:"pas encore envoyé",envoye:"envoyé",accepte:"accepté ✓",refuse:"refusé"};
     const eur=v=>new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR"}).format(+v||0);
-    box.innerHTML=xs.map(d=>`<a class="docl" href="menus.html#doc=${encodeURIComponent(d.id)}"><span>📄</span><span><b>Devis${d.num?" n° "+esc(d.num):""} · ${eur(d.montant)}</b><small>${ST[d.statut]||""}${d.statut==="envoye"&&d.envoye_le?" le "+new Date(d.envoye_le).toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"}):""}</small></span><span class="go">›</span></a>`).join("");
+    box.innerHTML=xs.map(d=>`<a class="docl" href="menus.html#doc=${encodeURIComponent(d.id)}"><span>📄</span><span><b>${d.num?"Devis n° "+esc(d.num):"Dossier menu"}${d.montant!=null?" · "+eur(d.montant):""}</b><small>${ST[d.statut]||""}${d.statut==="envoye"&&d.envoye_le?" le "+new Date(d.envoye_le).toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"}):""}</small></span><span class="go">›</span></a>`).join("");
     box.hidden=false}).catch(()=>{});
   if(!isNew)$("#fDevis").onclick=()=>{
     const t=type==="traiteur"?"Prestation traiteur":"Privatisation de la salle";
