@@ -152,6 +152,16 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
 @media (prefers-reduced-motion:reduce){.newsw{transition:none}}
 @media (prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}.goal .bar i{animation:none}.tile,.card{transition:none}}
 @media (max-width:350px){.grid2{grid-template-columns:1fr}}
+/* À relancer : menus et devis envoyés sans réponse depuis 5 jours (2026-11-13) */
+.ic.rel{font-size:20px;display:grid;place-items:center}
+.relx{padding:8px 14px 12px}
+.relx+.relx{border-top:1px solid var(--line)}
+.relx a{display:block;color:var(--fg);text-decoration:none}
+.relx b{display:block;font-size:16px;font-weight:800;line-height:1.25;overflow-wrap:anywhere}
+.relx small{display:block;color:var(--muted);font-size:13.5px;font-weight:600;margin-top:2px;overflow-wrap:anywhere}
+.relb{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px}
+.relb button{height:42px;border-radius:12px;border:1px solid var(--line);background:var(--sunken);color:var(--fg);font-weight:800;font-size:14px}
+.relb .ok{background:var(--go-soft);color:var(--go);border-color:transparent}
 </style>
 </head>
 <body>
@@ -186,6 +196,11 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
       <h2>À commander</h2>
       <div id="cmd"><span class="sk big"></span><span class="sk" style="width:70%"></span></div>
     </a>
+  </div>
+
+  <div class="card" id="cRel" hidden>
+    <div class="ch"><span class="ic rel" aria-hidden="true">🔔</span><h2>À relancer</h2></div>
+    <div id="rels"></div>
   </div>
 
   <a class="card" href="evenements.html" id="cEv">
@@ -269,6 +284,21 @@ function drawEv(list){
   $("#evs").innerHTML=html||`<div class="empty">Rien de prévu aujourd'hui ni demain.</div>`;
 }
 $("#cEv").addEventListener("click",e=>{const x=e.target.closest("[data-ev]");if(!x)return;e.preventDefault();location.href=`evenements.html#ev=${encodeURIComponent(x.dataset.ev)}&j=${x.dataset.j}`});
+
+/* À relancer (page Menus : bouton « Préparer le mail » → 5 jours sans réponse) ; chacun voit les siens */
+function drawRel(list){
+  const me=(window.Profil&&Profil.get())||"";
+  const xs=(list||[]).filter(r=>!r.cree_par||r.cree_par===me||r.cree_par==="commun");
+  $("#cRel").hidden=!xs.length;if(!xs.length)return;
+  const eur=v=>new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR",maximumFractionDigits:2}).format(+v||0);
+  const jj=s=>new Date(s).toLocaleDateString("fr-FR",{day:"numeric",month:"long"});
+  $("#rels").innerHTML=xs.map(r=>{const qui=r.client||r.contact||r.titre||"le client";
+    const det=[r.kind==="devis"?`Devis${r.num?" n° "+r.num:""}${r.montant!=null?" · "+eur(r.montant):""}`:`Menu${r.montant!=null?" · "+String(+r.montant).replace(".",",")+" € / pers.":""}`,"envoyé le "+jj(r.envoye_le)].join(" · ");
+    return `<div class="relx"><a href="menus.html#doc=${encodeURIComponent(r.id)}"><b>Relancer ${esc(qui)}</b><small>${esc(det)}${r.contact&&r.contact!==qui?" · "+esc(r.contact):""}</small></a>
+      <div class="relb"><button type="button" data-ra="relance" data-id="${esc(r.id)}">Relancé</button><button type="button" class="ok" data-ra="accepte" data-id="${esc(r.id)}">Accepté</button><button type="button" data-ra="refuse" data-id="${esc(r.id)}">Refusé</button></div></div>`}).join("");
+}
+$("#rels").addEventListener("click",async e=>{const b=e.target.closest("[data-ra]");if(!b)return;b.disabled=true;
+  try{await rpc("proposition_suivi",{p_id:b.dataset.id,p_action:b.dataset.ra});drawRel(await rpc("propositions_a_relancer"))}catch(err){if(!lost(err))b.disabled=false}});
 
 /* À commander : total et par fournisseur (Cuisine et Bar & Salle) */
 function drawCmd(d){
@@ -383,6 +413,7 @@ async function load(){
   if(et.status==="fulfilled"&&et.value){cache("commande2b-cache",et.value);drawCmd(et.value)}
   if(mo.status==="fulfilled"){drawHier(mo.value)}
   loadGoal().catch(e=>{lost(e)});
+  rpc("propositions_a_relancer").then(drawRel).catch(()=>{});
   if(ev.status==="rejected"&&!cache("accueil2b-ev-"+TODAY))$("#evs").innerHTML=`<div class="empty">Pas de connexion pour l'instant.</div>`;
 }
 load();

@@ -240,6 +240,23 @@ header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .field .chk label{display:flex;align-items:center;gap:7px;padding:9px 13px;border:1px solid var(--line);border-radius:999px;background:var(--sunken);font-weight:600;font-size:14px;text-transform:none;letter-spacing:0;color:var(--fg)}
 .chk input{width:18px;height:18px;accent-color:var(--accent)}
 .mailbox .lnk{align-self:flex-start;padding:2px 0}
+/* Mes menus et devis (2026-11-13) */
+.docbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.sv{font-size:12.5px;color:var(--muted);margin:-4px 0 0;min-height:1.2em}
+.sv[data-s="err"]{color:#c0392b}
+.listbox h3{font-family:var(--display);font-size:20px;font-weight:800;margin:0}
+.dlist{display:flex;flex-direction:column;gap:8px}
+.ditem{border:1px solid var(--line);border-radius:14px;background:var(--sunken);overflow:hidden}
+.ditem.cur{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.dopen{display:block;width:100%;text-align:left;border:0;background:transparent;padding:12px 14px;color:var(--fg)}
+.dopen b{display:block;font-size:16px;font-weight:800;line-height:1.25;overflow-wrap:anywhere}
+.dopen small{display:block;color:var(--muted);font-size:13.5px;font-weight:600;margin-top:3px}
+.dst{display:inline-block;margin-top:7px;font-size:12px;font-weight:800;padding:3px 9px;border-radius:99px;background:var(--surface);color:var(--muted)}
+.dst.envoye{color:#b26b00}.dst.accepte{color:#1e8e4e}.dst.refuse{color:#c0392b}
+.dacts{display:flex;border-top:1px solid var(--line)}
+.dacts button{flex:1;height:44px;border:0;background:transparent;font-weight:700;font-size:14px;color:var(--fg)}
+.dacts button+button{border-left:1px solid var(--line)}
+.dacts .del{color:#c0392b}
 </style>
 </head>
 <body>
@@ -259,6 +276,8 @@ header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
     <!-- Saisie : Menu -->
     <section class="panel" id="panel-menu">
       <h2>Ton menu</h2>
+      <div class="docbar"><button class="btn soft" type="button" data-list="menu">📂 Mes menus</button><button class="btn soft" type="button" data-newdoc="menu">＋ Nouveau</button></div>
+      <p class="sv" data-sv></p>
       <div class="field">
         <label for="raw">Colle, écris ou dicte le menu</label>
         <textarea id="raw" spellcheck="true" lang="fr" placeholder="ex.&#10;Entrée : tartine de pain de campagne, foie gras, chutney de figues ou gravlax de saumon maison&#10;Plat : dodine de volaille farcie aux herbes ou carré de porcelet rôti au miel&#10;Dessert : pavlova aux fruits exotiques ou poire pochée au vin rouge"></textarea>
@@ -313,6 +332,8 @@ Monaco</textarea></div>
     <!-- Saisie : Devis -->
     <section class="panel" id="panel-devis" hidden>
       <h2>Devis</h2>
+      <div class="docbar"><button class="btn soft" type="button" data-list="devis">📂 Mes devis</button><button class="btn soft" type="button" data-newdoc="devis">＋ Nouveau</button></div>
+      <p class="sv" data-sv></p>
       <div class="row2">
         <div class="field"><label for="dNum">N° de devis</label><input id="dNum" maxlength="20"></div>
         <div class="field"><label for="dDate">Date du devis</label><input id="dDate" type="date"></div>
@@ -599,7 +620,7 @@ function mergeSecs(old,nw){
       mode:a.mode===a.om?b.mode:a.mode,om:b.om,plats:L.map(y=>y.t),po:L.map(y=>y.o),del:a.del.filter(o=>b.po.includes(o))};
   });
 }
-const save=()=>store.set("menus2b-dernier",MENU);
+const save=()=>{store.set("menus2b-dernier",MENU);queueSave("menu")};
 function build(){
   const p=parseMenu(RAW||EXAMPLE_TXT);
   const old=MENU&&Array.isArray(MENU.sections)?ready(MENU):null;
@@ -767,7 +788,7 @@ $("#freset").onclick=()=>{$("#p1").value=F_DEFAULT.p1;$("#p2").value=F_DEFAULT.p
 /* ---------- Devis ---------- */
 const COND_DEF="Devis valable {v} jours à compter de sa date.\nLa réservation est confirmée à réception du devis signé et d'un acompte de {a} % du montant TTC.\nLe nombre définitif de convives est à confirmer au plus tard 7 jours avant l'événement ; il servira de base à la facturation.\nLe solde est à régler le jour de l'événement.";
 const todayISO=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
-function nextNum(){let n=1;try{n=(+localStorage.getItem("devis2b-compteur")||0)+1;localStorage.setItem("devis2b-compteur",n)}catch{}return `${new Date().getFullYear()}-${String(n).padStart(3,"0")}`}
+function nextNum(){return ""} // n° donné par le serveur (devis_numero / proposition_enregistrer), commun à tous les téléphones
 function blankDevis(){return {num:nextNum(),date:todayISO(),client:"",adr:"",objet:"",jour:"",pers:"",lignes:[],acompte:30,valid:30,cond:""}}
 let DEVIS=store.get("menus2b-devis")||blankDevis();
 const n2=v=>{const x=parseFloat(String(v??"").replace(/\s|€/g,"").replace(",","."));return isNaN(x)?0:x};
@@ -797,7 +818,7 @@ function devisPage(dv){
     <div class="foot">DOUBLE B — SAS au capital de 10 000 € — Siège : 12 rue des Loriots, 57500 Saint-Avold — RCS Sarreguemines 915 267 595<br>SIRET 915 267 595 00022 — TVA intracommunautaire FR32915267595</div>
   </div></div>`;
 }
-function saveDevis(){store.set("menus2b-devis",DEVIS)}
+function saveDevis(){store.set("menus2b-devis",DEVIS);queueSave("devis")}
 function linesUI(){
   $("#dLignes").innerHTML=DEVIS.lignes.map((l,i)=>`<div class="dline" data-li="${i}">
     <div class="r1"><label><span class="t">Désignation</span><textarea data-k="d" rows="1" maxlength="160" placeholder="ex. Menu anniversaire">${esc(l.d||"")}</textarea></label>
@@ -831,11 +852,11 @@ document.querySelectorAll("[data-qa]").forEach(b=>b.onclick=()=>{
   DEVIS.lignes.push(l);saveDevis();linesUI();show();
   if(b.dataset.qa==="libre"){const inp=$(`#dLignes [data-li="${DEVIS.lignes.length-1}"] [data-k="d"]`);inp&&inp.focus()}
 });
-$("#dNew").onclick=()=>{if(!confirm("Vider ce devis et en commencer un nouveau ?"))return;DEVIS=blankDevis();saveDevis();fillDevisForm();show();toast("Nouveau devis n° "+DEVIS.num)};
+$("#dNew").onclick=()=>newDoc("devis");
 $("#dpdf").onclick=e=>exportAs("pdf",e.currentTarget);$("#dpng").onclick=e=>exportAs("png",e.currentTarget);
 // Arrivée depuis une fiche Événement : on préremplit le devis
 function prefillFromEvent(){let p=null;try{p=JSON.parse(localStorage.getItem("devis2b-prefill")||"null");localStorage.removeItem("devis2b-prefill")}catch{}
-  if(!p)return false;DEVIS=blankDevis();Object.assign(DEVIS,{client:p.client||"",adr:p.adr||"",objet:p.objet||"",jour:p.jour||"",pers:p.pers??""});saveDevis();return true}
+  if(!p)return false;CUR.devis=null;DEVIS=blankDevis();Object.assign(DEVIS,{evt:p.evt||"",client:p.client||"",adr:p.adr||"",objet:p.objet||"",jour:p.jour||"",pers:p.pers??""});saveDevis();return true}
 
 /* ---------- Export PDF / image ---------- */
 async function capture(){
@@ -893,10 +914,10 @@ const traiteur=()=>/traiteur/i.test(DEVIS.objet||"");
 function mailObjet(s){return `${traiteur()?"Votre prestation":"Votre repas"}${s.jour?" du "+jourTxt(s.jour):""} au Double B`}
 function mailTexte(s){
   const quand=[s.jour?"du "+jourTxt(s.jour):"",s.serv==="soir"?"au soir":s.serv==="midi"?"midi":""].filter(Boolean).join(" ");
-  const prix=priceNum(MENU.prix),hb=/hors boisson|boissons? non compris/.test(fold(MENU.note||"")),pers=n2(s.pers),f=s.menu?MENU.formule:"";
+  const prix=priceNum(MENU.prix),pers=n2(s.pers),f=s.menu?MENU.formule:"",bo=s.boiss==="hors"?", hors boissons":s.boiss==="comp"?", boissons comprises":"";
   const L=[`Bonjour${s.nom?" "+s.nom:""},`,
     `Merci beaucoup pour votre demande, nous serons ravis de vous accueillir au Double B pour ${traiteur()?"votre prestation":"votre repas"}${quand?" "+quand:""}.`];
-  if(s.menu)L.push(`Vous trouverez en pièce jointe notre proposition de menu${prix?`, au prix de ${prix} € par personne${hb?", hors boissons":""}`:""}.`);
+  if(s.menu)L.push(`Vous trouverez en pièce jointe notre proposition de menu${prix?`, au prix de ${prix} € par personne${bo}`:""}.`);
   if(s.devis){const t=devisTotals();L.push(`${s.menu?"Vous trouverez également":"Vous trouverez en pièce jointe"} notre devis n° ${DEVIS.num}${t.ttc?`, d'un montant de ${eurD(t.ttc)} TTC`:""}. Pour confirmer la réservation, il vous suffit de nous le retourner signé, accompagné d'un acompte de ${n2(DEVIS.acompte)||30} %.`)}
   if(s.forf)L.push("Je vous joins aussi nos forfaits apéritifs, si vous souhaitez ajouter un apéritif.");
   const gp=pers?`votre groupe de ${pers} personnes`:"votre groupe";
@@ -914,6 +935,8 @@ function openMail(){
   const dv=TAB==="devis",hasMenu=(MENU.sections||[]).length>0;
   const S={to:"",nom:"",jour:"",serv:"",pers:"",menu:TAB==="menu"||(dv&&hasMenu&&DEVIS.lignes.some(l=>/menu/i.test(l.d||""))),
     devis:dv&&DEVIS.lignes.length>0,forf:TAB==="forfaits"||(dv&&DEVIS.lignes.some(l=>/forfait/i.test(l.d||"")))};
+  const nf=fold(MENU.note||"");S.boiss=/hors boisson|boissons? non compris/.test(nf)?"hors":/boissons? compris/.test(nf)?"comp":"";
+  if(!dv&&MENU.jour)S.jour=MENU.jour;
   if(dv){const m=String(DEVIS.adr||"").match(/[^\s<>@]+@[^\s<>@]+\.[a-z]{2,}/i);S.to=m?m[0]:"";S.nom=DEVIS.client||"";S.jour=DEVIS.jour||"";S.pers=DEVIS.pers||""}
   let edited=false;
   const m=document.createElement("div");m.className="modal";
@@ -923,6 +946,7 @@ function openMail(){
     <div class="row2"><div class="field"><label for="mJour">Date du repas</label><input id="mJour" type="date" value="${esc(S.jour)}"></div>
       <div class="field"><label for="mPers">Nombre de personnes</label><input id="mPers" inputmode="numeric" placeholder="ex. 10" value="${esc(String(S.pers))}"></div></div>
     <div class="field"><span class="lbl">Service</span><div class="seg" id="mServ"><button type="button" data-v="" aria-pressed="true">Pas précisé</button><button type="button" data-v="midi" aria-pressed="false">Midi</button><button type="button" data-v="soir" aria-pressed="false">Soir</button></div></div>
+    <div class="field"><span class="lbl">Boissons</span><div class="seg" id="mBoiss"><button type="button" data-v="" aria-pressed="${!S.boiss}">Pas précisé</button><button type="button" data-v="hors" aria-pressed="${S.boiss==="hors"}">Hors boissons</button><button type="button" data-v="comp" aria-pressed="${S.boiss==="comp"}">Boissons comprises</button></div></div>
     <div class="field"><span class="lbl">Pièces jointes</span><div class="chk">
       <label><input type="checkbox" id="mMenu"${S.menu?" checked":""}${hasMenu?"":" disabled"}> Le menu</label>
       <label><input type="checkbox" id="mDevis"${S.devis?" checked":""}${DEVIS.lignes.length?"":" disabled"}> Le devis</label>
@@ -934,13 +958,14 @@ function openMail(){
     <div class="btns"><button class="btn soft" type="button" id="mCopy">Copier le texte</button><button class="btn soft" type="button" id="mClose">Fermer</button></div></div>`;
   document.body.appendChild(m);
   const q=s=>m.querySelector(s);
-  const read=()=>({to:q("#mTo").value.trim(),nom:q("#mNom").value.trim(),jour:q("#mJour").value,pers:q("#mPers").value.trim(),serv:S.serv||"",
+  const read=()=>({to:q("#mTo").value.trim(),nom:q("#mNom").value.trim(),jour:q("#mJour").value,pers:q("#mPers").value.trim(),serv:S.serv||"",boiss:S.boiss||"",
     menu:q("#mMenu").checked,devis:q("#mDevis").checked,forf:q("#mForf").checked});
   const redo=()=>{const r=read();q("#mObj").value=mailObjet(r);if(!edited)q("#mTxt").value=mailTexte(r)};
   redo();
   m.addEventListener("input",e=>{if(e.target.id==="mTxt"){edited=true;q("#mRe").hidden=false;return}if(e.target.id!=="mObj")redo()});
   m.addEventListener("change",e=>{if(e.target.type==="checkbox")redo()});
   q("#mServ").onclick=e=>{const b=e.target.closest("button");if(!b)return;S.serv=b.dataset.v;q("#mServ").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));redo()};
+  q("#mBoiss").onclick=e=>{const b=e.target.closest("button");if(!b)return;S.boiss=b.dataset.v;q("#mBoiss").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));redo()};
   q("#mRe").onclick=()=>{edited=false;q("#mRe").hidden=true;redo()};
   q("#mClose").onclick=()=>m.remove();
   m.addEventListener("click",e=>{if(e.target===m)m.remove()});
@@ -953,6 +978,9 @@ function openMail(){
     try{await loadLibs().catch(()=>{throw new Error("libs")});
       for(const [ok,w] of [[r.menu,"menu"],[r.devis,"devis"],[r.forf,"forfaits"]])if(ok)files.push(await pdfOf(w));}
     catch(e){toast(e.message==="libs"?"Pas de connexion : les PDF ont besoin d'internet":"Les PDF n'ont pas pu être préparés, réessaie");btn.disabled=false;btn.textContent="Ouvrir ma messagerie";return}
+    // le menu garde la date et le client ; on note l'envoi (relance proposée 5 jours après sur la page Aujourd'hui)
+    if(r.menu){MENU.jour=r.jour||MENU.jour||"";MENU.client=r.nom||r.to||MENU.client||"";save()}
+    const noter=()=>{flushSaves().then(()=>{for(const k of ["menu","devis"])if(r[k]&&CUR[k])rpc("proposition_suivi",{p_id:CUR[k],p_action:"envoye",p_contact:r.to}).catch(()=>{})})};
     const tel=/iPhone|iPad|Android/i.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&/Macintosh/.test(navigator.userAgent));
     if(tel&&navigator.canShare&&(!files.length||navigator.canShare({files}))){
       // le téléphone demande un nouveau toucher après la préparation des PDF
@@ -960,16 +988,95 @@ function openMail(){
         <button class="btn" type="button" data-s>Envoyer</button><button class="btn soft" type="button" data-c>Fermer</button>`;
       m.querySelector("[data-c]").onclick=()=>m.remove();
       m.querySelector("[data-s]").onclick=()=>{if(r.to&&navigator.clipboard)navigator.clipboard.writeText(r.to).catch(()=>{});
-        navigator.share(Object.assign({title:obj,text:txt},files.length?{files}:{})).then(()=>m.remove()).catch(e=>{if(e.name!=="AbortError")toast("Le partage n'a pas marché, réessaie")})};
+        navigator.share(Object.assign({title:obj,text:txt},files.length?{files}:{})).then(()=>{noter();m.remove()}).catch(e=>{if(e.name!=="AbortError")toast("Le partage n'a pas marché, réessaie")})};
       return;
     }
-    files.forEach(f=>saveLink(f,f.name));
+    noter();files.forEach(f=>saveLink(f,f.name));
     location.href=`mailto:${encodeURIComponent(r.to).replace("%40","@")}?subject=${encodeURIComponent(obj)}&body=${encodeURIComponent(txt)}`;
     m.remove();toast(files.length?"Mail ouvert : joins le PDF qui vient d'être téléchargé":"Mail ouvert");
   };
   setTimeout(()=>q(S.to?"#mJour":"#mTo").focus(),50);
 }
 document.querySelectorAll("[data-mail]").forEach(b=>b.onclick=openMail);
+
+/* ---------- Mes menus et devis : enregistrés dans Supabase (table propositions, 2026-11-13) ----------
+   Chaque menu / devis est enregistré tout seul (1 s après la dernière retouche) : retrouvé sur tous les téléphones et sur le Mac.
+   CUR = l'enregistrement en cours sur ce téléphone ; le n° de devis est donné par le serveur. */
+var API="https://kokjumjhpasxxxrpspng.supabase.co/rest/v1/rpc/",KEY="sb_publishable_HIJXH1eJ_CP-A4G3AecDKg_NbBUD0m2";
+var CUR=store.get("menus2b-ids")||{menu:null,devis:null},DOCS_ON=false,SAVING={},Q={};
+async function rpc(fn,args={}){let code="";try{code=localStorage.getItem("commande2b-code")||""}catch{}
+  const r=await fetch(API+fn,{method:"POST",headers:{"apikey":KEY,"Content-Type":"application/json"},body:JSON.stringify({p_code:code,...args})});
+  if(!r.ok){let e={};try{e=await r.json()}catch{}const err=new Error(e.message||"net");err.code=e.code;
+    if(e.code==="28000"){try{localStorage.removeItem("commande2b-code")}catch{}location.replace("./")}throw err}
+  const t=await r.text();return t?JSON.parse(t):null}
+const menuVide=()=>!String(RAW||"").trim()&&!retouche();
+function payload(k){
+  if(k==="menu")return {titre:[MENU.titre,MENU.sousTitre].filter(Boolean).join(" · "),client:MENU.client||"",jour:MENU.jour||"",
+    montant:priceNum(MENU.prix).replace(",","."),data:{menu:MENU,raw:RAW,champs:opts()},par:PROF};
+  return {titre:DEVIS.objet||"Devis",client:DEVIS.client||"",jour:DEVIS.jour||"",montant:String(Math.round(devisTotals().ttc*100)/100),
+    num:DEVIS.num||"",evenement_id:DEVIS.evt||"",data:DEVIS,par:PROF};
+}
+function svState(st){document.querySelectorAll("[data-sv]").forEach(el=>{el.dataset.s=st;el.textContent=st==="ok"?"✓ Enregistré dans « Mes "+(el.closest("#panel-devis")?"devis":"menus")+" »":st==="err"?"Pas encore enregistré (connexion), ça réessaiera tout seul":"Enregistrement…"})}
+function queueSave(k){if(!DOCS_ON||(k==="menu"&&menuVide()))return;clearTimeout(SAVING[k]);svState("…");SAVING[k]=setTimeout(()=>saveNow(k),1000)}
+function saveNow(k){clearTimeout(SAVING[k]);SAVING[k]=null;
+  Q[k]=(Q[k]||Promise.resolve()).then(async()=>{if(k==="menu"&&menuVide())return;
+    try{const r=await rpc("proposition_enregistrer",{p_id:CUR[k],p_kind:k,p_champs:payload(k)});
+      CUR[k]=r.id;store.set("menus2b-ids",CUR);
+      if(k==="devis"&&r.num&&r.num!==DEVIS.num){DEVIS.num=r.num;store.set("menus2b-devis",DEVIS);$("#dNum").value=r.num;if(TAB==="devis")page()}
+      svState("ok")}catch(e){svState("err")}});
+  return Q[k]}
+async function flushSaves(){for(const k of ["menu","devis"])if(SAVING[k])saveNow(k);await Q.menu;await Q.devis}
+function newNum(){rpc("devis_numero").then(n=>{if(n&&!DEVIS.num){DEVIS.num=n;store.set("menus2b-devis",DEVIS);$("#dNum").value=n;if(TAB==="devis")page()}}).catch(()=>{})}
+function goTab(k){const b=document.querySelector(`[data-tab="${k}"]`);if(TAB!==k)b.click();else{if(k==="devis")fillDevisForm();show()}}
+function loadMenu(d,id){DOCS_ON=false;d=d||{};const c=d.champs||{};
+  RAW=typeof d.raw==="string"?d.raw:"";$("#raw").value=RAW;MENU=d.menu||null;
+  $("#fTitle").value=c.titre||"Menu";$("#fSub").value=c.sousTitre||"";$("#fPrice").value=priceNum(c.prix);$("#fNote").value=c.note||"";setForm(c.formule||"");
+  if(!MENU||!Array.isArray(MENU.sections))build();else{ready(MENU);applyFields()}
+  store.set("menus2b-texte",RAW);store.set("menus2b-champs",opts());store.set("menus2b-dernier",MENU);
+  CUR.menu=id||null;store.set("menus2b-ids",CUR);HIST.length=0;undoUI();DOCS_ON=true;goTab("menu")}
+function loadDevis(d,id){DOCS_ON=false;DEVIS=Object.assign(blankDevis(),d||{});CUR.devis=id||null;store.set("menus2b-ids",CUR);store.set("menus2b-devis",DEVIS);DOCS_ON=true;goTab("devis")}
+async function newDoc(k){await flushSaves();
+  if(k==="menu"){loadMenu({},null);toast("Nouveau menu : colle ou écris-le")}
+  else{loadDevis({},null);newNum();toast("Nouveau devis")}}
+async function openDoc(id,copie){
+  let row;try{row=await rpc("proposition_lire",{p_id:id})}catch(e){toast("Pas de connexion : réessaie");return}
+  if(!row){toast("Introuvable (supprimé ?)");return}
+  await flushSaves();
+  const d=JSON.parse(JSON.stringify(row.data||{}));
+  if(row.kind==="menu"){if(copie&&d.menu){d.menu.client="";d.menu.jour=""}loadMenu(d,copie?null:row.id)}
+  else{if(copie)Object.assign(d,{num:"",client:"",adr:"",jour:"",evt:"",date:todayISO()});else d.num=row.num||d.num;loadDevis(d,copie?null:row.id);if(copie)newNum()}
+  if(copie){saveNow(row.kind);toast("Copie créée : change ce qu'il faut")}else toast((row.kind==="menu"?"Menu":"Devis")+" ouvert")}
+const STL={brouillon:"Pas encore envoyé",envoye:"Envoyé",accepte:"Accepté ✓",refuse:"Refusé"};
+const jj=s=>{const d=new Date(s);return isNaN(d)?"":d.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})};
+async function openList(k){
+  await flushSaves();
+  const m=document.createElement("div");m.className="modal";
+  m.innerHTML=`<div class="box listbox" role="dialog" aria-label="${k==="menu"?"Mes menus":"Mes devis"}"><h3>📂 ${k==="menu"?"Mes menus":"Mes devis"}</h3>
+    <button class="btn" type="button" data-n>＋ ${k==="menu"?"Nouveau menu":"Nouveau devis"}</button>
+    <div class="dlist"><p class="hint">Chargement…</p></div><button class="btn soft" type="button" data-c>Fermer</button></div>`;
+  document.body.appendChild(m);
+  const close=()=>m.remove();
+  m.querySelector("[data-c]").onclick=close;m.addEventListener("click",e=>{if(e.target===m)close()});
+  m.querySelector("[data-n]").onclick=()=>{close();newDoc(k)};
+  let rows=[];
+  const draw=()=>{m.querySelector(".dlist").innerHTML=rows.length?rows.map(r=>{
+      const det=[r.client,r.jour?dateFR(r.jour):"",r.montant!=null?(k==="menu"?String(+r.montant).replace(".",",")+" € / pers.":eurD(+r.montant)):"",r.num?"n° "+r.num:""].filter(Boolean).map(esc).join(" · ");
+      return `<div class="ditem${r.id===CUR[k]?" cur":""}"><button class="dopen" type="button" data-o="${esc(r.id)}"><b>${esc(r.titre||(k==="menu"?"Menu":"Devis"))}${r.id===CUR[k]?" · <small style='display:inline'>ouvert</small>":""}</b>${det?`<small>${det}</small>`:""}
+        <span class="dst ${esc(r.statut)}">${STL[r.statut]||""}${r.statut==="envoye"&&r.envoye_le?" le "+jj(r.envoye_le):""}</span></button>
+        <div class="dacts"><button type="button" data-d="${esc(r.id)}">Dupliquer</button><button type="button" class="del" data-x="${esc(r.id)}">Supprimer</button></div></div>`}).join("")
+    :`<p class="hint">${k==="menu"?"Aucun menu enregistré pour l'instant : ceux que tu prépares s'ajoutent ici tout seuls.":"Aucun devis enregistré pour l'instant."}</p>`};
+  try{rows=await rpc("propositions_liste",{p_kind:k})||[];draw()}catch(e){m.querySelector(".dlist").innerHTML=`<p class="hint">Pas de connexion pour l'instant.</p>`}
+  m.querySelector(".dlist").addEventListener("click",async e=>{
+    const o=e.target.closest("[data-o]"),d=e.target.closest("[data-d]"),x=e.target.closest("[data-x]");
+    if(o){close();if(o.dataset.o!==CUR[k])openDoc(o.dataset.o);else goTab(k)}
+    else if(d){close();openDoc(d.dataset.d,true)}
+    else if(x){const r=rows.find(y=>y.id===x.dataset.x);if(!confirm(`Supprimer « ${r&&r.titre||"ce document"} » ? Il disparaîtra pour toute l'équipe.`))return;
+      try{await rpc("proposition_supprimer",{p_id:x.dataset.x});rows=rows.filter(y=>y.id!==x.dataset.x);draw();
+        if(x.dataset.x===CUR[k]){CUR[k]=null;store.set("menus2b-ids",CUR);close();newDoc(k)}toast("Supprimé")}catch{toast("Pas supprimé : vérifie la connexion")}}
+  });
+}
+document.querySelectorAll("[data-list]").forEach(b=>b.onclick=()=>openList(b.dataset.list));
+document.querySelectorAll("[data-newdoc]").forEach(b=>b.onclick=()=>newDoc(b.dataset.newdoc));
 
 /* ---------- Onglets ---------- */
 document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{
@@ -986,7 +1093,12 @@ $("#raw").value=RAW;
 if(!MENU||!Array.isArray(MENU.sections))build();else ready(MENU);
 $("#editnote").textContent="Aperçu au format A4. Touche un texte de la page pour le retoucher.";
 show();
-if(location.hash==="#devis"){const pre=prefillFromEvent();history.replaceState(null,"",location.pathname);document.querySelector('[data-tab="devis"]').click();if(pre)toast("Devis préparé depuis la fiche événement")}
+DOCS_ON=true;
+if(location.hash==="#devis"){const pre=prefillFromEvent();history.replaceState(null,"",location.pathname);document.querySelector('[data-tab="devis"]').click();if(pre){toast("Devis préparé depuis la fiche événement");newNum();saveNow("devis")}}
+else if(location.hash.startsWith("#doc=")){const id=decodeURIComponent(location.hash.slice(5));history.replaceState(null,"",location.pathname);openDoc(id)}
+// ce qui était déjà en cours sur ce téléphone rejoint « Mes menus / Mes devis »
+if(!CUR.menu&&!menuVide())saveNow("menu");
+if(!CUR.devis&&(DEVIS.lignes.length||DEVIS.client))saveNow("devis");else if(!DEVIS.num)newNum();
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
 </body>

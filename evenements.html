@@ -158,6 +158,9 @@ input[type=date]::-webkit-date-and-time-value,input[type=time]::-webkit-date-and
 .pbar{view-transition-name:pbar}.apps{view-transition-name:apps}
 @media (prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}}
 .logo img{aspect-ratio:1000/403}
+.docs{display:flex;flex-direction:column;gap:8px}
+.docl{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--sunken);color:var(--fg);text-decoration:none}
+.docl b{display:block;font-weight:800}.docl small{display:block;color:var(--muted);font-weight:600;font-size:13px}.docl .go{color:var(--muted);font-size:22px}
 </style>
 </head>
 <body>
@@ -392,6 +395,7 @@ function openForm(ev,day){
     <div class="field paye"><label for="fAcompte">Acompte reçu <em>(facultatif)</em></label><div class="in"><input id="fAcompte" inputmode="decimal" placeholder="–" value="${e.acompte!=null?String(+e.acompte).replace(".",","):""}"><span>€</span></div></div>
     <label class="caisse paye"><input type="checkbox" id="fCaisse"${e.en_caisse?" checked":""}><span>💰 Entré dans la caisse du restaurant<small>${e.en_caisse&&e.en_caisse_par?`Coché par ${esc(NOMS[e.en_caisse_par]||e.en_caisse_par)}${e.en_caisse_le?" le "+esc(new Date(e.en_caisse_le).toLocaleDateString("fr-FR")):""}`:"À cocher seulement quand c'est tapé dans la caisse"}</small></span></label>
     <div class="field"><label for="fNotes">Notes <em>(menu choisi, allergies, déco…)</em></label><textarea id="fNotes" maxlength="2000">${esc(e.notes||"")}</textarea></div>
+    ${isNew?"":`<div class="docs" id="fDocs" hidden></div>`}
     <div class="acts">
       <button class="btn" type="button" id="fSave">${isNew?"Ajouter au calendrier":"Enregistrer"}</button>
       ${isNew?"":`<button class="btn soft paye" type="button" id="fDevis">📄 Faire le devis</button>`}
@@ -434,10 +438,17 @@ function openForm(ev,day){
       toast(isNew?"Ajouté au calendrier ✓":"Fiche enregistrée ✓")}
     catch(err){if(lost(err))return;toast("Pas enregistré : vérifie la connexion");$("#fSave").disabled=false}
   };
+  // Devis liés à cet événement (page Menus › Devis) : n°, montant, où il en est
+  if(!isNew)rpc("propositions_liste",{p_kind:"devis"}).then(list=>{
+    const xs=(list||[]).filter(d=>d.evenement_id===e.id),box=$("#fDocs");if(!xs.length||!box)return;
+    const ST={brouillon:"pas encore envoyé",envoye:"envoyé",accepte:"accepté ✓",refuse:"refusé"};
+    const eur=v=>new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR"}).format(+v||0);
+    box.innerHTML=xs.map(d=>`<a class="docl" href="menus.html#doc=${encodeURIComponent(d.id)}"><span>📄</span><span><b>Devis${d.num?" n° "+esc(d.num):""} · ${eur(d.montant)}</b><small>${ST[d.statut]||""}${d.statut==="envoye"&&d.envoye_le?" le "+new Date(d.envoye_le).toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"}):""}</small></span><span class="go">›</span></a>`).join("");
+    box.hidden=false}).catch(()=>{});
   if(!isNew)$("#fDevis").onclick=()=>{
     const t=type==="traiteur"?"Prestation traiteur":"Privatisation de la salle";
     const adr=[$("#fTel").value.trim(),type==="traiteur"&&$("#fLieu").value.trim()?"Lieu : "+$("#fLieu").value.trim():""].filter(Boolean).join("\n");
-    try{localStorage.setItem("devis2b-prefill",JSON.stringify({client:$("#fClient").value.trim(),adr,objet:t,jour:$("#fJour").value,pers:$("#fPers").value.trim()}))}catch{}
+    try{localStorage.setItem("devis2b-prefill",JSON.stringify({evt:e.id,client:$("#fClient").value.trim(),adr,objet:t,jour:$("#fJour").value,pers:$("#fPers").value.trim()}))}catch{}
     location.href="menus.html#devis";
   };
   if(!isNew)$("#fDel").onclick=async()=>{
