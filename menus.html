@@ -1253,7 +1253,8 @@ $("#dMore").onclick=()=>{
     if(a==="dup"){await flushSaves();if(CUR)openDossier(CUR,true);else toast("Rien à dupliquer pour l'instant");return}
     if(a==="acc"||a==="ref"){try{await rpc("proposition_suivi",{p_id:CUR,p_action:a==="acc"?"accepte":"refuse"});STATUT=a==="acc"?"accepte":"refuse";statUI();toast("Noté")}catch{toast("Pas de connexion : réessaie")}return}
     if(a==="del"){if(!confirm(`Supprimer le dossier « ${CLI.nom||"sans nom"} » ? Il disparaîtra pour toute l'équipe.`))return;
-      try{await rpc("proposition_supprimer",{p_id:CUR});CUR=null;store.set("menus2b-dossier",null);ROWS=null;toast("Dossier supprimé");go("home")}catch{toast("Pas supprimé : vérifie la connexion")}}
+      clearTimeout(SAVING.t);SAVING.t=null;await Q.p;const id=CUR;CUR=null;DOCS_ON=false;   /* plus aucun enregistrement en route : le dossier ne revient pas */
+      try{await rpc("proposition_supprimer",{p_id:id});store.set("menus2b-dossier",null);ROWS=null;toast("Dossier supprimé");go("home");DOCS_ON=true}catch{CUR=id;DOCS_ON=true;toast("Pas supprimé : vérifie la connexion")}}
   });
 };
 
