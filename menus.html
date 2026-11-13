@@ -1259,7 +1259,7 @@ $("#dMore").onclick=()=>{
 };
 
 /* Hauteur de la barre du bas de l'appli : le gros bouton reste juste au-dessus */
-function bnh(){const n=document.querySelector(".bnav");document.documentElement.style.setProperty("--bnh",(n?n.offsetHeight:0)+"px")}
+function bnh(){const n=document.querySelector(".bnav");document.documentElement.style.setProperty("--bnh",(n?Math.max(0,innerHeight-n.getBoundingClientRect().top):0)+"px")}   // barre flottante : hauteur + marge du bas
 addEventListener("resize",bnh);setTimeout(bnh,300);
 
 /* Démarrage */

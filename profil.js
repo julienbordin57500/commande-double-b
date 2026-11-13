@@ -204,39 +204,45 @@
   .ncut svg.slash{position:absolute;inset:0;width:100%;height:100%;z-index:2;overflow:visible}
   .npan .ne{text-align:center;color:var(--muted,#6f695d);padding:30px 16px 40px;font-size:16px;line-height:1.45}
   .npan .ne b{display:block;font-size:44px;margin-bottom:8px}
-  /* Barre d'onglets en bas, comme une vraie appli : une icône dessinée par partie */
-  body{padding-bottom:calc(88px + env(safe-area-inset-bottom,0px))!important}
-  .bnav{position:fixed;left:0;right:0;bottom:0;z-index:15;display:flex;justify-content:center;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));
-    background:var(--surface,#fff);
-    border-top:1px solid var(--line,#e6e1d5);box-shadow:0 -8px 24px -16px rgba(40,25,5,.35);view-transition-name:bnav;font-family:"Figtree",system-ui,sans-serif}
-  .bnav .in{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:100%;max-width:560px;gap:2px}
-  .bnav a{display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0 2px;min-height:60px;border-radius:14px;text-decoration:none;color:var(--muted,#6f695d);font-size:11px;font-weight:700;letter-spacing:-.1px;white-space:nowrap}
-  .bnav .ic{width:54px;height:34px;border-radius:17px;display:grid;place-items:center;transition:background-color .2s ease,color .2s ease}
-  .bnav svg{width:25px;height:25px}
+  /* Barre d'onglets en bas (refonte 2026-11-14) : une bulle flottante, comme sur l'iPhone ; une seule pastille glisse sous l'onglet ouvert.
+     Plus de rond par icône ni d'effet « pop » : rien ne clignote quand on change d'onglet. */
+  body{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))!important}
+  .bnav{position:fixed;left:50%;bottom:calc(10px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:15;width:min(430px,calc(100% - 20px));
+    border-radius:30px;background:color-mix(in srgb,var(--surface,#fff) 80%,transparent);-webkit-backdrop-filter:blur(20px) saturate(1.7);backdrop-filter:blur(20px) saturate(1.7);
+    border:1px solid color-mix(in srgb,var(--line,#e6e1d5) 75%,transparent);box-shadow:0 12px 32px -14px rgba(30,20,5,.45),0 2px 6px -2px rgba(30,20,5,.12);
+    view-transition-name:bnav;font-family:"Figtree",system-ui,sans-serif}
+  .bnav .in{position:relative;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:5px}
+  .bnav .bul{position:absolute;top:5px;bottom:5px;left:5px;width:calc((100% - 10px) / 5);border-radius:24px;background:color-mix(in srgb,var(--fg,#1d1b17) 8%,transparent);
+    transform:translateX(calc(var(--i,0) * 100%));transition:transform .34s cubic-bezier(.3,1.2,.5,1);pointer-events:none}
+  .bnav .bul.sans{transition:none}
+  .bnav a{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:54px;border-radius:24px;text-decoration:none;
+    color:var(--muted,#6f695d);font-size:10.5px;font-weight:700;letter-spacing:-.1px;white-space:nowrap;outline:none;-webkit-tap-highlight-color:transparent;
+    transition:color .2s ease,transform .15s ease}
+  .bnav a:focus-visible{box-shadow:inset 0 0 0 2px var(--accent,#f2a516)}
+  .bnav a:active{transform:scale(.93)}
+  .bnav .ic{display:grid;place-items:center;width:30px;height:28px}
+  .bnav svg{width:24px;height:24px}
   .bnav a[aria-current="page"]{color:var(--fg,#1d1b17);font-weight:800}
-  .bnav a[aria-current="page"] .ic{background:var(--accent,#f2a516);color:var(--accent-ink,#2a1d00);background-image:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,0));box-shadow:0 5px 14px -6px color-mix(in srgb,var(--accent,#f2a516) 90%,#000);animation:icPop .38s cubic-bezier(.3,1.5,.5,1)}
-  .bnav a:active .ic{scale:.9}
-  @media (max-width:360px){.bnav{padding-inline:2px}.bnav a{font-size:10px;letter-spacing:-.2px}.bnav .ic{width:46px}}
-  .bnav a{position:relative}.bnav .bdot{position:absolute;top:0;left:calc(50% + 9px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--accent,#f2a516);color:var(--accent-ink,#2a1d00);font-size:11px;font-weight:800;line-height:18px;text-align:center;box-shadow:0 0 0 2px var(--surface,#fff)}
+  @media (max-width:360px){.bnav a{font-size:9.5px;letter-spacing:-.2px}}
+  .bnav .bdot{position:absolute;top:3px;left:calc(50% + 6px);min-width:17px;height:17px;padding:0 5px;border-radius:9px;background:var(--accent,#f2a516);color:var(--accent-ink,#2a1d00);font-size:10.5px;font-weight:800;line-height:17px;text-align:center;box-shadow:0 0 0 2px color-mix(in srgb,var(--surface,#fff) 90%,transparent)}
   .bnav a[aria-current="page"] .bdot{display:none}
   /* Changement d'onglet en douceur (transition native du navigateur, rien n'attend plus longtemps) :
      la page glisse un peu dans le sens de l'onglet touché et apparaît en fondu ; barres du haut et du bas immobiles. */
   @view-transition{navigation:auto}
   .pbar{view-transition-name:pbar}
   ::view-transition-group(bnav),::view-transition-group(pbar),::view-transition-old(bnav),::view-transition-new(bnav),::view-transition-old(pbar),::view-transition-new(pbar){animation:none}
-  ::view-transition-old(root){animation:vtOut .16s cubic-bezier(.4,0,1,1) both}
-  ::view-transition-new(root){animation:vtIn .22s cubic-bezier(0,0,.2,1) both}
+  ::view-transition-old(root){animation:vtOut .12s cubic-bezier(.4,0,1,1) both}
+  ::view-transition-new(root){animation:vtIn .18s cubic-bezier(0,0,.2,1) both}
   html:active-view-transition-type(droite)::view-transition-old(root){animation-name:vtOutG}
   html:active-view-transition-type(droite)::view-transition-new(root){animation-name:vtInD}
   html:active-view-transition-type(gauche)::view-transition-old(root){animation-name:vtOutD}
   html:active-view-transition-type(gauche)::view-transition-new(root){animation-name:vtInG}
   @keyframes vtOut{to{opacity:0}} @keyframes vtIn{from{opacity:0}}
-  @keyframes vtOutG{to{opacity:0;transform:translateX(-28px)}} @keyframes vtInD{from{opacity:0;transform:translateX(28px)}}
-  @keyframes vtOutD{to{opacity:0;transform:translateX(28px)}} @keyframes vtInG{from{opacity:0;transform:translateX(-28px)}}
+  @keyframes vtOutG{to{opacity:0;transform:translateX(-14px)}} @keyframes vtInD{from{opacity:0;transform:translateX(14px)}}
+  @keyframes vtOutD{to{opacity:0;transform:translateX(14px)}} @keyframes vtInG{from{opacity:0;transform:translateX(-14px)}}
   @media (prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}}
   .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))!important}
-  @keyframes icPop{0%{transform:scale(.8)}100%{transform:none}}
-  @media (prefers-reduced-motion:reduce){.bnav a[aria-current="page"] .ic{animation:none}}
+  @media (prefers-reduced-motion:reduce){.bnav .bul,.bnav a{transition:none}}
   /* Croix de fermeture : en haut à droite de chaque fenêtre, reste visible quand on fait défiler */
   .xclose{position:sticky;top:0;float:right;align-self:flex-end;flex:none;z-index:6;width:46px;height:46px;margin:-6px -6px -40px 10px;border-radius:14px;border:1.5px solid var(--line,#e6e1d5);background:var(--surface,#fff);color:var(--fg,#1d1b17);font:inherit;font-size:20px;font-weight:800;display:grid;place-items:center;box-shadow:0 2px 10px rgba(0,0,0,.1);cursor:pointer}
   .box>.xclose+h2,.box>.xclose+h3,.box>.xclose+b,.box>.xclose+div:first-of-type>h3{padding-right:52px}
@@ -394,15 +400,17 @@
     const cur=h=>h==="./"?(here==="index.html"||here===""):here===h;
     let n=0;try{const c=JSON.parse(localStorage.getItem("commande2b-cache")||"null");if(c&&c.produits)n=c.produits.filter(p=>p.acommander).length}catch{}
     const b=document.createElement("nav");b.className="bnav";b.setAttribute("aria-label","Parties de l'appli");
-    b.innerHTML=`<div class="in">${TABS.map(([h,i,l])=>`<a href="${h}"${cur(h)?' aria-current="page"':""}><span class="ic">${IC[i]}</span>${i==="cmd"&&n?`<span class="bdot">${n>99?"99+":n}</span>`:""}<span>${l}</span></a>`).join("")}</div>`;
-    document.body.appendChild(b);
+    const ix=Math.max(0,TABS.findIndex(([h])=>cur(h)));
+    b.innerHTML=`<div class="in"><span class="bul sans" style="--i:${ix}" aria-hidden="true"></span>${TABS.map(([h,i,l])=>`<a href="${h}"${cur(h)?' aria-current="page"':""}><span class="ic">${IC[i]}</span>${i==="cmd"&&n?`<span class="bdot">${n>99?"99+":n}</span>`:""}<span>${l}</span></a>`).join("")}</div>`;
+    document.body.appendChild(b);requestAnimationFrame(()=>b.querySelector(".bul").classList.remove("sans"));
   }
   // Onglet touché : il s'allume tout de suite, sans attendre que la page suivante arrive ; on retient le sens (gauche / droite) pour la transition
   document.addEventListener("click",e=>{const a=e.target.closest(".bnav a");if(!a)return;
     if(a.getAttribute("aria-current")){e.preventDefault();window.scrollTo({top:0,behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});return}
     const all=[...document.querySelectorAll(".bnav a")],from=all.findIndex(x=>x.getAttribute("aria-current")),to=all.indexOf(a);
     try{sessionStorage.setItem("2b-sens",to>from?"droite":"gauche")}catch{}
-    document.querySelectorAll(".bnav a[aria-current]").forEach(x=>x.removeAttribute("aria-current"));a.setAttribute("aria-current","page")});
+    document.querySelectorAll(".bnav a[aria-current]").forEach(x=>x.removeAttribute("aria-current"));a.setAttribute("aria-current","page");
+    const bu=a.closest(".in").querySelector(".bul");if(bu)bu.style.setProperty("--i",to)});   // la pastille glisse tout de suite vers l'onglet touché
   // Le sens est lu en haut de chaque page (petit script dans <head>) : la transition démarre avant le chargement de ce fichier
   addEventListener("pageshow",e=>{if(e.persisted){document.querySelectorAll(".bnav").forEach(b=>b.remove());nav()}});
   // Mises à jour : on vérifie s'il y a une nouvelle version quand on revient dans l'appli
@@ -641,22 +649,11 @@
   else if(get())bar();                                      // barre remplie tout de suite : rien ne bouge à l'affichage
 })();
 
-/* ===== Un peu de vie (2026-11-14) : une couleur par onglet, confettis pour les belles nouvelles, chiffre sur l'icône ===== */
+/* ===== Un peu de vie (2026-11-14) : confettis pour les belles nouvelles, chiffre sur l'icône ===== */
 (function(){
-  /* 1. Une couleur par onglet : barre du bas (icônes colorées, onglet ouvert plein) et trait sous le titre de la page */
-  const page=(location.pathname.split("/").pop()||"index.html").replace(".html","");
-  const KEY={accueil:"jour",index:"cmd",menus:"menu","menus-essai":"menu",chiffres:"chif",evenements:"ev",hygiene:"hyg",fidelite:"fid",prospection:"pro"}[page]||"jour";
-  document.documentElement.dataset.onglet=KEY;
+  /* Message des fêtes (les couleurs par onglet ont été retirées le 2026-11-14 : jugées « cheap ») */
   const st=document.createElement("style");
   st.textContent=`
-  :root{--c-jour:#e9a010;--c-cmd:#e8622c;--c-menu:#d43c70;--c-chif:#2b78db;--c-ev:#7a52d6;--c-hyg:#21976a;--c-fid:#c58b1e;--c-pro:#16949f}
-  @media (prefers-color-scheme:dark){:root{--c-jour:#f5b232;--c-cmd:#ff8754;--c-menu:#f2679a;--c-chif:#5ea4f7;--c-ev:#a385f2;--c-hyg:#46c48e;--c-fid:#e8b450;--c-pro:#3cc3cd}}
-  :root{--tab:var(--c-${KEY})}
-  .bnav a:nth-child(1){--tabc:var(--c-jour);--tabi:#2a1d00}.bnav a:nth-child(2){--tabc:var(--c-cmd)}.bnav a:nth-child(3){--tabc:var(--c-menu)}
-  .bnav a:nth-child(4){--tabc:var(--c-chif)}.bnav a:nth-child(5){--tabc:var(--c-ev)}
-  .bnav a .ic{color:color-mix(in srgb,var(--tabc) 78%,var(--muted,#6f695d))}
-  .bnav a[aria-current="page"] .ic{background:var(--tabc);color:var(--tabi,#fff);box-shadow:0 5px 14px -6px color-mix(in srgb,var(--tabc) 90%,#000)}
-  header.top h1::after,header.head h1::after,.hello h1::after{content:"";display:block;width:36px;height:4px;border-radius:3px;background:var(--tab);margin-top:9px}
   .fete-msg{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translate(-50%,-20px);opacity:0;z-index:2147482500;
     background:var(--fg,#1f1b14);color:var(--bg,#f5f2ea);font:800 16px/1.25 "Figtree",system-ui,sans-serif;padding:12px 18px;border-radius:16px;
     box-shadow:0 14px 30px -10px rgba(0,0,0,.45);text-align:center;max-width:calc(100% - 32px);transition:opacity .3s ease,transform .35s cubic-bezier(.2,1.3,.4,1);pointer-events:none}
