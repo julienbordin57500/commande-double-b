@@ -404,9 +404,10 @@ details.more summary em{font-style:normal;color:var(--muted);font-weight:600}
         <div id="dBody">
           <div class="field"><span class="lbl">Apéritif</span><div class="seg" id="dAper"><button type="button" data-v="">Aucun</button><button type="button" data-v="f1">Classique</button><button type="button" data-v="f2">Réception</button></div></div>
           <span class="lbl">Lignes du devis</span>
-          <p class="hint" style="margin-top:-6px">Les lignes Menu et Apéritif se calculent toutes seules (prix × personnes).</p>
+          <p class="hint" style="margin-top:-6px">Les lignes Menu et Apéritif se calculent toutes seules (prix × personnes). Tu peux les changer ou les supprimer : elles restent comme tu les as laissées.</p>
           <div id="dLignes" class="dl"></div>
           <button class="btn soft" type="button" data-qa="libre">＋ Ajouter une ligne</button>
+          <button class="lnk" type="button" id="dRecalc" style="align-self:center">↺ Recalculer les lignes Menu et Apéritif</button>
           <div class="field"><span class="lbl">Demander un acompte ?</span><div class="seg s2" id="dAc"><button type="button" data-v="0">Non</button><button type="button" data-v="1">Oui</button></div></div>
           <div class="field" id="dAcF" hidden><label for="dAcompte">Acompte demandé</label><div class="euro"><input id="dAcompte" inputmode="numeric" value="30"><span>%</span></div></div>
           <details class="more"><summary>Validité et conditions</summary>
@@ -937,9 +938,11 @@ function fillDevisForm(){
 }
 const DMAP={dNum:"num",dDate:"date",dClient:"client",dAdr:"adr",dObjet:"objet",dJour:"jour",dPers:"pers",dAcompte:"acompte",dValid:"valid",dCond:"cond"};
 Object.keys(DMAP).forEach(id=>$("#"+id).addEventListener("input",()=>{DEVIS[DMAP[id]]=$("#"+id).value;saveDevis();clearTimeout(saveDevis.t);saveDevis.t=setTimeout(()=>{if(TAB==="devis")show()},250)}));
-$("#dLignes").addEventListener("input",e=>{const r=e.target.closest("[data-li]");if(!r)return;if(e.target.tagName==="TEXTAREA"){e.target.style.height="auto";e.target.style.height=e.target.scrollHeight+2+"px"}const i=+r.dataset.li,l=DEVIS.lignes[i];l[e.target.dataset.k]=e.target.value;const lt=r.querySelector(`[data-lt="${i}"]`);if(lt)lt.textContent=eurD(n2(l.q)*n2(l.pu));saveDevis();clearTimeout(saveDevis.t);saveDevis.t=setTimeout(()=>show(),250)});
+$("#dLignes").addEventListener("input",e=>{const r=e.target.closest("[data-li]");if(!r)return;if(e.target.tagName==="TEXTAREA"){e.target.style.height="auto";e.target.style.height=e.target.scrollHeight+2+"px"}const i=+r.dataset.li,l=DEVIS.lignes[i];l[e.target.dataset.k]=e.target.value;if(l.auto){l.man=l.auto;delete l.auto}/* retouchée à la main : on n'y touche plus */const lt=r.querySelector(`[data-lt="${i}"]`);if(lt)lt.textContent=eurD(n2(l.q)*n2(l.pu));saveDevis();clearTimeout(saveDevis.t);saveDevis.t=setTimeout(()=>show(),250)});
 $("#dLignes").addEventListener("change",e=>{const r=e.target.closest("[data-li]");if(!r||e.target.tagName!=="SELECT")return;DEVIS.lignes[+r.dataset.li].tva=e.target.value;saveDevis();show()});
-$("#dLignes").addEventListener("click",e=>{const x=e.target.closest("[data-lx]");if(!x)return;DEVIS.lignes.splice(+x.dataset.lx,1);saveDevis();linesUI();show()});
+$("#dLignes").addEventListener("click",e=>{const x=e.target.closest("[data-lx]");if(!x)return;const l=DEVIS.lignes[+x.dataset.lx],k=l&&(l.auto||l.man);
+  if(k==="aper")DEVIS.aper="";else if(k){DEVIS.noAuto=DEVIS.noAuto||{};DEVIS.noAuto[k]=1}   // supprimée : elle ne revient pas toute seule
+  DEVIS.lignes.splice(+x.dataset.lx,1);saveDevis();linesUI();if(typeof devisUI==="function")devisUI();show()});
 document.querySelectorAll("[data-qa]").forEach(b=>b.onclick=()=>{
   const pers=n2(DEVIS.pers)||"";const f=readF();let l;
   if(b.dataset.qa==="menu"){const nom=["Menu",MENU.sousTitre].filter(Boolean).join(" – ");l={d:nom+(MENU.sections&&MENU.sections.length?" (voir menu joint)":""),q:pers,pu:priceNum(MENU.prix)||"",tva:10}}
@@ -998,7 +1001,7 @@ $("#fpdf").onclick=e=>exportAs("pdf",e.currentTarget);$("#fpng").onclick=e=>expo
 function setForm(v){FORM=FPH[v]||v==="apero"?v:"";document.querySelectorAll("#fForm button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===FORM))}
 $("#fForm").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;snap();const was=FORM;setForm(b.dataset.v);
   // apéro dînatoire : titre adapté (s'il n'a pas été changé à la main) et pièces en liste
-  const t=$("#fTitle").value.trim();if(FORM==="apero"&&(!t||t==="Menu"))$("#fTitle").value="Apéritif dînatoire";else if(was==="apero"&&FORM!=="apero"&&t==="Apéritif dînatoire")$("#fTitle").value="Menu";
+  const t=$("#fTitle").value.trim();if(FORM==="apero"&&(!t||t==="Menu"))$("#fTitle").value=aperoTitre();else if(was==="apero"&&FORM!=="apero"&&/^Apéritif (dînatoire|déjeunatoire)$/.test(t))$("#fTitle").value="Menu";
   store.set("menus2b-champs",opts());if(was==="apero"||FORM==="apero"){MENU=null;build();show()}else{applyFields();if(TAB==="menu")page()}});
 
 /* ---------- Textes du mail (écrits tout seuls) ---------- */
@@ -1008,21 +1011,25 @@ const ART={"entree":"une entrée","entrees":"une entrée","entree chaude":"une e
 function choixTxt(){const u=[...new Set((MENU.sections||[]).map(s=>ART[fold(s.nom||"").replace(/\s+/g," ").trim()]).filter(Boolean))];
   return !u.length?"vos plats":u.length===1?u[0]:u.slice(0,-1).join(", ")+" et "+u[u.length-1]}
 const signe=()=>`${PROF&&PROF!=="commun"?cap(PROF):"L'équipe"}\nDouble B\n59 avenue Foch, 57730 Folschviller\n06 13 10 05 03`;
-const traiteur=()=>/traiteur/i.test(DEVIS.objet||"");
-function mailObjet(s){return `${traiteur()?"Votre prestation":"Votre repas"}${s.jour?" du "+jourTxt(s.jour):""} au Double B`}
+const traiteur=()=>CLI.type==="traiteur";
+const apero=()=>(MENU&&MENU.formule||FORM)==="apero";
+const aperoTitre=()=>CLI.serv==="midi"?"Apéritif déjeunatoire":"Apéritif dînatoire";
+const quoi=()=>apero()?aperoTitre().toLowerCase():traiteur()?"prestation traiteur":"repas";   // « votre … »
+function mailObjet(s){return `Votre ${quoi()}${s.jour?" du "+jourTxt(s.jour):""}${traiteur()?" – Double B":" au Double B"}`}
 function mailTexte(s){
   const quand=[s.jour?"du "+jourTxt(s.jour):"",s.serv==="soir"?"au soir":s.serv==="midi"?"midi":""].filter(Boolean).join(" ");
   const prix=priceNum(MENU.prix),pers=n2(s.pers),f=s.menu?MENU.formule:"",bo=s.boiss==="hors"?", hors boissons":s.boiss==="comp"?", boissons comprises":"";
   const L=[`Bonjour${s.nom?" "+s.nom:""},`,
-    `Merci beaucoup pour votre demande, nous serons ravis de vous accueillir au Double B pour ${traiteur()?"votre prestation":"votre repas"}${quand?" "+quand:""}.`];
-  if(s.menu)L.push(`Vous trouverez en pièce jointe notre proposition ${MENU.formule==="apero"?"d'apéritif dînatoire":"de menu"}${prix?`, au prix de ${prix} € par personne${bo}`:""}.`);
+    traiteur()?`Merci beaucoup pour votre demande, nous serons ravis de préparer votre ${quoi()}${quand?" "+quand:""}${apero()?" en prestation traiteur":""}.`
+      :`Merci beaucoup pour votre demande, nous serons ravis de vous accueillir au Double B pour votre ${quoi()}${quand?" "+quand:""}.`];
+  if(s.menu)L.push(`Vous trouverez en pièce jointe notre proposition ${apero()?"d'"+aperoTitre().toLowerCase():"de menu"}${prix?`, au prix de ${prix} € par personne${bo}`:""}.`);
   if(s.devis){const t=devisTotals();L.push(`${s.menu?"Vous trouverez également":"Vous trouverez en pièce jointe"} notre devis n° ${DEVIS.num}${t.ttc?`, d'un montant de ${eurD(t.ttc)} TTC`:""}. Pour confirmer la réservation, il vous suffit de nous le retourner signé${DEVIS.acOn?`, accompagné d'un acompte de ${n2(DEVIS.acompte)||30} %`:""}.`)}
   if(s.forf)L.push("Je vous joins aussi nos forfaits apéritifs, si vous souhaitez ajouter un apéritif.");
   const gp=pers?`votre groupe de ${pers} personnes`:"votre groupe";
   if(f==="unique")L.push(`Pour que tout se passe au mieux pour ${gp}, nous servons un menu unique à toute la table : je vous laisse choisir ensemble ${choixTxt()} parmi les propositions, et ce même menu sera servi à chacun de vos convives.`);
   if(f==="choix")L.push(`Chaque convive pourra choisir ${choixTxt()} parmi les propositions : il vous suffira de me transmettre les choix de chacun quelques jours avant.`);
   L.push((f==="unique"?"Il vous suffit de me répondre avec vos choix, et je m'occupe du reste. ":"")+"N'hésitez pas à me signaler une allergie ou un régime particulier, nous adapterons avec plaisir.");
-  L.push("Au plaisir de vous recevoir,",signe());
+  L.push(traiteur()?"Au plaisir de vous régaler,":"Au plaisir de vous recevoir,",signe());
   return L.join("\n\n");
 }
 async function pdfOf(which){const old=TAB,hd=$("#preview").hidden;$("#preview").hidden=false;TAB=which;page();
@@ -1066,16 +1073,19 @@ function syncAuto(){
   const s=autoSub(),nt=CLI.boiss==="hors"?"Boissons non comprises":CLI.boiss==="comp"?"Boissons comprises":"";let ch=false;
   const fs=$("#fSub").value;if((!fs.trim()||fs===CLI._sub)&&fs!==s){$("#fSub").value=s;ch=true}CLI._sub=s;
   const n=$("#fNote").value;if((!n.trim()||n===CLI._note||/^boissons (non )?comprises$/i.test(n.trim()))&&n!==nt){$("#fNote").value=nt;ch=true}CLI._note=nt;
+  const t=$("#fTitle").value.trim();
+  if(FORM==="apero"&&(!t||t==="Menu"||/^Apéritif (dînatoire|déjeunatoire)$/.test(t))&&t!==aperoTitre()){$("#fTitle").value=aperoTitre();ch=true}
+  const ab=document.querySelector('#fForm [data-v="apero"]');if(ab)ab.textContent="🥂 "+aperoTitre().replace("Apéritif","Apéro");
   if(ch){store.set("menus2b-champs",opts());applyFields()}
-  Object.assign(DEVIS,{client:CLI.nom,adr:[CLI.adr,CLI.tel,CLI.mail].filter(Boolean).join("\n"),objet:CLI.type==="traiteur"?"Prestation traiteur":"Repas au restaurant",
+  Object.assign(DEVIS,{client:CLI.nom,adr:[CLI.adr,CLI.tel,CLI.mail].filter(Boolean).join("\n"),objet:(apero()?aperoTitre():traiteur()?"Prestation traiteur":"Repas")+(traiteur()?(apero()?" – prestation traiteur":""):" au restaurant"),
     jour:CLI.jour,pers:CLI.pers,evt:CLI.evt||DEVIS.evt||""});
 }
-function syncLignes(){if(DEVIS.off)return;const pers=n2(CLI.pers)||"",f=readF(),auto=[];
-  if(!menuVide()&&(MENU.sections||[]).length)auto.push({auto:"menu",d:(MENU.titre&&MENU.titre!=="Menu"?MENU.titre:"Menu")+" (voir menu joint)",q:pers,pu:priceNum(MENU.prix)||"",tva:10});
-  if(DEVIS.aper==="f1")auto.push({auto:"aper",d:"Forfait apéritif classique (une consommation)",q:pers,pu:n2(f.p1)||"",tva:20});
-  if(DEVIS.aper==="f2")auto.push({auto:"aper",d:"Forfait apéritif réception (deux consommations)",q:pers,pu:n2(f.p2)||"",tva:20});
+function syncLignes(){if(DEVIS.off)return;const pers=n2(CLI.pers)||"",f=readF(),auto=[],no=DEVIS.noAuto||{},man=k=>DEVIS.lignes.some(l=>l.man===k);
+  if(!no.menu&&!man("menu")&&!menuVide()&&(MENU.sections||[]).length)auto.push({auto:"menu",d:(MENU.titre&&MENU.titre!=="Menu"?MENU.titre:"Menu")+" (voir menu joint)",q:pers,pu:priceNum(MENU.prix)||"",tva:10});
+  if(!man("aper")&&DEVIS.aper==="f1")auto.push({auto:"aper",d:"Forfait apéritif classique (une consommation)",q:pers,pu:n2(f.p1)||"",tva:20});
+  if(!man("aper")&&DEVIS.aper==="f2")auto.push({auto:"aper",d:"Forfait apéritif réception (deux consommations)",q:pers,pu:n2(f.p2)||"",tva:20});
   const hasM=auto.some(a=>a.auto==="menu");
-  DEVIS.lignes=auto.concat(DEVIS.lignes.filter(l=>!l.auto&&!(hasM&&/^menu\b/i.test(l.d||""))));
+  DEVIS.lignes=auto.concat(DEVIS.lignes.filter(l=>!l.auto&&!(hasM&&!l.man&&/^menu\b/i.test(l.d||""))));
 }
 
 /* En-tête du dossier et étapes */
@@ -1103,7 +1113,7 @@ function go(step){
 }
 document.querySelectorAll("#steps [data-step]").forEach(b=>b.onclick=()=>go(b.dataset.step));
 $("#nPrev").onclick=()=>go(STEPS[Math.max(0,STEPS.indexOf(STEP)-1)]);
-$("#nGo").onclick=()=>{if(STEP==="client"&&!CLI.nom&&!CLI.mail){toast("Mets au moins le nom ou le mail du client");$("#cNom").focus();return}
+$("#nGo").onclick=()=>{if(STEP==="client"&&!CLI.nom&&!CLI.mail)toast("Pense à mettre le nom du client (tu peux le faire plus tard)");
   if(STEP==="send")doSend();else go(STEPS[STEPS.indexOf(STEP)+1])};
 $("#dBack").onclick=async()=>{await flushSaves();go("home")};
 
@@ -1115,6 +1125,7 @@ function clientChanged(){store.set("menus2b-client",CLI);headUI();clearTimeout(c
 Object.keys(CMAP).forEach(id=>$("#"+id).addEventListener("input",()=>{CLI[CMAP[id]]=$("#"+id).value.trim();clientChanged()}));
 document.querySelectorAll("#panel-client .seg").forEach(g=>g.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const k=g.dataset.c;
   CLI[k]=CLI[k]===b.dataset.v&&k!=="type"?"":b.dataset.v;segUI();clientChanged()}));
+// le mail suit les boutons tant qu'il n'a pas été retouché à la main
 
 /* 3. Devis */
 function devisUI(){const on=!DEVIS.off;$("#dBody").hidden=!on;
@@ -1126,7 +1137,8 @@ $("#dAc").onclick=e=>{const b=e.target.closest("button");if(!b)return;DEVIS.acOn
   saveDevis();devisUI();if(TAB==="devis")show()};
 $("#dOn").onclick=e=>{const b=e.target.closest("button");if(!b)return;DEVIS.off=b.dataset.v==="0";if(!DEVIS.off){syncLignes();if(!DEVIS.num)newNum()}
   saveDevis();devisUI();linesUI();TAB=DEVIS.off?"menu":"devis";show()};
-$("#dAper").onclick=e=>{const b=e.target.closest("button");if(!b)return;DEVIS.aper=b.dataset.v;syncLignes();saveDevis();devisUI();linesUI();show()};
+$("#dRecalc").onclick=()=>{DEVIS.noAuto={};DEVIS.lignes=DEVIS.lignes.filter(l=>!l.man);syncLignes();saveDevis();linesUI();show();toast("Lignes recalculées")};
+$("#dAper").onclick=e=>{const b=e.target.closest("button");if(!b)return;DEVIS.aper=b.dataset.v;DEVIS.lignes=DEVIS.lignes.filter(l=>l.man!=="aper");syncLignes();saveDevis();devisUI();linesUI();show()};
 
 /* 4. Envoyer */
 function sendState(){return {to:$("#sTo").value.trim(),nom:CLI.nom,jour:CLI.jour,pers:CLI.pers,serv:CLI.serv,boiss:CLI.boiss,
