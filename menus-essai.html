@@ -1086,6 +1086,7 @@ function syncLignes(){if(DEVIS.off)return;const pers=n2(CLI.pers)||"",f=readF(),
   if(!man("aper")&&DEVIS.aper==="f2")auto.push({auto:"aper",d:"Forfait apéritif réception (deux consommations)",q:pers,pu:n2(f.p2)||"",tva:20});
   const hasM=auto.some(a=>a.auto==="menu");
   DEVIS.lignes=auto.concat(DEVIS.lignes.filter(l=>!l.auto&&!(hasM&&!l.man&&/^menu\b/i.test(l.d||""))));
+  const rk=l=>({menu:0,aper:1})[l.auto||l.man]??2;DEVIS.lignes.sort((x,y)=>rk(x)-rk(y));   // menu, puis apéritif, puis le reste
 }
 
 /* En-tête du dossier et étapes */
