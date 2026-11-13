@@ -1016,14 +1016,14 @@ function payload(k){
   return {titre:DEVIS.objet||"Devis",client:DEVIS.client||"",jour:DEVIS.jour||"",montant:String(Math.round(devisTotals().ttc*100)/100),
     num:DEVIS.num||"",evenement_id:DEVIS.evt||"",data:DEVIS,par:PROF};
 }
-function svState(st){document.querySelectorAll("[data-sv]").forEach(el=>{el.dataset.s=st;el.textContent=st==="ok"?"✓ Enregistré dans « Mes "+(el.closest("#panel-devis")?"devis":"menus")+" »":st==="err"?"Pas encore enregistré (connexion), ça réessaiera tout seul":"Enregistrement…"})}
-function queueSave(k){if(!DOCS_ON||(k==="menu"&&menuVide()))return;clearTimeout(SAVING[k]);svState("…");SAVING[k]=setTimeout(()=>saveNow(k),1000)}
+function svState(st,k){document.querySelectorAll(`#panel-${k} [data-sv]`).forEach(el=>{el.dataset.s=st;el.textContent=st==="ok"?"✓ Enregistré dans « Mes "+(el.closest("#panel-devis")?"devis":"menus")+" »":st==="err"?"Pas encore enregistré (connexion), ça réessaiera tout seul":"Enregistrement…"})}
+function queueSave(k){if(!DOCS_ON||(k==="menu"&&menuVide()))return;clearTimeout(SAVING[k]);svState("…",k);SAVING[k]=setTimeout(()=>saveNow(k),1000)}
 function saveNow(k){clearTimeout(SAVING[k]);SAVING[k]=null;
   Q[k]=(Q[k]||Promise.resolve()).then(async()=>{if(k==="menu"&&menuVide())return;
     try{const r=await rpc("proposition_enregistrer",{p_id:CUR[k],p_kind:k,p_champs:payload(k)});
       CUR[k]=r.id;store.set("menus2b-ids",CUR);
       if(k==="devis"&&r.num&&r.num!==DEVIS.num){DEVIS.num=r.num;store.set("menus2b-devis",DEVIS);$("#dNum").value=r.num;if(TAB==="devis")page()}
-      svState("ok")}catch(e){svState("err")}});
+      svState("ok",k)}catch(e){svState("err",k)}});
   return Q[k]}
 async function flushSaves(){for(const k of ["menu","devis"])if(SAVING[k])saveNow(k);await Q.menu;await Q.devis}
 function newNum(){rpc("devis_numero").then(n=>{if(n&&!DEVIS.num){DEVIS.num=n;store.set("menus2b-devis",DEVIS);$("#dNum").value=n;if(TAB==="devis")page()}}).catch(()=>{})}
