@@ -295,6 +295,7 @@ header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .dz-next{position:sticky;bottom:calc(var(--bnh,76px) + 8px);z-index:6;display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;margin-top:16px;max-width:420px;padding:6px;border-radius:20px;background:color-mix(in srgb,var(--bg) 82%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 .dz-next .btn{height:56px;font-size:16.5px;font-weight:800;border-radius:16px}
 #nPrev{width:56px;padding:0;font-size:24px}
+#nPrev[hidden]+#nGo{grid-column:1/-1}
 #dSv{max-width:420px;text-align:center}
 .seg.s2{grid-template-columns:1fr 1fr}
 details.more{border:1px solid var(--line);border-radius:14px;background:var(--sunken);padding:0 12px}
@@ -1081,7 +1082,7 @@ function headUI(){$("#dName").textContent=CLI.nom||CLI.mail||"Nouveau dossier";
   document.querySelectorAll("#steps [data-step]").forEach((b,i)=>{const cur=b.dataset.step===STEP,done=STEPS.indexOf(STEP)>i;
     b.setAttribute("aria-current",cur?"step":"false");b.classList.toggle("done",done);b.querySelector("i").textContent=done?"✓":String(i+1)})}
 function go(step){
-  STEP=step;$("#home").hidden=step!=="home";$("#dos").hidden=step==="home";
+  STEP=step;$("#home").hidden=step!=="home";document.querySelector("header.top").hidden=step!=="home";$("#dos").hidden=step==="home";
   for(const k of ["client","menu","devis","send"])$("#panel-"+k).hidden=k!==step;$("#panel-forfaits").hidden=step!=="reglages";
   $("#steps").hidden=step==="reglages";$("#next").hidden=step==="reglages";$("#dMore").hidden=step==="reglages";
   if(step==="home"){loadHome();scrollTo(0,0);return}
@@ -1117,7 +1118,7 @@ function devisUI(){const on=!DEVIS.off;$("#dBody").hidden=!on;
   $("#dNumT").textContent=on&&DEVIS.num?"n° "+DEVIS.num:""}
 $("#dOn").onclick=e=>{const b=e.target.closest("button");if(!b)return;DEVIS.off=b.dataset.v==="0";if(!DEVIS.off){syncLignes();if(!DEVIS.num)newNum()}
   saveDevis();devisUI();linesUI();TAB=DEVIS.off?"menu":"devis";show()};
-$("#dAper").onclick=e=>{const b=e.target.closest("button");if(!b)return;DEVIS.aper=b.dataset.v;syncLignes();saveDevis();linesUI();show()};
+$("#dAper").onclick=e=>{const b=e.target.closest("button");if(!b)return;DEVIS.aper=b.dataset.v;syncLignes();saveDevis();devisUI();linesUI();show()};
 
 /* 4. Envoyer */
 function sendState(){return {to:$("#sTo").value.trim(),nom:CLI.nom,jour:CLI.jour,pers:CLI.pers,serv:CLI.serv,boiss:CLI.boiss,
@@ -1196,10 +1197,10 @@ $("#hSet").onclick=()=>go("reglages");
 /* Accueil : la liste */
 let FILT="cours",ROWS=null;
 const STC={brouillon:["bro","À finir"],envoye:["env","Envoyé"],accepte:["acc","Accepté ✓"],refuse:["ref","Refusé"]};
-const ini=n=>{const w=String(n||"").replace(/^(mme|mlle|m\.|mr|madame|monsieur|mademoiselle)\s+/i,"").split(/[\s@._-]+/).filter(Boolean);return ((w[0]||"?")[0]+((w[1]||"")[0]||"")).toUpperCase()};
+const ini=n=>{const w=String(n||"").replace(/^(mme|mlle|m\.|mr|madame|monsieur|mademoiselle)\s+/i,"").split(/[^\p{L}\d]+/u).filter(Boolean);return ((w[0]||"?")[0]+((w[1]||"")[0]||"")).toUpperCase()};
 function card(r){const nom=r.client||r.titre||"Sans nom";
   const det=[dCourte(r.jour),r.pers?r.pers+" pers.":""].filter(Boolean).join(" · ");
-  const prix=r.montant!=null?eurD(+r.montant):r.prix?String(r.prix).replace(".",",")+" €/pers.":"";
+  const prix=+r.montant>0?eurD(+r.montant):r.prix?String(r.prix).replace(".",",")+" €/pers.":"";
   const rel=r.statut==="envoye"&&r.relance_le&&new Date(r.relance_le)<=new Date();
   const st=rel?["rel","🔔 À relancer"]:r.statut==="envoye"?["env","Envoyé le "+jj(r.envoye_le)]:STC[r.statut]||STC.brouillon;
   return `<button type="button" class="dz-card" data-o="${esc(r.id)}"><span class="av" aria-hidden="true">${esc(ini(nom))}</span>
