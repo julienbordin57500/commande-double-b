@@ -1154,7 +1154,7 @@ function statUI(){const el=$("#sStat");
   el.innerHTML=STATUT==="envoye"?`<span>✉️ Envoyé${ENVOYE?" le "+esc(jj(ENVOYE)):""}. La réponse ?</span><div class="r"><button class="btn soft" type="button" data-st="accepte">✅ Accepté</button><button class="btn soft" type="button" data-st="refuse">Refusé</button></div>`
     :STATUT==="accepte"?`<span>✅ Accepté par le client</span>`:`<span>Refusé par le client</span>`}
 $("#sStat").addEventListener("click",async e=>{const b=e.target.closest("[data-st]");if(!b||!CUR)return;
-  try{await rpc("proposition_suivi",{p_id:CUR,p_action:b.dataset.st});STATUT=b.dataset.st;statUI();if(STATUT==="accepte"&&window.Fete)Fete.go("🎉 Dossier accepté, bravo !");else toast("Noté")}catch{toast("Pas de connexion : réessaie")}});
+  try{await rpc("proposition_suivi",{p_id:CUR,p_action:b.dataset.st});STATUT=b.dataset.st;statUI();toast("Noté")}catch{toast("Pas de connexion : réessaie")}});
 $("#panel-send").addEventListener("input",e=>{if(e.target.id==="sTxt"){SEDIT=true;$("#sRe").hidden=false}});
 $("#panel-send").addEventListener("change",e=>{if(e.target.type==="checkbox")redoMail()});
 $("#sRe").onclick=()=>{SEDIT=false;$("#sRe").hidden=true;redoMail()};
@@ -1251,7 +1251,7 @@ $("#dMore").onclick=()=>{
     if(a==="mpdf")return dl("menu","pdf",b);if(a==="mpng")return dl("menu","png",b);if(a==="dpdf")return dl("devis","pdf",b);
     m.remove();
     if(a==="dup"){await flushSaves();if(CUR)openDossier(CUR,true);else toast("Rien à dupliquer pour l'instant");return}
-    if(a==="acc"||a==="ref"){try{await rpc("proposition_suivi",{p_id:CUR,p_action:a==="acc"?"accepte":"refuse"});STATUT=a==="acc"?"accepte":"refuse";statUI();if(a==="acc"&&window.Fete)Fete.go("🎉 Dossier accepté, bravo !");else toast("Noté")}catch{toast("Pas de connexion : réessaie")}return}
+    if(a==="acc"||a==="ref"){try{await rpc("proposition_suivi",{p_id:CUR,p_action:a==="acc"?"accepte":"refuse"});STATUT=a==="acc"?"accepte":"refuse";statUI();toast("Noté")}catch{toast("Pas de connexion : réessaie")}return}
     if(a==="del"){if(!confirm(`Supprimer le dossier « ${CLI.nom||"sans nom"} » ? Il disparaîtra pour toute l'équipe.`))return;
       clearTimeout(SAVING.t);SAVING.t=null;await Q.p;const id=CUR;CUR=null;DOCS_ON=false;   /* plus aucun enregistrement en route : le dossier ne revient pas */
       try{await rpc("proposition_supprimer",{p_id:id});store.set("menus2b-dossier",null);ROWS=null;toast("Dossier supprimé");go("home");DOCS_ON=true}catch{CUR=id;DOCS_ON=true;toast("Pas supprimé : vérifie la connexion")}}

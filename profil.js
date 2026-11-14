@@ -682,7 +682,7 @@
   .fete-msg.on{opacity:1;transform:translate(-50%,0)}`;
   document.head.appendChild(st);
 
-  /* 2. Confettis : Fete.go("message") ; Fete.once(clé, "message") une seule fois par téléphone (objectif du mois, record…) */
+  /* 2. Confettis : Fete.go("message") ; Fete.once(clé, "message") une seule fois par téléphone (seulement quand l'objectif du mois est dépassé : décidé le 2026-11-14) */
   const COL=["#f2a516","#ffd54a","#e8622c","#d43c70","#2b78db","#7a52d6","#21976a","#ffffff"];
   const calme=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
   function message(t){if(!t)return;const m=document.createElement("div");m.className="fete-msg";m.setAttribute("role","status");m.textContent=t;document.body.appendChild(m);

@@ -346,7 +346,6 @@ function drawHier(month){
   $("#cHier").href="chiffres.html#j="+YESTERDAY;
   if(ca==null&&cl==null){$("#hier").innerHTML=`<div class="empty">Les chiffres ${VEILLE?"d'hier":"de "+Y.toLocaleDateString("fr-FR",{weekday:"long"})} ne sont pas encore notés.</div><div class="fill">✍️ Les noter maintenant</div>`;return}
   const all=Object.values(month||{}).map(jca).filter(x=>x!=null&&x>0),best=ca!=null&&all.length>=3&&ca>=Math.max(...all);
-  if(best&&window.Fete)Fete.once("best-"+YESTERDAY,"🏆 Meilleure journée du mois !");
   $("#hier").innerHTML=`<div class="kp"><div><small>Chiffre d'affaires</small><b class="num">${ca==null?"–":nf0.format(ca)+" €"}</b></div><div><small>Clients</small><b class="num">${cl==null?"–":nf0.format(cl)}</b></div>${best?`<div class="best">🏆 Meilleure journée du mois !</div>`:""}</div>`;
 }
 
