@@ -216,15 +216,15 @@
     transform:translateX(calc(var(--i,0) * 100%));transition:transform .34s cubic-bezier(.3,1.2,.5,1);pointer-events:none}
   .bnav .bul.sans{transition:none}
   .bnav a{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:54px;border-radius:24px;text-decoration:none;
-    color:var(--muted,#6f695d);font-size:10.5px;font-weight:700;letter-spacing:-.1px;white-space:nowrap;outline:none;-webkit-tap-highlight-color:transparent;
+    color:var(--muted,#6f695d);font-size:10.5px;font-weight:700;letter-spacing:-.1px;line-height:1.15;white-space:nowrap;outline:none;min-width:0;padding:0;background:none;box-shadow:none;-webkit-tap-highlight-color:transparent;
     transition:color .2s ease,transform .15s ease}
-  .bnav a:focus-visible{box-shadow:inset 0 0 0 2px var(--accent,#f2a516)}
+  .bnav a:focus,.bnav a:focus-visible{outline:none}.bnav a:focus-visible{box-shadow:inset 0 0 0 2px var(--accent,#f2a516)}
   .bnav a:active{transform:scale(.93)}
-  .bnav .ic{display:grid;place-items:center;width:30px;height:28px}
-  .bnav svg{width:24px;height:24px}
-  .bnav a[aria-current="page"]{color:var(--fg,#1d1b17);font-weight:800}
+  .bnav .bic{display:grid;place-items:center;width:30px;height:28px;margin:0;padding:0;border:0;border-radius:0;background:none;box-shadow:none}
+  .bnav .bic svg{position:static;width:24px;height:24px;transform:none;opacity:1;color:inherit}
+  .bnav a[aria-current="page"]{color:var(--fg,#1d1b17)}
   @media (max-width:360px){.bnav a{font-size:9.5px;letter-spacing:-.2px}}
-  .bnav .bdot{position:absolute;top:3px;left:calc(50% + 6px);min-width:17px;height:17px;padding:0 5px;border-radius:9px;background:var(--accent,#f2a516);color:var(--accent-ink,#2a1d00);font-size:10.5px;font-weight:800;line-height:17px;text-align:center;box-shadow:0 0 0 2px color-mix(in srgb,var(--surface,#fff) 90%,transparent)}
+  .bnav .bdot{position:absolute;top:3px;left:calc(50% + 6px);min-width:17px;height:17px;padding:0 5px;border-radius:9px;background:var(--accent,#f2a516);color:var(--accent-ink,#2a1d00);font-size:10.5px;font-weight:700;line-height:17px;text-align:center;box-shadow:0 0 0 2px color-mix(in srgb,var(--surface,#fff) 90%,transparent)}
   .bnav a[aria-current="page"] .bdot{display:none}
   /* Elle s'efface en descendant et revient dès qu'on remonte ou qu'on s'arrête (2026-11-14) */
   .bnav{transition:transform .3s cubic-bezier(.3,.7,.25,1),opacity .25s ease}
@@ -235,6 +235,9 @@
   @view-transition{navigation:auto}
   .pbar{view-transition-name:pbar}
   ::view-transition-group(bnav),::view-transition-group(pbar),::view-transition-old(bnav),::view-transition-new(bnav),::view-transition-old(pbar),::view-transition-new(pbar){animation:none}
+  ::view-transition-old(bnav),::view-transition-old(pbar){display:none}
+  ::view-transition-new(bnav),::view-transition-new(pbar){mix-blend-mode:normal}
+  ::view-transition-group(bnav){border-radius:30px;background:var(--surface,#fff)}
   ::view-transition-old(root){animation:vtOut .12s cubic-bezier(.4,0,1,1) both}
   ::view-transition-new(root){animation:vtIn .18s cubic-bezier(0,0,.2,1) both}
   html:active-view-transition-type(droite)::view-transition-old(root){animation-name:vtOutG}
@@ -405,7 +408,7 @@
     let n=0;try{const c=JSON.parse(localStorage.getItem("commande2b-cache")||"null");if(c&&c.produits)n=c.produits.filter(p=>p.acommander).length}catch{}
     const b=document.createElement("nav");b.className="bnav";b.setAttribute("aria-label","Parties de l'appli");
     const ix=Math.max(0,TABS.findIndex(([h])=>cur(h)));
-    b.innerHTML=`<div class="in"><span class="bul sans" style="--i:${ix}" aria-hidden="true"></span>${TABS.map(([h,i,l])=>`<a href="${h}"${cur(h)?' aria-current="page"':""}><span class="ic">${IC[i]}</span>${i==="cmd"&&n?`<span class="bdot">${n>99?"99+":n}</span>`:""}<span>${l}</span></a>`).join("")}</div>`;
+    b.innerHTML=`<div class="in"><span class="bul sans" style="--i:${ix}" aria-hidden="true"></span>${TABS.map(([h,i,l])=>`<a href="${h}"${cur(h)?' aria-current="page"':""}><span class="bic">${IC[i]}</span>${i==="cmd"&&n?`<span class="bdot">${n>99?"99+":n}</span>`:""}<span>${l}</span></a>`).join("")}</div>`;
     document.body.appendChild(b);requestAnimationFrame(()=>b.querySelector(".bul").classList.remove("sans"));
   }
   // Onglet touché : il s'allume tout de suite, sans attendre que la page suivante arrive ; on retient le sens (gauche / droite) pour la transition
