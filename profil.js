@@ -424,17 +424,17 @@
   // et on la recrée si jamais elle manquait (retour de veille, rotation, retour en arrière).
   /* Barre qui s'efface en descendant : cachée seulement pendant qu'on fait défiler vers le bas, loin du haut de la page ;
      elle revient en remontant, à l'arrêt du défilement (0,35 s), en bas de page, et toujours quand on touche un champ. Jamais coincée. */
-  (function(){let last=scrollY,t=null,tick=false;
+  (function(){let last=scrollY,t=null;
     const bar=()=>document.querySelector(".bnav");
     const montre=()=>{const b=bar();if(b)b.classList.remove("cache")};
     const tape=()=>{const a=document.activeElement;return a&&a.matches&&a.matches("input,textarea,select,[contenteditable]")};
-    addEventListener("scroll",()=>{if(tick)return;tick=true;requestAnimationFrame(()=>{tick=false;
-      const y=scrollY,d=y-last,b=bar();if(!b){last=y;return}
+    const fenetre=()=>[...document.querySelectorAll(".modal,.sheet,.npan")].some(e=>!e.hidden&&getComputedStyle(e).display!=="none");   // une fenêtre vraiment ouverte
+    addEventListener("scroll",()=>{const y=scrollY,d=y-last,b=bar();if(!b){last=y;return}
       const fin=y+innerHeight>=document.documentElement.scrollHeight-40;
-      if(d>6&&y>120&&!fin&&!tape()&&!document.querySelector(".modal,.sheet,.npan"))b.classList.add("cache");
+      if(d>6&&y>120&&!fin&&!tape()&&!fenetre())b.classList.add("cache");
       else if(d<-4||y<=120||fin)b.classList.remove("cache");
       if(Math.abs(d)>2)last=y;
-      clearTimeout(t);t=setTimeout(montre,350)})},{passive:true});
+      clearTimeout(t);t=setTimeout(montre,350)},{passive:true});
     ["focusin","pageshow","resize"].forEach(ev=>addEventListener(ev,montre,{passive:true}));document.addEventListener("visibilitychange",montre);
   })();
   const ensureNav=()=>{let ok=false;try{ok=!!localStorage.getItem("commande2b-code")}catch{}if(ok&&!document.getElementById("gate")?.offsetParent&&!document.querySelector(".bnav"))nav()};
