@@ -226,6 +226,10 @@
   @media (max-width:360px){.bnav a{font-size:9.5px;letter-spacing:-.2px}}
   .bnav .bdot{position:absolute;top:3px;left:calc(50% + 6px);min-width:17px;height:17px;padding:0 5px;border-radius:9px;background:var(--accent,#f2a516);color:var(--accent-ink,#2a1d00);font-size:10.5px;font-weight:800;line-height:17px;text-align:center;box-shadow:0 0 0 2px color-mix(in srgb,var(--surface,#fff) 90%,transparent)}
   .bnav a[aria-current="page"] .bdot{display:none}
+  /* Elle s'efface en descendant et revient dès qu'on remonte ou qu'on s'arrête (2026-11-14) */
+  .bnav{transition:transform .3s cubic-bezier(.3,.7,.25,1),opacity .25s ease}
+  .bnav.cache{transform:translate(-50%,calc(100% + 26px));opacity:.4;pointer-events:none}
+  @media (prefers-reduced-motion:reduce){.bnav{transition:opacity .2s ease}.bnav.cache{transform:translateX(-50%);opacity:0}}
   /* Changement d'onglet en douceur (transition native du navigateur, rien n'attend plus longtemps) :
      la page glisse un peu dans le sens de l'onglet touché et apparaît en fondu ; barres du haut et du bas immobiles. */
   @view-transition{navigation:auto}
@@ -418,6 +422,21 @@
   // La barre du bas reste TOUJOURS là (elle se cachait pendant la saisie et, sur iPhone, pouvait rester cachée).
   // Après la fermeture du clavier, on recale l'écran (bug connu de l'iPhone : les éléments fixes peuvent rester décalés),
   // et on la recrée si jamais elle manquait (retour de veille, rotation, retour en arrière).
+  /* Barre qui s'efface en descendant : cachée seulement pendant qu'on fait défiler vers le bas, loin du haut de la page ;
+     elle revient en remontant, à l'arrêt du défilement (0,35 s), en bas de page, et toujours quand on touche un champ. Jamais coincée. */
+  (function(){let last=scrollY,t=null,tick=false;
+    const bar=()=>document.querySelector(".bnav");
+    const montre=()=>{const b=bar();if(b)b.classList.remove("cache")};
+    const tape=()=>{const a=document.activeElement;return a&&a.matches&&a.matches("input,textarea,select,[contenteditable]")};
+    addEventListener("scroll",()=>{if(tick)return;tick=true;requestAnimationFrame(()=>{tick=false;
+      const y=scrollY,d=y-last,b=bar();if(!b){last=y;return}
+      const fin=y+innerHeight>=document.documentElement.scrollHeight-40;
+      if(d>6&&y>120&&!fin&&!tape()&&!document.querySelector(".modal,.sheet,.npan"))b.classList.add("cache");
+      else if(d<-4||y<=120||fin)b.classList.remove("cache");
+      if(Math.abs(d)>2)last=y;
+      clearTimeout(t);t=setTimeout(montre,350)})},{passive:true});
+    ["focusin","pageshow","resize"].forEach(ev=>addEventListener(ev,montre,{passive:true}));document.addEventListener("visibilitychange",montre);
+  })();
   const ensureNav=()=>{let ok=false;try{ok=!!localStorage.getItem("commande2b-code")}catch{}if(ok&&!document.getElementById("gate")?.offsetParent&&!document.querySelector(".bnav"))nav()};
   document.addEventListener("focusout",()=>setTimeout(()=>{window.scrollTo(window.scrollX,window.scrollY);ensureNav()},80));
   ["resize","orientationchange","pageshow"].forEach(ev=>addEventListener(ev,ensureNav));
