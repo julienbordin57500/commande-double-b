@@ -211,6 +211,14 @@ header.top{display:flex;align-items:center;gap:14px}
 @media (prefers-color-scheme:dark){.thr.warn{background:#3a1d1b;color:#f6aea9}}
 /* CA du mois en détail : midi, soir, soirées à thème, privatisations, traiteur ; puis chaque prestation avec sa case « En caisse » */
 :root{--theme:#7c3aed;--priv:#c2410c;--trait:#0e7490}
+/* Jour de privatisation / traiteur : son chiffre et la case « Entré dans la caisse », directement dans la fiche du jour */
+.prjb{margin-top:10px;display:flex;flex-direction:column;gap:10px}
+.prjb[hidden]{display:none}
+.prj{padding:10px 12px;border-radius:14px;background:var(--surface);border:1.5px solid var(--c);display:flex;flex-direction:column;gap:8px}
+.prj h5{margin:0;font-size:16px;font-weight:800;color:var(--c)}
+.prj h5 small{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-top:2px}
+.prj .f input:focus{border-color:var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 25%,transparent)}
+.prj .pjn{margin:0;font-size:13px;font-weight:600;color:var(--muted);line-height:1.35}
 @media (prefers-color-scheme:dark){:root{--theme:#c4a5f5;--priv:#fb923c;--trait:#67c6d9}}
 .card{margin-top:10px;background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden}
 .card>summary{list-style:none;display:flex;align-items:center;gap:12px;min-height:68px;padding:10px 14px;cursor:pointer;user-select:none}
@@ -560,8 +568,9 @@ html.vue-plats #vPlats{display:block} html.vue-plats #vMois{display:none}
           <div class="f" id="thPersF"><label for="theme_pers">Personnes venues pour la soirée</label><div class="thrw"><div class="in"><input id="theme_pers" data-k="theme_pers" inputmode="numeric" autocomplete="off" placeholder="–"></div><span class="px" id="thPx"></span></div></div>
           <div class="f" id="thCaF"><label for="ca_theme">Chiffre de la soirée</label><div class="in"><input id="ca_theme" class="eur" data-k="ca_theme" inputmode="decimal" autocomplete="off" placeholder="–"><span>€</span></div></div>
           <div class="thr" id="thRes" aria-live="polite"></div></div></div>
-        </div></div>
+        </div>
     </div>
+    <div class="prjb" id="prjBox" hidden aria-label="Privatisations et traiteur du jour"></div>
     <div class="pv" aria-label="Plats vendus ce jour-là"><div class="pvh"><h4>🍽️ Plats vendus</h4><button class="btn pvadd" id="pvAdd" type="button">＋ Ajouter</button></div>
       <div class="pvc"><div class="pvs midi"><h5>☀️ Midi <em id="cn_midi"></em></h5><div class="pvl" id="pvl_midi"></div></div><div class="pvs soir"><h5>🌙 Soir <em id="cn_soir"></em></h5><div class="pvl" id="pvl_soir"></div></div></div></div>
     <div class="refl"><label for="refuses">🚫 Clients refusés, faute de place</label><input id="refuses" data-k="refuses" inputmode="numeric" autocomplete="off" placeholder="0"></div>
@@ -587,7 +596,7 @@ html.vue-plats #vPlats{display:block} html.vue-plats #vMois{display:none}
     <div class="scroll"><table id="tbl"></table></div>
     <table class="compact" id="cmp"></table>
     <p class="note">Touche une ligne pour la remplir. 🍽️ = sur place, 🥡 = à emporter, 🍲 = plats du jour, 🍔 = burgers (tous, burger du mois compris), 📋 = autres plats de la carte. Les totaux se calculent tout seuls. Refusés = clients qu'on n'a pas pu accueillir faute de place.
-      Prestations = privatisations et traiteur (prix noté dans Événements), comptées en plus de la caisse. 🎉 = soir de soirée à thème.</p>
+      Prestations = privatisations et traiteur (chiffre noté dans la fiche du jour ou dans Événements), comptées en plus de la caisse. 🎉 = soir de soirée à thème.</p>
   </section>
   </div>
 </div>
@@ -810,6 +819,33 @@ function renderTheme(){
   const r=$("#thRes");r.className="thr"+cls;r.innerHTML=h;
 }
 ["#ca_midi","#ca_jour","#theme_pers","#ca_theme"].forEach(id=>$(id).addEventListener("input",()=>{renderSoir();renderTheme()}));
+/* Privatisation / traiteur du jour : le chiffre (= prix de l'événement) et « Entré dans la caisse », tapés ici sans passer par Événements.
+   Toujours compté à part de la caisse du jour (jamais dans le total journée). */
+const PRJ_T={};   // enregistrement du chiffre 0,8 s après la dernière touche
+function renderPrj(){
+  const dk=key(S.y,S.m,S.d),list=evsOf(dk).filter(paye),box=$("#prjBox");box.hidden=!list.length;
+  const sig=dk+"|"+list.map(e=>e.id).join(",");
+  if(box.dataset.sig!==sig){box.dataset.sig=sig;
+    box.innerHTML=list.map(e=>{const t=PRESTA[e.type],id=esc(e.id);
+      return `<div class="prj" style="--c:${t.c}" data-ev="${id}"><h5>${t.e} ${esc(t.l)} · ${esc(e.client)}<small>${[e.heure?String(e.heure).slice(0,5):"",e.personnes?e.personnes+" pers.":""].filter(Boolean).join(" · ")}</small></h5>
+        <div class="f"><label for="prj_${id}">Chiffre de la ${e.type==="traiteur"?"prestation":"privatisation"}</label><div class="in"><input id="prj_${id}" class="eur" data-prj="${id}" inputmode="decimal" autocomplete="off" placeholder="–"><span>€</span></div></div>
+        <label class="cai"><input type="checkbox" data-cai="${id}"><span>💰 Entré dans la caisse<small></small></span></label>
+        <p class="pjn">Compté à part, sur sa propre ligne : ne pas l'ajouter au total de la journée.</p></div>`}).join("")}
+  list.forEach(e=>{const w=box.querySelector(`[data-ev="${CSS.escape(e.id)}"]`);if(!w)return;
+    const inp=w.querySelector("input[data-prj]");if(inp!==document.activeElement&&!PRJ_T[e.id]){const x=prixEv(e);inp.value=x==null?"":(Number.isInteger(x)?String(x):x.toFixed(2)).replace(".",",")}
+    const cb=w.querySelector("input[data-cai]"),lb=cb.closest(".cai"),fut=dk>TODAY;cb.checked=!!e.en_caisse;lb.classList.toggle("no",!e.en_caisse&&!fut);
+    lb.querySelector("small").textContent=e.en_caisse?(e.en_caisse_par?`Coché par ${NOMS[e.en_caisse_par]||e.en_caisse_par}${e.en_caisse_le?" le "+new Date(e.en_caisse_le).toLocaleDateString("fr-FR"):""}`:"C'est fait"):"À cocher seulement quand c'est tapé dans la caisse"});
+}
+$("#prjBox").addEventListener("input",e=>{
+  const inp=e.target.closest("input[data-prj]");if(!inp)return;const ev=S.evs.find(x=>x.id===inp.dataset.prj);if(!ev)return;
+  const v=parseNum(inp.value,true);if(v===undefined)return;
+  clearTimeout(PRJ_T[ev.id]);CAI.add(ev.id);
+  PRJ_T[ev.id]=setTimeout(async()=>{const old=ev.budget;ev.budget=v;setSync("Enregistrement…");
+    try{await rpc("evenement_enregistrer",{p_id:ev.id,p_champs:{budget:v,par:who()}});setSync("Enregistré","ok")}
+    catch(err){if(lost(err))return;ev.budget=old;setSync("Pas enregistré : vérifie la connexion","err")}
+    finally{delete PRJ_T[ev.id];CAI.delete(ev.id);renderTotals()}},800);
+});
+$("#prjBox").addEventListener("change",e=>caiChange(e,$("#prjBox")));
 /* Plats vendus du jour : une ligne par plat, le plus vendu en haut ; toucher une ligne pour la modifier */
 function pvItems(row,sv){
   const c=DISH.map(d=>({d,sv,q:val(row,d.k+"_"+sv)})).filter(x=>x.q);
@@ -828,7 +864,7 @@ document.querySelectorAll(".card").forEach(d=>{
 document.querySelector(".pv").addEventListener("click",e=>{const b=e.target.closest(".pvr"),x=b&&PVI[b.dataset.i];if(x)pvOpen(x.sv,x.d?"c:"+x.d.k:"l:"+x.id)});
 $("#pvAdd").onclick=()=>pvOpen();
 function renderTotals(){
-  renderSoir();renderTheme();renderPV();const row=S.data[key(S.y,S.m,S.d)]||{};const t=totals(row);
+  renderSoir();renderTheme();renderPrj();renderPV();const row=S.data[key(S.y,S.m,S.d)]||{};const t=totals(row);
   const pj=evsOf(key(S.y,S.m,S.d)).map(e=>`<span>${PRESTA[e.type].e} ${esc(PRESTA[e.type].l)} <b>${esc(e.client)}</b>${paye(e)&&prixEv(e)!=null?` : <b class="num">${eur(prixEv(e))}</b> <small>(à part de la caisse)</small>`:""}</span>`).join("");
   $("#dayTot").innerHTML=pj+`<span>Clients <b class="num">${t.clients==null?"–":int(t.clients)}</b>${t.emp?` <small>(dont ${int(t.emp)} à emporter)</small>`:""}</span><span>CA de la journée <b class="num">${t.ca==null?"–":eur(t.ca)}</b></span><span>Plats du jour <b class="num">${t.plats==null?"–":int(t.plats)}</b></span>${t.carte!=null?`<span>Plats de la carte <b class="num">${int(t.carte)}</b></span>`:""}<span>Burgers <b class="num">${t.bg==null?"–":int(t.bg)}</b>${t.burgers?` <small>(dont ${int(t.burgers)} du mois)</small>`:""}</span>`;
   const nc=(S.corr||{})[key(S.y,S.m,S.d)];$("#hBtn").hidden=!nc;$("#hBtn").textContent=`🕘 ${nc} correction${nc>1?"s":""} ce jour-là : voir l'historique`;
@@ -879,14 +915,15 @@ function renderRep(){renderVentes();
     ${list.length?list.map(prestaItem).join(""):`<p class="vide">Rien ce mois-ci. On les ajoute dans l'onglet Événements.</p>`}</div>`;
 }
 const CAI=new Set();   // cases « En caisse » en cours d'envoi : le rafraîchissement ne les écrase pas
-$("#presta").addEventListener("change",async e=>{
+$("#presta").addEventListener("change",e=>caiChange(e));
+async function caiChange(e){
   const cb=e.target.closest("input[data-cai]");if(!cb)return;const ev=S.evs.find(x=>x.id===cb.dataset.cai);if(!ev)return;
   const v=cb.checked,old={en_caisse:ev.en_caisse,en_caisse_par:ev.en_caisse_par,en_caisse_le:ev.en_caisse_le};
-  Object.assign(ev,{en_caisse:v,en_caisse_par:v?who():null,en_caisse_le:v?new Date().toISOString():null});CAI.add(ev.id);renderRep();
+  Object.assign(ev,{en_caisse:v,en_caisse_par:v?who():null,en_caisse_le:v?new Date().toISOString():null});CAI.add(ev.id);renderRep();renderPrj();
   try{await rpc("evenement_enregistrer",{p_id:ev.id,p_champs:{en_caisse:v,par:who()}});toast(v?"Noté : entré dans la caisse ✓":"Case décochée")}
-  catch(err){if(lost(err))return;Object.assign(ev,old);renderRep();toast("Pas enregistré : vérifie la connexion")}
+  catch(err){if(lost(err))return;Object.assign(ev,old);renderRep();renderPrj();toast("Pas enregistré : vérifie la connexion")}
   finally{CAI.delete(ev.id)}
-});
+}
 /* Fenêtre des plats vendus : on choisit Midi ou Soir, on tape les quantités de tous les plats d'un coup
    (− / + ou le chiffre), et un seul « Valider » enregistre tout. Toucher un nom = +1.
    Chaque ligne = une case : impossible de compter un plat deux fois. Mettre 0 = supprimer (confirmation au Valider).
