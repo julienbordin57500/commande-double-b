@@ -107,6 +107,17 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
 .qsup{display:flex;align-items:center;gap:8px;min-height:56px;padding:6px 10px;border-radius:14px;border:1.5px solid var(--line);background:var(--sunken);color:var(--fg);font:inherit;font-size:15px;font-weight:700;text-align:left;cursor:pointer;overflow-wrap:anywhere}
 .qsup:active{transform:scale(.96)}
 .qsup .ico{flex:none;width:34px;height:34px}.qsup .ico svg{width:22px;height:22px}
+.qnewsup{border-style:dashed;background:var(--surface);color:var(--muted)}
+.qnewsup .ico{display:grid;place-items:center;font-size:22px;font-weight:800;color:var(--fg)}
+.qns{display:flex;gap:8px}.qns[hidden]{display:none}
+.qns input{flex:1;min-width:0;height:52px;border:1.5px solid var(--line);border-radius:14px;background:var(--sunken);padding:0 12px;font:inherit;font-size:16px;color:var(--fg)}
+.qns .btn{flex:none;height:52px}
+.qsup[aria-pressed="true"]{border-color:var(--go);background:color-mix(in srgb,var(--go) 14%,var(--surface))}
+.qsup .qsn{flex:1;min-width:0}
+.qsup .qok{flex:none;width:24px;height:24px;border-radius:8px;background:var(--go);color:#fff;display:grid;place-items:center;opacity:0;transform:scale(.5);transition:opacity .15s,transform .2s cubic-bezier(.2,1.4,.4,1)}
+.qsup .qok svg{width:14px;height:14px}
+.qsup[aria-pressed="true"] .qok{opacity:1;transform:none}
+[data-qgo]:disabled{opacity:.5}
 .qoth summary{cursor:pointer;font-weight:700;color:var(--muted);padding:6px 2px}
 .qoth .qsups{margin-top:6px}
 .qcmd{display:flex;align-items:center;gap:10px;min-height:52px;padding:6px 12px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;font-size:15px;font-weight:700;text-align:left;cursor:pointer}
@@ -450,7 +461,7 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
     <div class="qinfo" id="qinfo" hidden></div>
     <div class="suppliers" id="suppliers" aria-busy="true"><div class="sup" style="padding:16px;margin-top:16px"><span class="sk big"></span><span class="sk" style="width:85%"></span><span class="sk" style="width:60%"></span></div><div class="sup" style="padding:16px;margin-top:12px"><span class="sk big"></span><span class="sk" style="width:85%"></span><span class="sk" style="width:60%"></span></div></div>
 
-    <form class="add" id="addForm" autocomplete="off">
+    <form class="add" id="addForm" autocomplete="off" style="display:none" aria-hidden="true">
       <h3 id="addTitle">Ajouter un produit</h3>
       <div class="field"><label for="nNom">Produit</label><input id="nNom" placeholder="ex. Ciboulette" maxlength="60" required></div>
       <div class="field"><label for="nFour">Fournisseur</label><select id="nFour"></select></div>
@@ -693,7 +704,7 @@ function render(){
   ["cuisine","boissons"].forEach(sec=>{const k=all.filter(p=>(p.section||"cuisine")===sec&&p.acommander).length;const el=$(sec==="cuisine"?"#nCuisine":"#nBoissons");el.hidden=!k;el.textContent=k});
   document.querySelectorAll("[data-sec]").forEach(x=>x.setAttribute("aria-pressed",x.dataset.sec===S.sec));
   $("#addTitle").textContent="Ajouter un produit — "+SECN[S.sec];
-  $("#q").placeholder=S.sec==="boissons"?"Chercher… ex. coca, serviettes, bretzels":"Chercher un produit… ex. iceberg, agria";
+  $("#q").placeholder=S.sec==="boissons"?"Chercher ou ajouter… ex. coca, serviettes":"Chercher ou ajouter un produit… ex. iceberg";
   const sel=$("#nFour"),cur=sel.value;const others=allSups().filter(f=>!sups.includes(f));
   sel.innerHTML=sups.map(f=>`<option>${esc(f)}</option>`).join("")+(others.length?`<optgroup label="Autres fournisseurs">${others.map(f=>`<option>${esc(f)}</option>`).join("")}</optgroup>`:"");
   if(allSups().includes(cur))sel.value=cur;
@@ -704,7 +715,7 @@ function render(){
     info.innerHTML=hits?`<span>${hits} produit${hits>1?"s":""} trouvé${hits>1?"s":""}${res.fuzzy?" (en corrigeant la faute)":""}</span>`
       :`<span>Aucun produit ne correspond à « ${esc(S.q.trim())} ».</span>`;
     // Rien trouvé (ou seulement en corrigeant la faute) : on propose de créer l'article tout de suite, sans descendre au formulaire
-    const qn=(!hits||res.fuzzy)?`<button class="qnew" type="button" id="qAdd"><span class="qplus" aria-hidden="true">＋</span><span class="qnt"><b>Ajouter « ${esc(cap1(S.q.trim()))} »</b><small>${hits?"Ce n'est pas ce que tu cherches ? ":""}Un appui pour le créer et le commander</small></span></button>`:"";
+    const qn=`<button class="qnew" type="button" id="qAdd"><span class="qplus" aria-hidden="true">＋</span><span class="qnt"><b>Ajouter « ${esc(cap1(S.q.trim()))} »</b><small>${hits?"Pas dans la liste ? Crée-le comme nouvel article":"Un appui pour le créer et le commander"}</small></span></button>`;
     const old=$(".qres"),top=old?old.scrollTop:0;
     $("#suppliers").innerHTML=hits?`<div class="qres">${res.slice(0,40).map(qrHTML).join("")}${hits>40?`<div class="qr-more">Tape quelques lettres de plus pour voir les autres.</div>`:""}${qn}</div>`:`<div class="qres">${qn}</div>`;
     const nw=$(".qres");if(nw){nw.scrollTop=top;fitQres()}
@@ -974,31 +985,62 @@ $("#addForm").addEventListener("submit",async e=>{
 /* Ajout express depuis la recherche : on choisit juste le fournisseur, l'article est créé (et coché « Commander » si on le laisse) */
 const cap1=t=>t?t.charAt(0).toUpperCase()+t.slice(1):t;
 function quickAdd(nom){
-  if(!nom)return;const sec=S.sec,mine=supList(),others=allSups().filter(f=>!mine.includes(f));let cmd=true;
+  if(!nom)return;const sec=S.sec,mine=supList(),others=allSups().filter(f=>!mine.includes(f));
+  const choix=[];let cmd=true,cmdTouche=false;   // fournisseurs choisis (dans l'ordre) ; « À commander » coché d'office pour un seul fournisseur
   const m=document.createElement("div");m.className="sheet";
-  const btn=f=>`<button type="button" class="qsup" data-qf="${esc(f)}"><span class="ico" aria-hidden="true">${supIcon(f)}</span>${esc(f)}</button>`;
+  const btn=f=>`<button type="button" class="qsup" data-qf="${esc(f)}" aria-pressed="false"><span class="ico" aria-hidden="true">${supIcon(f)}</span><span class="qsn">${esc(f)}</span><span class="qok" aria-hidden="true">${CHECK}</span></button>`;
   m.innerHTML=`<div class="box" role="dialog" aria-label="Ajouter ${esc(nom)}"><h3>Ajouter « ${esc(nom)} »</h3>
-    <div class="sub" style="margin-top:0">Chez quel fournisseur ? (partie ${esc(SECN[sec])})</div>
-    <div class="qsups">${mine.map(btn).join("")}</div>
+    <div class="sub" style="margin-top:0">Chez quel fournisseur ? Tu peux en toucher plusieurs. (partie ${esc(SECN[sec])})</div>
+    <div class="qsups" id="qMine">${mine.map(btn).join("")}<button type="button" class="qsup qnewsup" data-qns><span class="ico" aria-hidden="true">＋</span><span class="qsn">Nouveau fournisseur</span></button></div>
+    <div class="qns" hidden><input id="qnsNom" maxlength="40" placeholder="Nom du fournisseur, ex. Brasserie Galibot" enterkeyhint="done"><button class="btn" type="button" data-qnsok>Créer</button></div>
     ${others.length?`<details class="qoth"><summary>Autres fournisseurs</summary><div class="qsups">${others.map(btn).join("")}</div></details>`:""}
-    <button type="button" class="qcmd" aria-pressed="true"><span class="qbx">${CHECK}</span>Le mettre tout de suite dans « À commander »</button>
-    <div class="acts"><button class="btn soft" type="button" data-qx>Annuler</button></div></div>`;
+    <button type="button" class="qcmd" aria-pressed="true"><span class="qbx">${CHECK}</span><span class="qcl">Le mettre tout de suite dans « À commander »</span></button>
+    <div class="acts"><button class="btn" type="button" data-qgo disabled>Choisis un fournisseur</button><button class="btn soft" type="button" data-qx>Annuler</button></div></div>`;
   document.body.appendChild(m);
+  const go=m.querySelector("[data-qgo]"),cb=m.querySelector(".qcmd");
+  const maj=()=>{
+    m.querySelectorAll("[data-qf]").forEach(b=>b.setAttribute("aria-pressed",choix.includes(b.dataset.qf)));
+    // plusieurs fournisseurs : on ne coche pas « À commander » d'office (sinon on commanderait chez tous)
+    if(!cmdTouche)cmd=choix.length<=1;
+    cb.setAttribute("aria-pressed",cmd);
+    cb.querySelector(".qcl").textContent=choix.length>1?`Le mettre dans « À commander » chez les ${choix.length}`:"Le mettre tout de suite dans « À commander »";
+    go.disabled=!choix.length;
+    go.textContent=!choix.length?"Choisis un fournisseur":choix.length===1?`Ajouter chez ${choix[0]}`:`Ajouter chez ${choix.length} fournisseurs`};
+  const creerSup=async()=>{
+    const inp=m.querySelector("#qnsNom"),n=inp.value.trim();if(!n){inp.focus();return}
+    const ex=allSups().find(x=>norm(x)===norm(n));
+    if(ex){if(!m.querySelector(`[data-qf="${CSS.escape(ex)}"]`))m.querySelector("#qMine").insertAdjacentHTML("afterbegin",btn(ex));if(!choix.includes(ex))choix.push(ex)}
+    else{S.sups=[...S.sups,n];S.supSec[n]=sec;setOpen(n,true);
+      try{await send("ajout_fournisseur",{p_nom:n,p_section:sec});toast("Fournisseur "+n+" créé")}
+      catch{S.sups=S.sups.filter(x=>x!==n);toast("Fournisseur pas créé : vérifie la connexion");return}
+      m.querySelector("#qMine").insertAdjacentHTML("afterbegin",btn(n));choix.push(n)}
+    inp.value="";m.querySelector(".qns").hidden=true;maj()};
+  m.querySelector("#qnsNom").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();creerSup()}});
   m.addEventListener("click",async e=>{
     if(e.target===m||e.target.closest("[data-qx]")){m.remove();return}
-    const c=e.target.closest(".qcmd");if(c){cmd=!cmd;c.setAttribute("aria-pressed",cmd);return}
-    const b=e.target.closest("[data-qf]");if(!b)return;const f=b.dataset.qf;m.remove();
-    const dup=[...S.items.values()].find(p=>p.fournisseur===f&&norm(p.nom)===norm(nom));
-    if(dup){if(cmd&&!dup.acommander){dup.acommander=true;render();send("maj_produit",{p_id:dup.id,p_champs:{acommander:true}}).catch(()=>{})}toast(`${dup.nom} existe déjà chez ${f}${cmd?" : coché ✓":""}`);return}
-    const tmp="tmp-"+Date.now(),obj={id:tmp,nom,fournisseur:f,section:sec,acommander:cmd,qte:null,unite:"pièce",ordre:Date.now(),groupe:null,prix:null,note:null};
-    S.items.set(tmp,obj);render();if(navigator.vibrate)navigator.vibrate(12);
-    try{const newId=await send("ajout_produit",{p_nom:nom,p_fournisseur:f,p_section:sec});
-      if(!newId){toast(nom+" sera ajouté dès que le réseau revient");return}
-      const cur=S.items.get(tmp)||obj;S.items.delete(tmp);S.items.set(newId,{...cur,id:newId});render();
-      if(cur.acommander)await send("maj_produit",{p_id:newId,p_champs:{acommander:true}});
-      toast(`${nom} ajouté chez ${f}${cur.acommander?" et coché ✓":""}`)}
-    catch{S.items.delete(tmp);render();toast("Pas ajouté : vérifie la connexion")}
+    if(e.target.closest("[data-qns]")){const z=m.querySelector(".qns");z.hidden=false;z.querySelector("input").focus();return}
+    if(e.target.closest("[data-qnsok]")){creerSup();return}
+    if(e.target.closest(".qcmd")){cmd=!cmd;cmdTouche=true;maj();return}
+    const b=e.target.closest("[data-qf]");
+    if(b){const f=b.dataset.qf,i=choix.indexOf(f);if(i<0)choix.push(f);else choix.splice(i,1);if(navigator.vibrate)navigator.vibrate(8);maj();return}
+    if(!e.target.closest("[data-qgo]")||!choix.length)return;
+    m.remove();const faits=[];
+    for(const f of choix){
+      const dup=[...S.items.values()].find(p=>p.fournisseur===f&&norm(p.nom)===norm(nom));
+      if(dup){if(cmd&&!dup.acommander){dup.acommander=true;send("maj_produit",{p_id:dup.id,p_champs:{acommander:true}}).catch(()=>{})}faits.push(f);continue}
+      const tmp="tmp-"+Date.now()+"-"+faits.length,obj={id:tmp,nom,fournisseur:f,section:sec,acommander:cmd,qte:null,unite:"pièce",ordre:Date.now(),groupe:null,prix:null,note:null};
+      S.items.set(tmp,obj);render();
+      try{const newId=await send("ajout_produit",{p_nom:nom,p_fournisseur:f,p_section:sec});
+        if(!newId){toast(nom+" sera ajouté dès que le réseau revient");continue}
+        const cur=S.items.get(tmp)||obj;S.items.delete(tmp);S.items.set(newId,{...cur,id:newId});
+        if(cur.acommander)await send("maj_produit",{p_id:newId,p_champs:{acommander:true}});
+        faits.push(f)}
+      catch{S.items.delete(tmp);toast(`Pas ajouté chez ${f} : vérifie la connexion`)}
+    }
+    render();if(navigator.vibrate)navigator.vibrate(12);
+    if(faits.length)toast(`${nom} ajouté chez ${faits.join(", ")}${cmd?" et coché ✓":""}`);
   });
+  maj();
 }
 
 /* Modifier un article : nom, fournisseur, Cuisine / Boissons */
