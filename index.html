@@ -98,6 +98,10 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
 .qr::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:transparent}
 .qr.on{background:var(--accent-soft)}.qr.on::before{background:var(--accent)}
 .qr-t{flex:1;min-width:0}
+.qnote{flex:none;width:44px;height:44px;border-radius:12px;border:1.5px dashed var(--line);background:var(--surface);color:var(--muted);display:grid;place-items:center;padding:0;cursor:pointer;transition:transform .12s}
+.qnote:active{transform:scale(.9)}
+.qnote.has{border-style:solid;border-color:var(--accent);background:var(--accent-soft);color:var(--fg)}
+.qrn{display:block;margin-top:3px;font-size:13px;font-weight:700;color:var(--fg);overflow-wrap:anywhere}
 .qr-t b{display:block;font-weight:700;font-size:16px;line-height:1.2;overflow-wrap:anywhere}
 .qr-t small{display:block;font-size:13px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .qr-t small i{font-style:normal;font-weight:700;color:var(--fg)}
@@ -643,15 +647,16 @@ function quickHits(ts){
   let r=all.map(p=>[p,score(p,false)]).filter(x=>x[1]!=null),fuzzy=false;
   if(!r.length){r=all.map(p=>[p,score(p,true)]).filter(x=>x[1]!=null);fuzzy=r.length>0}
   const out=r.sort((a,b)=>b[1]-a[1]||a[0].nom.localeCompare(b[0].nom,"fr")).map(x=>x[0]);out.fuzzy=fuzzy;return out}
+const NOTEIC=`<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h10l4 4v12H5z"/><path d="M14 4v5h5"/><path d="M8.5 13h7M8.5 16.5h4.5"/></svg>`;
 function qrHTML(p){
   const other=!inSec(p)?` · <i>${(p.section||"cuisine")==="boissons"?"🍸 Bar & Salle":"🍳 Cuisine"}</i>`:"";
   // Une fois commandé : quantité ET unité modifiables directement dans le résultat (avant, l'unité manquait ici)
   const tog=`<button class="toggle" type="button" data-t="${p.id}" aria-pressed="${p.acommander}" aria-label="${p.acommander?`Retirer ${esc(p.nom)} de la commande`:`Commander ${esc(p.nom)}`}"><span class="box">${CHECK}</span>${p.acommander?"":"Commander"}</button>`;
   const units=UNITS.includes(p.unite)||!p.unite?UNITS:[p.unite,...UNITS];
   const px=p.prix?` · <span class="qp">${eur(+p.prix.p)}/${esc(p.prix.u)}</span>${p.prix.promo?" "+PROMO:""}`:"";
-  return `<div class="qr${p.acommander?" on":""}"><div class="qr-t" role="button" tabindex="0" data-voir="${p.id}" aria-label="Voir la fiche de ${esc(p.nom)}"><b>${label(p.nom)} <span class="qgo" aria-hidden="true">›</span></b><small>${esc(p.fournisseur)}${px}${other}</small></div>
+  return `<div class="qr${p.acommander?" on":""}"><div class="qr-t" role="button" tabindex="0" data-voir="${p.id}" aria-label="Voir la fiche de ${esc(p.nom)}"><b>${label(p.nom)} <span class="qgo" aria-hidden="true">›</span></b><small>${esc(p.fournisseur)}${px}${other}</small>${p.acommander&&p.note?`<span class="qrn">📝 ${esc(p.note)}</span>`:""}</div>
     ${p.acommander?`<div class="qr-c"><input class="qty${estHab(p)?" auto":""}" type="number" inputmode="decimal" min="0" max="10000" step="any" placeholder="Qté" value="${p.qte??""}" data-q="${p.id}" aria-label="Quantité de ${esc(p.nom)} (facultatif)"${estHab(p)?` title="Comme d'habitude"`:""}>
-      <select class="unit" data-u="${p.id}" aria-label="Unité de ${esc(p.nom)}">${units.map(u=>`<option${u===(p.unite||"pièce")?" selected":""}>${esc(u)}</option>`).join("")}</select>${tog}</div>`:tog}</div>`}
+      <select class="unit" data-u="${p.id}" aria-label="Unité de ${esc(p.nom)}">${units.map(u=>`<option${u===(p.unite||"pièce")?" selected":""}>${esc(u)}</option>`).join("")}</select><button type="button" class="qnote${p.note?" has":""}" data-note="${p.id}" aria-label="${p.note?"Modifier la note":"Ajouter une note"} sur ${esc(p.nom)}">${NOTEIC}</button>${tog}</div>`:tog}</div>`}
 /* La liste des résultats s'arrête juste au-dessus du clavier */
 function fitQres(){const el=$(".qres");if(!el)return;const vv=window.visualViewport;const h=vv?vv.height:innerHeight;
   const top=el.getBoundingClientRect().top-(vv?vv.offsetTop:0);
