@@ -98,6 +98,21 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
 .qr::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:transparent}
 .qr.on{background:var(--accent-soft)}.qr.on::before{background:var(--accent)}
 .qr-t{flex:1;min-width:0}
+.qnew{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border:0;border-top:1px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;text-align:left;cursor:pointer}
+.qres>.qnew:first-child{border-top:0}
+.qnew:active{background:var(--sunken)}
+.qplus{flex:none;width:44px;height:44px;border-radius:14px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-size:24px;font-weight:800;box-shadow:0 3px 0 color-mix(in srgb,var(--accent) 60%,#000)}
+.qnt{min-width:0}.qnt b{display:block;font-size:16px;font-weight:800;overflow-wrap:anywhere}.qnt small{display:block;font-size:13px;color:var(--muted);margin-top:2px}
+.qsups{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.qsup{display:flex;align-items:center;gap:8px;min-height:56px;padding:6px 10px;border-radius:14px;border:1.5px solid var(--line);background:var(--sunken);color:var(--fg);font:inherit;font-size:15px;font-weight:700;text-align:left;cursor:pointer;overflow-wrap:anywhere}
+.qsup:active{transform:scale(.96)}
+.qsup .ico{flex:none;width:34px;height:34px}.qsup .ico svg{width:22px;height:22px}
+.qoth summary{cursor:pointer;font-weight:700;color:var(--muted);padding:6px 2px}
+.qoth .qsups{margin-top:6px}
+.qcmd{display:flex;align-items:center;gap:10px;min-height:52px;padding:6px 12px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;font-size:15px;font-weight:700;text-align:left;cursor:pointer}
+.qcmd .qbx{flex:none;width:28px;height:28px;border-radius:9px;border:2px solid var(--line);display:grid;place-items:center;color:transparent}
+.qcmd[aria-pressed="true"] .qbx{background:var(--go,#2f7d4f);border-color:var(--go,#2f7d4f);color:#fff}
+.qcmd .qbx svg{width:16px;height:16px}
 .qnote{flex:none;width:44px;height:44px;border-radius:12px;border:1.5px dashed var(--line);background:var(--surface);color:var(--muted);display:grid;place-items:center;padding:0;cursor:pointer;transition:transform .12s}
 .qnote:active{transform:scale(.9)}
 .qnote.has{border-style:solid;border-color:var(--accent);background:var(--accent-soft);color:var(--fg)}
@@ -687,9 +702,11 @@ function render(){
   if(ts.length){
     const res=quickHits(ts);const hits=res.length;const info=$("#qinfo");info.hidden=false;
     info.innerHTML=hits?`<span>${hits} produit${hits>1?"s":""} trouvé${hits>1?"s":""}${res.fuzzy?" (en corrigeant la faute)":""}</span>`
-      :`<span>Aucun produit ne correspond à « ${esc(S.q.trim())} ».</span><button class="btn soft" type="button" id="qAdd">Ajouter « ${esc(S.q.trim())} »</button>`;
+      :`<span>Aucun produit ne correspond à « ${esc(S.q.trim())} ».</span>`;
+    // Rien trouvé (ou seulement en corrigeant la faute) : on propose de créer l'article tout de suite, sans descendre au formulaire
+    const qn=(!hits||res.fuzzy)?`<button class="qnew" type="button" id="qAdd"><span class="qplus" aria-hidden="true">＋</span><span class="qnt"><b>Ajouter « ${esc(cap1(S.q.trim()))} »</b><small>${hits?"Ce n'est pas ce que tu cherches ? ":""}Un appui pour le créer et le commander</small></span></button>`:"";
     const old=$(".qres"),top=old?old.scrollTop:0;
-    $("#suppliers").innerHTML=hits?`<div class="qres">${res.slice(0,40).map(qrHTML).join("")}${hits>40?`<div class="qr-more">Tape quelques lettres de plus pour voir les autres.</div>`:""}</div>`:"";
+    $("#suppliers").innerHTML=hits?`<div class="qres">${res.slice(0,40).map(qrHTML).join("")}${hits>40?`<div class="qr-more">Tape quelques lettres de plus pour voir les autres.</div>`:""}${qn}</div>`:`<div class="qres">${qn}</div>`;
     const nw=$(".qres");if(nw){nw.scrollTop=top;fitQres()}
   }else{
     $("#qinfo").hidden=true;
@@ -763,7 +780,7 @@ $("#q").addEventListener("focus",()=>setTimeout(()=>{const tb=$(".tabs"),r=$(".s
 $("#qClear").onclick=()=>{$("#q").value="";S.q="";$("#qClear").hidden=true;render();$("#q").focus()};
 document.querySelectorAll("[data-sec]").forEach(b=>b.onclick=()=>{S.sec=b.dataset.sec;store.set("commande2b-sec",S.sec);render()});
 document.addEventListener("click",async e=>{
-  if(e.target.id==="qAdd"){$("#nNom").value=S.q.trim();$("#addForm").scrollIntoView({behavior:"smooth",block:"center"});setTimeout(()=>$("#nFour").focus(),300);return}
+  if(e.target.closest("#qAdd")){quickAdd(cap1(S.q.trim()));return}
   const pc=e.target.closest("[data-prix]");if(pc){openPrice(pc.dataset.prix);return}
   const vo=e.target.closest("[data-voir]");if(vo){$("#q").blur();openPrice(vo.dataset.voir,{recherche:true});return}
   const ed=e.target.closest("[data-edit]");if(ed){openEdit(ed.dataset.edit);return}
@@ -953,6 +970,36 @@ $("#addForm").addEventListener("submit",async e=>{
     if(!newId){toast(nom+" sera ajouté dès que le réseau revient");return}
     S.items.delete(tmp);S.items.set(newId,{...obj,id:newId});render();toast(`${nom} ajouté chez ${f}`);openPrice(newId,{nouveau:true})}).catch(()=>{S.items.delete(tmp);render()});
 });
+
+/* Ajout express depuis la recherche : on choisit juste le fournisseur, l'article est créé (et coché « Commander » si on le laisse) */
+const cap1=t=>t?t.charAt(0).toUpperCase()+t.slice(1):t;
+function quickAdd(nom){
+  if(!nom)return;const sec=S.sec,mine=supList(),others=allSups().filter(f=>!mine.includes(f));let cmd=true;
+  const m=document.createElement("div");m.className="sheet";
+  const btn=f=>`<button type="button" class="qsup" data-qf="${esc(f)}"><span class="ico" aria-hidden="true">${supIcon(f)}</span>${esc(f)}</button>`;
+  m.innerHTML=`<div class="box" role="dialog" aria-label="Ajouter ${esc(nom)}"><h3>Ajouter « ${esc(nom)} »</h3>
+    <div class="sub" style="margin-top:0">Chez quel fournisseur ? (partie ${esc(SECN[sec])})</div>
+    <div class="qsups">${mine.map(btn).join("")}</div>
+    ${others.length?`<details class="qoth"><summary>Autres fournisseurs</summary><div class="qsups">${others.map(btn).join("")}</div></details>`:""}
+    <button type="button" class="qcmd" aria-pressed="true"><span class="qbx">${CHECK}</span>Le mettre tout de suite dans « À commander »</button>
+    <div class="acts"><button class="btn soft" type="button" data-qx>Annuler</button></div></div>`;
+  document.body.appendChild(m);
+  m.addEventListener("click",async e=>{
+    if(e.target===m||e.target.closest("[data-qx]")){m.remove();return}
+    const c=e.target.closest(".qcmd");if(c){cmd=!cmd;c.setAttribute("aria-pressed",cmd);return}
+    const b=e.target.closest("[data-qf]");if(!b)return;const f=b.dataset.qf;m.remove();
+    const dup=[...S.items.values()].find(p=>p.fournisseur===f&&norm(p.nom)===norm(nom));
+    if(dup){if(cmd&&!dup.acommander){dup.acommander=true;render();send("maj_produit",{p_id:dup.id,p_champs:{acommander:true}}).catch(()=>{})}toast(`${dup.nom} existe déjà chez ${f}${cmd?" : coché ✓":""}`);return}
+    const tmp="tmp-"+Date.now(),obj={id:tmp,nom,fournisseur:f,section:sec,acommander:cmd,qte:null,unite:"pièce",ordre:Date.now(),groupe:null,prix:null,note:null};
+    S.items.set(tmp,obj);render();if(navigator.vibrate)navigator.vibrate(12);
+    try{const newId=await send("ajout_produit",{p_nom:nom,p_fournisseur:f,p_section:sec});
+      if(!newId){toast(nom+" sera ajouté dès que le réseau revient");return}
+      const cur=S.items.get(tmp)||obj;S.items.delete(tmp);S.items.set(newId,{...cur,id:newId});render();
+      if(cur.acommander)await send("maj_produit",{p_id:newId,p_champs:{acommander:true}});
+      toast(`${nom} ajouté chez ${f}${cur.acommander?" et coché ✓":""}`)}
+    catch{S.items.delete(tmp);render();toast("Pas ajouté : vérifie la connexion")}
+  });
+}
 
 /* Modifier un article : nom, fournisseur, Cuisine / Boissons */
 function openEdit(id){
