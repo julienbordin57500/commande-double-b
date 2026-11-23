@@ -288,7 +288,7 @@
     b.querySelector(".chg").onclick=()=>picker(true);
     b.querySelector(".bell:not(.gear)").onclick=()=>Notifs.open();
     b.querySelector(".gear").onclick=()=>reglages();
-    Notifs.badge();Notifs.start();Push.sync();
+    Notifs.badge();Notifs.start();Notes.start();Push.sync();
   }
   /* Mini visite guidée : une seule fois par téléphone */
   function tour(){
@@ -338,6 +338,44 @@
       sl.style.transition="opacity .2s";sl.style.opacity="0";k.style.transition="opacity .15s";k.style.opacity="0"},280);
     setTimeout(()=>{wrap.style.transition="height .22s ease,margin .22s ease";wrap.style.height="0px";wrap.style.marginBottom="-8px"},580);
     setTimeout(()=>{wrap.remove();res()},820)})}
+  /* ---------- Notes adressées (« Pour qui ? » dans Événements) ----------
+     Une note cochée pour quelqu'un s'affiche en grand à l'ouverture de l'appli, jusqu'à « J'ai vu ».
+     L'auteur voit ensuite « ✓ Vu par … » sur la note. */
+  const NV_NOMS={julien:"Julien",eric:"Eric",thierry:"Thierry",claire:"Claire"};
+  const Notes={busy:false,
+    css(){if(document.getElementById("nvu-css"))return;const st=document.createElement("style");st.id="nvu-css";st.textContent=`
+.nvu{position:fixed;inset:0;z-index:120;background:rgba(12,10,6,.62);display:flex;align-items:center;justify-content:center;padding:20px;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.nvu .nvb{background:var(--surface,#fffdf8);color:var(--fg,#1d1a14);width:100%;max-width:420px;border-radius:26px;padding:26px 22px 20px;box-shadow:0 24px 60px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:14px;text-align:center;animation:nvIn .38s cubic-bezier(.2,1.3,.4,1) both}
+.nvu .pin{font-size:44px;line-height:1;margin:0 auto;animation:nvPin .9s ease .3s both}
+.nvu .de{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#7a7366)}
+.nvu .tx{font-size:22px;font-weight:800;line-height:1.3;white-space:pre-wrap;overflow-wrap:anywhere}
+.nvu .qd{font-size:15px;font-weight:700;color:var(--muted,#7a7366)}
+.nvu .nb2{font-size:13px;font-weight:700;color:var(--muted,#7a7366)}
+.nvu .ok{height:62px;border:0;border-radius:18px;background:#1f8a4c;color:#fff;font:inherit;font-size:19px;font-weight:800;margin-top:6px;box-shadow:0 5px 0 #146236;transition:transform .08s,box-shadow .08s}
+.nvu .ok:active{transform:translateY(4px);box-shadow:0 1px 0 #146236}
+.nvu .ok:disabled{opacity:.7}
+@keyframes nvIn{from{opacity:0;transform:scale(.86) translateY(14px)}to{opacity:1;transform:none}}
+@keyframes nvPin{0%{transform:translateY(-14px) rotate(-18deg);opacity:0}55%{transform:translateY(2px) rotate(6deg);opacity:1}100%{transform:none}}
+@media (prefers-reduced-motion:reduce){.nvu .nvb,.nvu .pin{animation:none}}`;document.head.appendChild(st)},
+    async check(){if(this.busy||!get()||!code()||document.querySelector(".nvu"))return;this.busy=true;
+      try{const l=await call("notes_a_voir",{p_profil:get()});if(Array.isArray(l)&&l.length)this.show(l)}catch{}this.busy=false},
+    show(l){this.css();let i=0;const m=document.createElement("div");m.className="nvu";m.setAttribute("role","alertdialog");m.setAttribute("aria-label","Note pour toi");
+      const draw=()=>{const n=l[i];const d=n.jour?new Date(n.jour+"T00:00"):null;
+        const jr=d?d.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"}):"";
+        m.innerHTML=`<div class="nvb"><div class="pin" aria-hidden="true">📌</div>
+          <div class="de">Note de ${ESC(NV_NOMS[n.cree_par]||"l'équipe")} pour toi</div>
+          <div class="tx">${ESC(n.client)}</div>
+          ${jr?`<div class="qd">📅 ${ESC(jr.charAt(0).toUpperCase()+jr.slice(1))}${n.heure?" · "+ESC(n.heure):""}</div>`:""}
+          ${l.length>1?`<div class="nb2">Note ${i+1} sur ${l.length}</div>`:""}
+          <button class="ok" type="button">J'ai vu ✓</button></div>`;
+        const b=m.querySelector(".ok");b.onclick=async()=>{b.disabled=true;
+          try{await call("note_vue",{p_id:n.id,p_profil:get()})}catch{b.disabled=false;b.textContent="Pas de connexion, réessaie";return}
+          if(navigator.vibrate)navigator.vibrate(15);i++;if(i<l.length)draw();else m.remove()};
+        setTimeout(()=>b.focus({preventScroll:true}),400)};
+      draw();document.body.appendChild(m)},
+    start(){if(this.on)return;this.on=true;setTimeout(()=>this.check(),1800);
+      setInterval(()=>{if(document.visibilityState==="visible")this.check()},60000);
+      document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")this.check()})}};
   const Notifs={list:[],t:null,
     load(){try{this.list=JSON.parse(localStorage.getItem(NK())||"[]")}catch{this.list=[]}},
     save(){try{localStorage.setItem(NK(),JSON.stringify(this.list))}catch{}},

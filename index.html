@@ -199,6 +199,9 @@ mark{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:
 .cmd-item:first-of-type{border-top:0}
 .cmd-item .name{flex:1;min-width:0;font-weight:600}
 .qpill{flex:none;font-weight:800;font-size:15px;padding:6px 12px;border-radius:10px;background:var(--accent-soft);font-variant-numeric:tabular-nums}
+.anw{flex:1 0 100%;min-width:0;margin-top:-2px}
+.anote{display:flex;width:fit-content;max-width:100%;align-items:flex-start;gap:5px;margin-top:5px;padding:4px 10px;border:0;border-radius:10px;background:var(--accent-soft);color:var(--fg);font:inherit;font-size:14px;font-weight:700;line-height:1.3;text-align:left;white-space:normal;overflow-wrap:anywhere;cursor:pointer}
+.anadd{display:block;margin-top:3px;padding:3px 0;border:0;background:none;color:var(--muted);font:inherit;font-size:13px;font-weight:700;cursor:pointer}
 .habq{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-top:1px}
 .qty.auto{background:color-mix(in srgb,var(--accent) 10%,var(--sunken))}
 .qpill.none{background:transparent;color:var(--muted);font-weight:500;font-size:13px;padding:0}
@@ -704,7 +707,7 @@ function supHTML(f){
     <div class="sup-body"><div class="stk" aria-hidden="${!open}"><div class="stk-in" role="button" tabindex="-1" data-sup="${esc(f)}" aria-label="Replier ${esc(f)}"><span class="cdot"></span><b>${esc(f)}</b><span class="stk-up">Replier ${CHEVUP}</span></div></div>${body}</div></section>`;
 }
 function itemHTML(p){
-  return `<div class="item${p.acommander?" on":""}"><div class="name"><span>${label(p.nom)}</span>${chip(p)}${tools(p)}</div>
+  return `<div class="item${p.acommander?" on":""}"><div class="name"><span>${label(p.nom)}</span>${chip(p)}${tools(p)}${p.acommander?`<div class="anw">${(p.note?`<button type="button" class="anote" data-note="${p.id}" aria-label="Modifier la note de ${esc(p.nom)}">📝 ${esc(p.note)}</button>`:`<button type="button" class="anadd" data-note="${p.id}">✎ Ajouter une note</button>`)}</div>`:""}</div>
     <div class="ctrls">
       <input class="qty${estHab(p)?" auto":""}" type="number" inputmode="decimal" min="0" max="10000" step="any" placeholder="Qté" value="${p.qte??""}" data-q="${p.id}" aria-label="Quantité de ${esc(p.nom)} (facultatif)"${estHab(p)?` title="Comme d'habitude"`:""}>
       <select class="unit" data-u="${p.id}" aria-label="Unité de ${esc(p.nom)}">${(UNITS.includes(p.unite)?UNITS:[p.unite,...UNITS]).map(u=>`<option${u===p.unite?" selected":""}>${esc(u)}</option>`).join("")}</select>
@@ -717,8 +720,23 @@ function renderCmd(sups){
   if(!groups.length){el.innerHTML=`<div class="empty"><strong>Rien à commander en ${SECN[S.sec].toLowerCase()}</strong>Dans l'onglet Produits, appuie sur « Commander » à côté de ce qui manque. La quantité est facultative.</div>`;return}
   el.innerHTML=groups.map(([f,ps])=>{const open=isCOpen(f);return `<section class="cmd-sup" data-open="${open}" data-cmdsup="${esc(f)}" style="${supStyle(f)}">
     <header role="button" tabindex="0" data-ctog="${esc(f)}" aria-expanded="${open}"><span class="ico" aria-hidden="true">${supIcon(f)}</span><span class="cnom"><h2>${esc(f)}</h2><span>${ps.length} article${ps.length>1?"s":""}</span></span><button class="sendb appb" type="button" data-appel="${esc(f)}" aria-label="Mode appel : dicter la commande à ${esc(f)}">${PHONE}</button><span class="chev" aria-hidden="true">${CHEV}</span></header>
-    <div class="cmd-body">${ps.map(p=>`<div class="cmd-item"><div class="name"><span>${esc(p.nom)}${estHab(p)?`<small class="habq">comme d'habitude</small>`:""}</span>${chip(p)}</div>${p.qte?`<span class="qpill">${fmt(p.qte)} ${esc(plU(p.unite,p.qte))}</span>`:`<span class="qpill none">quantité libre</span>`}<button class="okc" data-ok="${p.id}" aria-label="${esc(p.nom)} est commandé"><span class="ring">${CHECK}</span>Commandé</button><button class="del" data-t="${p.id}" aria-label="Retirer ${esc(p.nom)} de la commande">Retirer</button></div>`).join("")}
+    <div class="cmd-body">${ps.map(p=>`<div class="cmd-item"><div class="name"><span>${esc(p.nom)}${estHab(p)?`<small class="habq">comme d'habitude</small>`:""}</span>${chip(p)}${p.acommander?`<div class="anw">${(p.note?`<button type="button" class="anote" data-note="${p.id}" aria-label="Modifier la note de ${esc(p.nom)}">📝 ${esc(p.note)}</button>`:`<button type="button" class="anadd" data-note="${p.id}">✎ Ajouter une note</button>`)}</div>`:""}</div>${p.qte?`<span class="qpill">${fmt(p.qte)} ${esc(plU(p.unite,p.qte))}</span>`:`<span class="qpill none">quantité libre</span>`}<button class="okc" data-ok="${p.id}" aria-label="${esc(p.nom)} est commandé"><span class="ring">${CHECK}</span>Commandé</button><button class="del" data-t="${p.id}" aria-label="Retirer ${esc(p.nom)} de la commande">Retirer</button></div>`).join("")}
     <div class="cmd-done">${parMessage(f)?`<button class="btn msgb" type="button" data-send="${esc(f)}">${PLANE}Envoyer par message</button>`:""}<button class="btn" type="button" data-done="${esc(f)}">Commande effectuée chez ${esc(f)}</button></div></div></section>`}).join("");
+}
+
+/* Note sur un article à commander (ex. « pour l'apéro de samedi ») : interne, jamais envoyée au fournisseur ;
+   effacée toute seule quand l'article est commandé ou retiré */
+function noteSheet(p){
+  const m=document.createElement("div");m.className="sheet";
+  m.innerHTML=`<div class="box" role="dialog" aria-label="Note sur ${esc(p.nom)}"><h3>📝 Note sur ${esc(p.nom)}</h3>
+    <div class="sub" style="margin-top:0">Elle s'affiche dans « À commander », à côté de l'article. Elle s'efface quand c'est commandé.</div>
+    <input id="anTxt" type="text" maxlength="120" enterkeyhint="done" placeholder="ex. pour l'apéro de samedi" value="${esc(p.note||"")}" style="font:inherit;font-size:17px;height:54px;border:1.5px solid var(--line);border-radius:14px;background:var(--sunken);padding:0 12px;width:100%;color:var(--fg)">
+    <div class="acts"><button class="btn" type="button" data-a="ok">Enregistrer</button>${p.note?`<button class="btn danger" type="button" data-a="del">Effacer la note</button>`:""}<button class="btn soft" type="button" data-a="x">Annuler</button></div></div>`;
+  document.body.appendChild(m);const inp=m.querySelector("#anTxt");setTimeout(()=>{inp.focus();inp.setSelectionRange(inp.value.length,inp.value.length)},200);
+  const fin=v=>{m.remove();if(v===undefined)return;v=v.trim();if(v===(p.note||""))return;p.note=v||null;render();
+    send("maj_produit",{p_id:p.id,p_champs:{note:v}}).then(()=>toast(v?"Note ajoutée ✓":"Note effacée")).catch(()=>{})};
+  m.addEventListener("click",e=>{if(e.target===m)return fin();const b=e.target.closest("[data-a]");if(!b)return;fin(b.dataset.a==="ok"?inp.value:b.dataset.a==="del"?"":undefined)});
+  inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();fin(inp.value)}});
 }
 
 /* Petites fenêtres (confirmations, choix) : gros boutons, rien de caché */
@@ -755,9 +773,11 @@ document.addEventListener("click",async e=>{
     return}
   const ct=e.target.closest("[data-ctog]");
   if(ct){const f=ct.dataset.ctog;setCOpen(f,!isCOpen(f));const sec=ct.closest(".cmd-sup");sec.dataset.open=isCOpen(f);ct.setAttribute("aria-expanded",isCOpen(f));return}
+  const nt=e.target.closest("[data-note]");
+  if(nt){const p=S.items.get(nt.dataset.note);if(p)noteSheet(p);return}
   const t=e.target.closest("[data-t]");
   if(t){const p=S.items.get(t.dataset.t);if(!p)return;
-    p.acommander=!p.acommander;const champs={acommander:p.acommander};if(!p.acommander){p.qte=null;champs.qte=""}
+    p.acommander=!p.acommander;const champs={acommander:p.acommander};if(!p.acommander){p.qte=null;champs.qte="";if(p.note){p.note=null;champs.note=""}}
     // Quantité habituelle : la dernière quantité commandée est proposée d'office (modifiable, ou à effacer)
     else if(p.qte==null&&p.qh&&+p.qh.q>0){p.qte=+p.qh.q;champs.qte=p.qte;if(p.qh.u){p.unite=p.qh.u;champs.unite=p.qh.u}}
     render();send("maj_produit",{p_id:p.id,p_champs:champs}).catch(()=>{});
@@ -776,15 +796,15 @@ document.addEventListener("click",async e=>{
     await new Promise(r=>setTimeout(r,matchMedia("(prefers-reduced-motion: reduce)").matches?0:260));
     if(row){row.style.height=row.offsetHeight+"px";row.classList.add("gone");await new Promise(r=>setTimeout(r,matchMedia("(prefers-reduced-motion: reduce)").matches?0:320))}
     trace(p.fournisseur,p.section||"cuisine",[p]);
-    p.acommander=false;p.qte=null;S.busy=false;render();
-    send("maj_produit",{p_id:p.id,p_champs:{acommander:false,qte:""}}).then(()=>toast(p.nom+" : commandé ✓")).catch(()=>{});return}
+    p.acommander=false;p.qte=null;p.note=null;S.busy=false;render();
+    send("maj_produit",{p_id:p.id,p_champs:{acommander:false,qte:"",note:""}}).then(()=>toast(p.nom+" : commandé ✓")).catch(()=>{});return}
   const dn=e.target.closest("[data-done]");
   if(dn){const f=dn.dataset.done;
     if(!dn.classList.contains("confirm")){dn.classList.add("confirm");dn.textContent="Touche encore pour confirmer";setTimeout(()=>{if(dn.isConnected){dn.classList.remove("confirm");dn.textContent="Commande effectuée chez "+f}},4000);return}
     const block=dn.closest(".cmd-sup");const sec=S.sec;S.busy=true;
     await knife(block);
     trace(f,sec,[...S.items.values()].filter(p=>p.fournisseur===f&&(p.section||"cuisine")===sec&&p.acommander));
-    [...S.items.values()].forEach(p=>{if(p.fournisseur===f&&(p.section||"cuisine")===sec&&p.acommander){p.acommander=false;p.qte=null}});
+    [...S.items.values()].forEach(p=>{if(p.fournisseur===f&&(p.section||"cuisine")===sec&&p.acommander){p.acommander=false;p.qte=null;p.note=null}});
     S.busy=false;render();
     send("commande_effectuee_fournisseur",{p_fournisseur:f,p_section:sec}).then(()=>toast("Commande "+f+" effectuée")).catch(()=>{})}
 });
